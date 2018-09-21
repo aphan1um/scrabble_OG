@@ -1,8 +1,10 @@
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
 
 
-public class ScrabbleBoard extends JFrame {
+public class ScrabbleBoard extends JFrame implements DocumentListener {
     private final int rows = 20;
     private final int colomns = 20;
 
@@ -11,9 +13,11 @@ public class ScrabbleBoard extends JFrame {
     private JPanel board;
     private JPanel buttons;
 
+    private ScrabbleTF[][] txt;
+
     public ScrabbleBoard() {
         boardInitialization();
-        buttonsInitialization();
+        //buttonsInitialization();
         setVisible(true);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         validate();
@@ -24,17 +28,17 @@ public class ScrabbleBoard extends JFrame {
         board = new JPanel();
         board.setLayout(grids);
 
-        JTextField[][] txt = new JTextField[rows][colomns];
+        txt = new ScrabbleTF[rows][colomns];
         for(int i = 0; i < txt.length; i++) {
             for(int j = 0; j < txt[i].length; j++) {
-                JTextField tf = new JTextField();
-                tf.setDocument(new JTextFieldCharLimit(1));
-
+                ScrabbleTF tf = new ScrabbleTF(i, j);
+                tf.setDocument(new JTextFieldCharLimit());
+                tf.getDocument().addDocumentListener(this);
                 txt[i][j] = tf;
                 board.add(txt[i][j]);
             }
         }
-        add(board, BorderLayout.WEST);
+        add(board, BorderLayout.CENTER);
     }
 
     private void buttonsInitialization() {
@@ -58,5 +62,24 @@ public class ScrabbleBoard extends JFrame {
         ScrabbleBoard board = new ScrabbleBoard();
         board.setSize(500, 500);
         board.setResizable(false);
+    }
+
+    @Override
+    public void insertUpdate(DocumentEvent e) {
+        for(int i = 0; i < txt.length; i++) {
+            for(int j = 0; j < txt[i].length; j++) {
+                txt[i][j].setEditable(false);
+            }
+        }
+    }
+
+    @Override
+    public void removeUpdate(DocumentEvent e) {
+
+    }
+
+    @Override
+    public void changedUpdate(DocumentEvent e) {
+
     }
 }

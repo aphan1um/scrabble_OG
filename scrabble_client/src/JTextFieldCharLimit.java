@@ -6,7 +6,7 @@ public class JTextFieldCharLimit extends PlainDocument {
 
     private final int limit = 1;
 
-    public JTextFieldCharLimit(int limitation) {
+    public JTextFieldCharLimit() {
 
     }
 
