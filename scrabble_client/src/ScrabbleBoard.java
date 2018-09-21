@@ -7,9 +7,19 @@ public class ScrabbleBoard extends JFrame {
     private final int colomns = 20;
 
     private GridLayout grids;
+    private GridLayout btn_grids;
     private JPanel board;
+    private JPanel buttons;
 
     public ScrabbleBoard() {
+        boardInitialization();
+        buttonsInitialization();
+        setVisible(true);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        validate();
+    }
+
+    private void boardInitialization() {
         grids = new GridLayout(20, 20);
         board = new JPanel();
         board.setLayout(grids);
@@ -24,10 +34,24 @@ public class ScrabbleBoard extends JFrame {
                 board.add(txt[i][j]);
             }
         }
-        add(board, BorderLayout.CENTER);
-        setVisible(true);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        validate();
+        add(board, BorderLayout.WEST);
+    }
+
+    private void buttonsInitialization() {
+        btn_grids = new GridLayout(3, 1);
+        buttons = new JPanel();
+        buttons.setLayout(btn_grids);
+
+        JButton submit = new JButton("submit");
+        submit.setSize(20, 50);
+        buttons.add(submit);
+        JButton pass = new JButton("pass");
+        pass.setSize(20, 50);
+        buttons.add(pass);
+        JButton revoke = new JButton("revoke");
+        revoke.setSize(20, 50);
+        buttons.add(revoke);
+        add(buttons, BorderLayout.EAST);
     }
 
     public static void main(String[] args) {
