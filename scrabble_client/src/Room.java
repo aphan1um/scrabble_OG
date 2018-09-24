@@ -2,7 +2,7 @@ import javax.swing.*;
 import java.util.ArrayList;
 
 public class Room {
-    private JList list1;
+    private JList RoomMember;
     private JPanel room;
     private JButton readyButton;
     private JTextArea textArea1;
@@ -23,11 +23,14 @@ public class Room {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setSize(900, 500);
-        DefaultListModel model = new DefaultListModel();
-        for(int i = 0;i < roomGUI.player.size();i++){
-            model.addElement(roomGUI.player.get(i));
-        }
-        roomGUI.list1.setModel(model);
+        showRoomMember(roomGUI.player,roomGUI.RoomMember);
         frame.setVisible(true);
+    }
+    public void showRoomMember(ArrayList player,JList list1){
+        DefaultListModel model = new DefaultListModel();
+        for(int i = 0;i < player.size();i++){
+            model.addElement(player.get(i));
+        }
+        list1.setModel(model);
     }
 }
