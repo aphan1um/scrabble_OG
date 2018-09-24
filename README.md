@@ -6,3 +6,6 @@ By aphan1
 By murphy
 
 By david
+
+Draft document:
+https://docs.google.com/document/d/1F9yUfzmdfMzwzzjxHmIXkR9BOFRFcbK6rAqeqwoVZ3A/edit?usp=sharing
