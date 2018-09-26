@@ -9,6 +9,8 @@ public class MouseAction implements MouseListener {
         if(!(invate.contains(receiver))){
             invate.add(receiver);
         }
+        loginGui.getWelcome().setText("");
+        loginGui.getWelcome().append("Invitation has been sent to "+receiver+" .");
     }
     public MouseAction(LoginGui loginGui){
         this.loginGui = loginGui;
