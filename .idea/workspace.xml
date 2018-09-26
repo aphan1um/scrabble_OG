@@ -308,7 +308,7 @@
     <property name="UI_DESIGNER_EDITOR_MODE.UIDesignerToolWindowManager.WIDTH" value="243" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1537940229844" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1537942612686" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
@@ -336,9 +336,42 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Application.Host">
+  <component name="RunManager" selected="Application.ClientGUI">
+    <configuration name="ClientGUI (1)" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="client.ClientGUI" />
+      <module name="scrabble_OG" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="client.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ClientGUI" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="ClientGUI" />
+      <module name="scrabble_OG" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="Host" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="server.Host" />
+      <module name="scrabble_OG" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="server.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="MainClass" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="server.MainClass" />
       <module name="scrabble_OG" />
       <extension name="coverage">
         <pattern>
@@ -363,32 +396,20 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="ScrabbleBoard" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="ScrabbleBoard" />
-      <module name="scrabble_OG" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="ScrabbleTF" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="ScrabbleTF" />
-      <module name="scrabble_OG" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
     <list>
-      <item itemvalue="Application.ScrabbleBoard" />
-      <item itemvalue="Application.ScrabbleTF" />
       <item itemvalue="Application.ScrabbleBoard (1)" />
       <item itemvalue="Application.Host" />
+      <item itemvalue="Application.ClientGUI" />
+      <item itemvalue="Application.MainClass" />
+      <item itemvalue="Application.ClientGUI (1)" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Application.ClientGUI" />
+        <item itemvalue="Application.ClientGUI (1)" />
+        <item itemvalue="Application.MainClass" />
         <item itemvalue="Application.Host" />
-        <item itemvalue="Application.ScrabbleBoard" />
         <item itemvalue="Application.ScrabbleBoard (1)" />
-        <item itemvalue="Application.ScrabbleTF" />
       </list>
     </recent_temporary>
   </component>

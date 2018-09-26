@@ -20,7 +20,7 @@ public class StartAction implements ActionListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Room roomGUI = new Room();
-                roomGUI.initial(loginGui.getReceiver());
+                //roomGUI.initial(loginGui.getReceiver());
                 accept_window.dispose();
                 frame.dispose();
             }
