@@ -1,5 +1,3 @@
-package client;
-
 public class TestUser {
     private String username;
     private String userid;
