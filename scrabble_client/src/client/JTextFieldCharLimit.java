@@ -1,3 +1,5 @@
+package client;
+
 import javax.swing.text.BadLocationException;
 import javax.swing.text.PlainDocument;
 import javax.swing.text.AttributeSet;
