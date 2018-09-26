@@ -27,4 +27,8 @@ public class ClientGUI {
         frame.setSize(900, 500);
         frame.setVisible(true);
     }
+    public JTextField getText1(){
+        return Text1;
+    }
+    
 }

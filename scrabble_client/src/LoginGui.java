@@ -8,13 +8,15 @@ public class LoginGui {
     private JButton startButton;
     private JButton cancelButton;
     private JList Userlist;
-    private JTextArea welcomeToTheScrabbleTextArea;
+    private JTextArea Welcome;
+    private JLabel Username;
     private ArrayList Receiver;
     private final static int Maxplayer = 100;
     TestUser user1 = new TestUser("Xun Sun","1","Signin");
     TestUser user2 = new TestUser("Jing Bi","2","Signout");
     TestUser user3 = new TestUser("Chaodi Tang","2","Signin");
     JFrame frame = new JFrame("LoginGui");
+    ClientGUI clientGUI = new ClientGUI();
     public LoginGui() {
         Receiver = new ArrayList(Maxplayer);
     }
@@ -43,5 +45,8 @@ public class LoginGui {
     }
     public JList getUserlist(){
         return Userlist;
+    }
+    public JTextArea getWelcome(){
+        return Welcome;
     }
 }

@@ -25,6 +25,12 @@ public class StartAction implements ActionListener {
                 frame.dispose();
             }
         });
+        window.getRefused().addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                accept_window.dispose();
+            }
+        });
         accept_window.setSize(300, 200);
         accept_window.setVisible(true);
     }
