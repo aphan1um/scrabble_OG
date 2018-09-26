@@ -1,3 +1,5 @@
+package client;
+
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -6,7 +8,7 @@ public class StartAction implements ActionListener {
     private LoginGui loginGui;
     private JButton button;
     private JFrame frame;
-    public StartAction(LoginGui loginGui,JFrame frame,JButton button){
+    public StartAction(LoginGui loginGui, JFrame frame, JButton button){
         this.loginGui = loginGui;
         this.button = button;
         this.frame = frame;

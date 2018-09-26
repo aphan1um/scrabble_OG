@@ -1,3 +1,5 @@
+package client;
+
 public class Modification {
     private int x;
     private int y;

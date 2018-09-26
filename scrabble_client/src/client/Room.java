@@ -1,4 +1,7 @@
+package client;
+
 import javax.swing.*;
+import java.awt.*;
 import java.util.ArrayList;
 
 public class Room {
@@ -9,10 +12,11 @@ public class Room {
     private ArrayList player = new ArrayList<String>();
     JFrame frame = new JFrame("Room");
 
-    public void setPlayer(ArrayList player){
+    public void setPlayer(ArrayList player) {
         this.player = (ArrayList) player.clone();
     }
-    public ArrayList getPlayer(){
+
+    public ArrayList getPlayer() {
         return player;
     }
 
@@ -23,14 +27,16 @@ public class Room {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setSize(900, 500);
-        showRoomMember(roomGUI.player,roomGUI.RoomMember);
+        showRoomMember(roomGUI.player, roomGUI.RoomMember);
         frame.setVisible(true);
     }
-    public void showRoomMember(ArrayList player,JList list1){
+
+    public void showRoomMember(ArrayList player, JList list1) {
         DefaultListModel model = new DefaultListModel();
-        for(int i = 0;i < player.size();i++){
+        for (int i = 0; i < player.size(); i++) {
             model.addElement(player.get(i));
         }
         list1.setModel(model);
     }
+
 }
