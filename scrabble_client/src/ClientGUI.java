@@ -1,4 +1,5 @@
 import javax.swing.*;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -22,6 +23,7 @@ public class ClientGUI {
         SignAction Sign = new SignAction(frame,clientGUI.Signbutton);
         clientGUI.cancelButton.addActionListener(Cancel);
         clientGUI.Signbutton.addActionListener(Sign);
+        clientGUI.iWantToBeButton.addActionListener(Sign);
         frame.setContentPane(clientGUI.panel1);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
