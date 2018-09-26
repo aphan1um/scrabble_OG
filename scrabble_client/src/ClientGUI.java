@@ -18,11 +18,9 @@ public class ClientGUI {
         ClientGUI clientGUI = new ClientGUI();
         CancelAction Cancel = new CancelAction(clientGUI.cancelButton);
         SignAction Sign = new SignAction(frame,clientGUI.Signbutton);
-
         clientGUI.cancelButton.addActionListener(Cancel);
         clientGUI.Signbutton.addActionListener(Sign);
         clientGUI.iWantToBeButton.addActionListener(Sign);
-
         frame.setContentPane(clientGUI.panel1);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
