@@ -1,9 +1,7 @@
 import javax.swing.*;
-<<<<<<< HEAD
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-=======
->>>>>>> fc665436e720f31becce00399c19129bef1da615
 
 public class ClientGUI {
     private JPanel panel1;
@@ -32,8 +30,4 @@ public class ClientGUI {
         frame.setSize(900, 500);
         frame.setVisible(true);
     }
-    public JTextField getText1(){
-        return Text1;
-    }
-    
 }

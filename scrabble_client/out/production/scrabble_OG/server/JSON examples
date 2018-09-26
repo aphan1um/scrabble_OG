@@ -1,0 +1,17 @@
+JSON examples:
+------------------------------------------------------------------
+
+Enquire name detail syntax:
+    Server:     {'op': 'REQUEST_ID'}
+    Client:     {'op': 'REQUEST_ID', 'id': 'player_name'}
+
+
+
+If player enters lobby:
+    1. Detail users in the lobby
+    2. If a player leaves or enters the lobby
+            i)  Each player must be informed of this.
+
+
+Chat JSON syntax:
+    {
