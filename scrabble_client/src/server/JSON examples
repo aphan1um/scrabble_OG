@@ -2,8 +2,10 @@ JSON examples:
 ------------------------------------------------------------------
 
 Enquire name detail syntax:
-    Server:     {'op': 'id_need'}
-    Client:     {'op': 'id_need', '''id': 'player_name'}
+    Server:     {'op': 'REQUEST_ID'}
+    Client:     {'op': 'REQUEST_ID', 'id': 'player_name'}
+
+
 
 If player enters lobby:
     1. Detail users in the lobby

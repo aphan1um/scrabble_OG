@@ -3,5 +3,7 @@ package server;
 public enum Operations {
     REQUEST_ID,
     GAME_START,
-    CHAT;
+    PLAYER_STATUS_CHANGED,
+    CHAT,
+    PING,
 }

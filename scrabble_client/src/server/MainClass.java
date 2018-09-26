@@ -19,14 +19,17 @@ public class MainClass {
         // Ask for username
         p = new Player("dummy name");
 
+        // this is for the client
         Thread t = new Thread(() -> client_run(args[0], Integer.parseInt(args[1])));
         t.start();
+
+        // TODO: Handle if player wants to be the host
     }
 
     private static void client_run(String ip, int port) {
         try {
+            // IP:port address of server (TCP)
             Socket s = new Socket(ip, port);
-
 
             while (true) {
                 DataInputStream in = new DataInputStream(s.getInputStream());
@@ -55,6 +58,11 @@ public class MainClass {
             case REQUEST_ID:
                 j.put(JSONKeys.VALUE, p.getID());
                 break;
+            case CHAT:
+                // add code here
+                break;
+            case PLAYER_STATUS_CHANGED:
+                PlayerStatus status = PlayerStatus.valueOf(j.get(JSONKeys.VALUE.toString()).toString());
         }
 
         return j;

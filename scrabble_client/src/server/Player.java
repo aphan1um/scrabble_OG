@@ -24,6 +24,6 @@ public class Player {
     }
 
     public String toString() {
-        return "Player " + id + " with address " + ip_address;
+        return getID();
     }
 }
