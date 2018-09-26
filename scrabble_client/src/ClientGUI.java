@@ -1,4 +1,6 @@
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class ClientGUI {
     private JPanel panel1;
@@ -7,11 +9,6 @@ public class ClientGUI {
     private JButton cancelButton;
     private JLabel Lable1;
     private JLabel picture;
-    private JTextField IP;
-    private JTextField Port;
-    private JLabel Lable2;
-    private JLabel Label3;
-    private JButton iWantToBeButton;
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("ClientGUI");
@@ -20,15 +17,26 @@ public class ClientGUI {
         SignAction Sign = new SignAction(frame,clientGUI.Signbutton);
         clientGUI.cancelButton.addActionListener(Cancel);
         clientGUI.Signbutton.addActionListener(Sign);
-        clientGUI.iWantToBeButton.addActionListener(Sign);
         frame.setContentPane(clientGUI.panel1);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setSize(900, 500);
         frame.setVisible(true);
     }
-    public JTextField getText1(){
-        return Text1;
+}
+
+class SignAction implements ActionListener{
+    private JButton button;
+    private JFrame frame;
+    public SignAction(JFrame frame,JButton button){
+        super();
+        this.frame = frame;
+        this.button = button;
     }
-    
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        LoginGui loginGui = new LoginGui();
+        loginGui.initial();
+        frame.dispose();
+    }
 }
