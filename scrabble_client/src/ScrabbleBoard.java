@@ -139,7 +139,8 @@ public class ScrabbleBoard extends JFrame {
                 if (table.getValueAt(row, i) == null)
                     return false;
             }
-        } else { // vertical word
+        }
+        else { // vertical word
             int direction = (int)Math.signum(row - modification.getX());
 
             for (int j = modification.getX(); direction * (row - j) >= 0; j += direction) {
