@@ -6,10 +6,12 @@ import javax.swing.border.MatteBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.EventObject;
 
 /*
 there are four states in this game.
@@ -41,11 +43,12 @@ public class ScrabbleBoard extends JFrame {
     private GridLayout board_grids;
     private GridLayout btn_grids;
     private GridLayout mark_grids;
-    private JPanel board;
+    JScrollPane tableContainer;
+    private JPanel panel;
     private JPanel buttons;
-    private JPanel mark;
+    private JPanel scoreBoard;
 
-    private ScrabbleTF[][] txt;
+    private JTextField tf;
 
     private JButton submit;
     private JButton pass;
@@ -53,76 +56,80 @@ public class ScrabbleBoard extends JFrame {
     private JButton vote;
 
     private JLabel username_lb;
+    private JLabel user;
     private JLabel score_lb;
+    private JLabel score;
 
     private Modification modification;
     private int myScore = 0;
+    private boolean myscore_flag = false;
 
     public ScrabbleBoard() {
         frame = new JFrame();
-
+        frame.setPreferredSize(new Dimension(510, 610));
+        setBoard();
+        setScoreBoard();
         setTable();
-
         setButtons();
-
-        frame.getContentPane().add(board);
         frame.pack();
         frame.setVisible(true);
+    }
 
-        //table.setBorder(BorderFactory.createLineBorder(Color.black));
-//        board.add(table);
-        //add(board, BorderLayout.CENTER);
-//        setContentPane(board);
-//        setVisible(true);
-
-//        boardInitialization();
-//        setButtons();
-//        markInitialization();
-//        this.setSize(scrabble_board_width, scrabble_board_height);
-//        this.setResizable(true);
-//        setVisible(true);
-//        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//        validate();
+    private void setBoard() {
+        panel = new JPanel();
+        panel.setBorder(new EmptyBorder(5, 5, 5, 5));
+        panel.setLayout(new FlowLayout());
+        frame.getContentPane().add(panel);
     }
 
     private void setTable() {
-        board = new JPanel();
-        board.setBorder(new EmptyBorder(5, 5, 5, 5));
-        board.setLayout(new FlowLayout());
-
-        //DefaultTableModel defaultTableModel = new DefaultTableModel(board_rows, board_colomns);
-        table = new JTable(board_rows, board_colomns) {
+        table = new JTable() {
             @Override
             public Component prepareRenderer(TableCellRenderer r, int row, int col) {
                 Component comp = super.prepareRenderer(r, row, col);
 
                 if (modification != null &&
                         row == modification.getX() &&
-                        col == modification.getY())
+                        col == modification.getY()) {
                     comp.setBackground(Color.green);
-                else if (is_part_of_word(row, col))
+                }
+                else if (is_part_of_word(row, col)) {
                     comp.setBackground(Color.yellow);
+                }
                 else
                     comp.setBackground(Color.white);
 
                 comp.setForeground(Color.black);
-
                 return comp;
             }
         };
+
+        DefaultTableModel tmodel = new DefaultTableModel(20, 20) {
+            // set cell non-editable if it's not empty
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                if(table.getValueAt(row, column) == null || table.getValueAt(row, column).toString().isEmpty())
+                    return true;
+                else
+                    return false;
+            }
+        };
+        table.setModel(tmodel);
+
+        table.setTableHeader(null);
+        table.setRowHeight(500 / 20);
 
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
         table.setDefaultRenderer(Object.class, centerRenderer);
 
-        //table.setPreferredSize(new Dimension(20, 20));
         MatteBorder matteBorder = new MatteBorder(1, 1, 0, 0, Color.black);
         table.setBorder(matteBorder);
         table.setGridColor(Color.black);
 
-        JScrollPane tableContainer = new JScrollPane(table);
-        board.add(tableContainer, BorderLayout.CENTER);
-
+        tableContainer = new JScrollPane(table);
+        tableContainer.setPreferredSize(new Dimension(510, 505));
+        panel.add(tableContainer, BorderLayout.CENTER);
         setTableCellListener();
 
         setTableCellEditor();
@@ -132,12 +139,11 @@ public class ScrabbleBoard extends JFrame {
         if (modification == null ||
                 (modification.getX() != row && modification.getY() != col))
             return false;
-
         if (modification.getX() == row) {
             int direction = (int)Math.signum(col - modification.getY());
 
             for (int i = modification.getY(); direction * (col - i) >= 0; i += direction) {
-                if (table.getValueAt(row, i) == null)
+                if (table.getValueAt(row, i) == null || table.getValueAt(row, i).toString().isEmpty())
                     return false;
             }
         }
@@ -145,11 +151,10 @@ public class ScrabbleBoard extends JFrame {
             int direction = (int)Math.signum(row - modification.getX());
 
             for (int j = modification.getX(); direction * (row - j) >= 0; j += direction) {
-                if (table.getValueAt(j, col) == null)
+                if (table.getValueAt(j, col) == null || table.getValueAt(j, col).toString().isEmpty())
                     return false;
             }
         }
-
         return true;
     }
 
@@ -160,97 +165,91 @@ public class ScrabbleBoard extends JFrame {
             {
                 TableCellListener tcl = (TableCellListener)e.getSource();
 
-                if (tcl.getNewValue() != null && tcl.getOldValue() == null) {
+                if ((!tcl.getNewValue().toString().isEmpty())) {
                     modification = new Modification(tcl.getRow(), tcl.getColumn(), tcl.getNewValue().toString().toCharArray()[0]);
-
-                    System.out.println("Row   : " + tcl.getRow());
-                    System.out.println("Column: " + tcl.getColumn());
-                    System.out.println("Old   : " + tcl.getOldValue());
-                    System.out.println("New   : " + tcl.getNewValue());
-
+//                    System.out.println("new modi: " + modification.getX() + " " + modification.getY() + " " + modification.getLetter());
+//
+//                    System.out.println("Row   : " + tcl.getRow());
+//                    System.out.println("Column: " + tcl.getColumn());
+//                    System.out.println("Old   : " + tcl.getOldValue());
+//                    System.out.println("New   : " + tcl.getNewValue());
                     table.repaint();
+                    submit.setEnabled(true);
+                    revoke.setEnabled(true);
+                    tf.setEnabled(false);
                 }
             }
         };
-
         TableCellListener tcl = new TableCellListener(table, action);
     }
 
     private void setTableCellEditor() {
-        JTextField tf = new JTextField();
+        tf = new JTextField();
         tf.setDocument(new JTextFieldCharLimit());
+//        tf.getDocument().addDocumentListener(new DocumentListener() {
+//            @Override
+//            public void insertUpdate(DocumentEvent e) {
+////                tf.setEnabled(false);
+//                System.out.println("insert");
+//            }
+//
+//            @Override
+//            public void removeUpdate(DocumentEvent e) {
+//                System.out.println("remove");
+//            }
+//
+//            @Override
+//            public void changedUpdate(DocumentEvent e) {
+//                System.out.println("update");
+//            }
+//        });
         for(int i = 0; i < board_colomns; i ++) {
             table.getColumnModel().getColumn(i).setCellEditor(new DefaultCellEditor(tf));
         }
     }
 
-    private void boardInitialization() {
-        board_grids = new GridLayout(20, 20);
-        board = new JPanel();
-        board.setLayout(board_grids);
-
-        txt = new ScrabbleTF[board_rows][board_colomns];
-        for(int i = 0; i < txt.length; i++) {
-            for(int j = 0; j < txt[i].length; j++) {
-                ScrabbleTF tf = new ScrabbleTF(i, j);
-                tf.setDocument(new JTextFieldCharLimit());
-                //tf.getDocument().addDocumentListener(this);
-                tf.getDocument().addDocumentListener(new DocumentListener() {
-                    @Override
-                    public void insertUpdate(DocumentEvent e) {
-                        modification = new Modification(tf.getStf_x(), tf.getStf_y(), tf.getText().toCharArray()[0]);
-                        //highlightTouchedLetters(tf.getStf_x(), tf.getStf_y(), new Color(255, 0, 0));
-                        disableEditing();
-                    }
-
-                    @Override
-                    public void removeUpdate(DocumentEvent e) {
-                        System.out.println("remove layout");
-                    }
-
-                    @Override
-                    public void changedUpdate(DocumentEvent e) {
-
-                    }
-                });
-                txt[i][j] = tf;
-                board.add(txt[i][j]);
-            }
-        }
-        add(board, BorderLayout.CENTER);
-    }
-
     private void setButtons() {
         btn_grids = new GridLayout(button_layout_row, button_count);
         buttons = new JPanel();
+        buttons.setSize(new Dimension(510, 50));
         buttons.setLayout(btn_grids);
 
         setSubmit();
+        submit.setEnabled(false);
         buttons.add(submit);
 
         setPass();
         buttons.add(pass);
 
         setRevoke();
+        revoke.setEnabled(false);
         buttons.add(revoke);
 
         setVote();
+        vote.setEnabled(false);
         buttons.add(vote);
 
-        board.add(buttons);
+        panel.add(buttons);
         //add(buttons, BorderLayout.SOUTH);
     }
 
-    private void markInitialization() {
-        mark_grids = new GridLayout(1, 2);
-        mark = new JPanel();
-        mark.setLayout(mark_grids);
+    private void setScoreBoard() {
+        mark_grids = new GridLayout(1, 4);
+        scoreBoard = new JPanel();
+        scoreBoard.setSize(new Dimension(510, 50));
+        scoreBoard.setLayout(mark_grids);
 
-        username_lb = new JLabel("username");
-        score_lb = new JLabel("0");
-        mark.add(username_lb);
-        mark.add(score_lb);
-        add(mark, BorderLayout.NORTH);
+        String myname = "Murphy";
+        username_lb = new JLabel("username: " );
+        user = new JLabel(myname);
+        score_lb = new JLabel("score: ");
+        score = new JLabel(String.valueOf(myScore));
+        scoreBoard.add(username_lb);
+        scoreBoard.add(user);
+
+        scoreBoard.add(score_lb);
+        scoreBoard.add(score);
+        panel.add(scoreBoard);
     }
 
     private void setSubmit() {
@@ -261,11 +260,18 @@ public class ScrabbleBoard extends JFrame {
         submit.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-//                System.out.println("submit " + modification.getX() + " " + modification.getY() + " " + modification.getLetter());
-//                int bonus = highlightTouchedLetters(modification.getX(), modification.getY(), new Color(0,0,0)) - 3;
-//                int current = Integer.parseInt(score_lb.getText());
-//                score_lb.setText(String.valueOf(bonus + current));
-//                ableEditing();
+                myScore += getScore();
+                System.out.println("score: " + String.valueOf(myScore));
+                score.setText(String.valueOf(myScore));
+
+                tf.setEnabled(true);
+                submit.setEnabled(false);
+                revoke.setEnabled(false);
+                modification = null;
+                table.repaint();
+
+
+                System.out.println("submit");
             }
         });
     }
@@ -291,10 +297,13 @@ public class ScrabbleBoard extends JFrame {
         revoke.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                tf.setEnabled(true);
+                revoke.setEnabled(false);
+                submit.setEnabled(false);
+                table.setValueAt(null, modification.getX(), modification.getY());
+
+                modification = null;
                 System.out.println("revoke");
-//                highlightTouchedLetters(modification.getX(), modification.getY(), new Color(0, 0, 0));
-//                removeChar(modification.getX(), modification.getY());
-//                ableEditing();
             }
         });
     }
@@ -310,96 +319,83 @@ public class ScrabbleBoard extends JFrame {
         });
     }
 
-    private int highlightTouchedLetters(int x, int y) {
-        int count = 0;
-        count += highlightTouchedLetters_South(x, y);
-        count += highlightTouchedLetters_North(x, y);
-        count += highlightTouchedLetters_East(x, y);
-        count += highlightTouchedLetters_West(x, y);
-        return count;
-    }
+    private int getScore() {
+        int offset = 1;
+        boolean flag_N = true, flag_E = true, flag_W = true, flag_S = true;
+        while(flag_E || flag_N || flag_S || flag_W) {
+            if(flag_E) {
+                if (modification.getX() + offset <= 19) {
+                    if(table.getValueAt(modification.getX() + offset, modification.getY()) == null
+                    || table.getValueAt(modification.getX() + offset, modification.getY()).toString().isEmpty()) {
+                        flag_E = false;
+                    }
+                    else {
+                        modification.setHori(true);
+                        modification.addScore();
+                    }
 
-    private int highlightTouchedLetters_West(int x, int y) {
-        int count = 0;
-        if(txt[x][y].getText().isEmpty()) {
-            return count;
-        }
-        else {
-            txt[x][y].setForeground(Color.green);
-            count++;
-            if(y - 1 >= 0) {
-                count += highlightTouchedLetters_West(x, y - 1);
-            }
-            return count;
-        }
-    }
-
-    private int highlightTouchedLetters_East(int x, int y) {
-        int count = 0;
-        if(txt[x][y].getText().isEmpty()) {
-            return count;
-        }
-        else {
-            txt[x][y].setForeground(Color.green);
-            count++;
-            if(y + 1 <= board_colomns - 1) {
-                count += highlightTouchedLetters_East(x, y + 1);
-            }
-            return count;
-        }
-    }
-
-    private int highlightTouchedLetters_North(int x, int y) {
-        int count = 0;
-        if(txt[x][y].getText().isEmpty()) {
-            return count;
-        }
-        else {
-            txt[x][y].setForeground(Color.green);
-            count++;
-            if(x - 1 >= 0) {
-                count += highlightTouchedLetters_North(x - 1, y);
-            }
-            return count;
-        }
-    }
-
-    private int highlightTouchedLetters_South(int x, int y) {
-        int count = 0;
-        if(txt[x][y].getText().isEmpty()) {
-            return count;
-        }
-        else {
-            txt[x][y].setForeground(Color.green);
-            count++;
-            if(x + 1 <= board_rows - 1) {
-                count += highlightTouchedLetters_South(x + 1, y);
-            }
-            return count;
-        }
-    }
-
-    private void disableEditing() {
-        // disable editing
-        for(int i = 0; i < txt.length; i++) {
-            for(int j = 0; j < txt[i].length; j++) {
-                txt[i][j].setEditable(false);
-            }
-        }
-    }
-
-    private void ableEditing() {
-        for(int i = 0; i < txt.length; i++) {
-            for(int j = 0; j < txt[i].length; j++) {
-                if(txt[i][j].getText().isEmpty()) {
-                    txt[i][j].setEditable(true);
                 }
+                else
+                    flag_E = false;
             }
-        }
-    }
+            if(flag_W) {
+                if (modification.getX() - offset >= 0) {
+                    if(table.getValueAt(modification.getX() - offset, modification.getY()) == null
+                            || table.getValueAt(modification.getX() - offset, modification.getY()).toString().isEmpty()) {
+                        flag_W = false;
+                    }
+                    else {
+                        modification.setHori(true);
+                        modification.addScore();
+                    }
 
-    private void removeChar(int x, int y) {
-        txt[x][y].setText(null);
+                }
+                else
+                    flag_W = false;
+            }
+            if(flag_N) {
+                if (modification.getY() - offset >= 0) {
+                    if(table.getValueAt(modification.getX(), modification.getY() - offset) == null
+                            || table.getValueAt(modification.getX(), modification.getY() - offset).toString().isEmpty()) {
+                        flag_N = false;
+                    }
+                    else {
+                        modification.setVerti(true);
+                        modification.addScore();
+                    }
+
+                }
+                else
+                    flag_N = false;
+            }
+            if(flag_S) {
+                if (modification.getY() + offset <= 19) {
+                    if(table.getValueAt(modification.getX(), modification.getY() + offset) == null
+                            || table.getValueAt(modification.getX(), modification.getY() + offset).toString().isEmpty()) {
+                        flag_S = false;
+                    }
+                    else {
+                        modification.setVerti(true);
+                        modification.addScore();
+                    }
+
+                }
+                else
+                    flag_S = false;
+            }
+            offset++;
+        }
+
+        System.out.println("bonus: " + String.valueOf(modification.getScore()));
+
+        if(modification.isHori() && modification.isVerti()) {
+            modification.addScore();
+            modification.addScore();
+        }
+        else
+            modification.addScore();
+
+        return modification.getScore();
     }
 
     public static void main(String[] args) {
