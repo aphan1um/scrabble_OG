@@ -10,6 +10,8 @@ import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
 /*
 there are four states in this game.
@@ -26,7 +28,7 @@ there are four states in this game.
 |-------------------------------------------------|
  */
 public class ScrabbleBoard extends JFrame {
-    private final int scrabble_board_width = 500;
+    private final int scrabble_board_width = 400;
     private final int scrabble_board_height = 500;
 
     private JTable table;
@@ -47,27 +49,36 @@ public class ScrabbleBoard extends JFrame {
 
     private ScrabbleTF[][] txt;
 
-    private JButton submit;
-    private JButton pass;
-    private JButton revoke;
-    private JButton vote;
-
     private JLabel username_lb;
     private JLabel score_lb;
 
     private Modification modification;
     private int myScore = 0;
 
+    private JPanel panel1;
+    private JButton submitButton;
+    private JButton passTurnButton;
+    private JButton clearButton;
+    private JButton voteButton;
+    private JScrollPane scrollTable;
+
     public ScrabbleBoard() {
         frame = new JFrame();
 
-        setTable();
+        //setButtons();
 
-        setButtons();
-
-        frame.getContentPane().add(board);
+        //frame.getContentPane().add(board);
+        frame.setContentPane(panel1);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
+        //frame.setSize(scrabble_board_width, scrabble_board_height);
         frame.setVisible(true);
+
+        // limit size of frame
+        // TODO: magic number
+        frame.setMinimumSize(new Dimension(
+                (table.getColumnCount() + 3) * table.getColumnModel().getColumn(0).getMinWidth(),
+                table.getRowHeight() * table.getRowCount()));
 
         //table.setBorder(BorderFactory.createLineBorder(Color.black));
 //        board.add(table);
@@ -85,51 +96,8 @@ public class ScrabbleBoard extends JFrame {
 //        validate();
     }
 
-    private void setTable() {
-        board = new JPanel();
-        board.setBorder(new EmptyBorder(5, 5, 5, 5));
-        board.setLayout(new FlowLayout());
-
-        //DefaultTableModel defaultTableModel = new DefaultTableModel(board_rows, board_colomns);
-        table = new JTable(board_rows, board_colomns) {
-            @Override
-            public Component prepareRenderer(TableCellRenderer r, int row, int col) {
-                Component comp = super.prepareRenderer(r, row, col);
-
-                if (modification != null &&
-                        row == modification.getX() &&
-                        col == modification.getY())
-                    comp.setBackground(Color.green);
-                else if (is_part_of_word(row, col))
-                    comp.setBackground(Color.yellow);
-                else
-                    comp.setBackground(Color.white);
-
-                comp.setForeground(Color.black);
-
-                return comp;
-            }
-        };
-
-        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
-        centerRenderer.setHorizontalAlignment(JLabel.CENTER);
-        table.setDefaultRenderer(Object.class, centerRenderer);
-
-        //table.setPreferredSize(new Dimension(20, 20));
-        MatteBorder matteBorder = new MatteBorder(1, 1, 0, 0, Color.black);
-        table.setBorder(matteBorder);
-        table.setGridColor(Color.black);
-
-        JScrollPane tableContainer = new JScrollPane(table);
-        board.add(tableContainer, BorderLayout.CENTER);
-
-        setTableCellListener();
-
-        setTableCellEditor();
-    }
-
     private boolean is_part_of_word(int row, int col) {
-        if (modification == null ||
+        if (modification == null || isCellEmpty(row, col) ||
                 (modification.getX() != row && modification.getY() != col))
             return false;
 
@@ -160,8 +128,10 @@ public class ScrabbleBoard extends JFrame {
             {
                 TableCellListener tcl = (TableCellListener)e.getSource();
 
-                if (tcl.getNewValue() != null && tcl.getOldValue() == null) {
-                    modification = new Modification(tcl.getRow(), tcl.getColumn(), tcl.getNewValue().toString().toCharArray()[0]);
+                if (!isCellEmpty(tcl.getRow(), tcl.getColumn())) {
+                    modification = new Modification(
+                            tcl.getRow(), tcl.getColumn(),
+                            tcl.getNewValue().toString().toCharArray()[0]);
 
                     System.out.println("Row   : " + tcl.getRow());
                     System.out.println("Column: " + tcl.getColumn());
@@ -174,6 +144,12 @@ public class ScrabbleBoard extends JFrame {
         };
 
         TableCellListener tcl = new TableCellListener(table, action);
+    }
+
+    private boolean isCellEmpty(int row, int col) {
+        Object val = table.getValueAt(row, col);
+
+        return val == null || val.equals("");
     }
 
     private void setTableCellEditor() {
@@ -200,7 +176,7 @@ public class ScrabbleBoard extends JFrame {
                     public void insertUpdate(DocumentEvent e) {
                         modification = new Modification(tf.getStf_x(), tf.getStf_y(), tf.getText().toCharArray()[0]);
                         //highlightTouchedLetters(tf.getStf_x(), tf.getStf_y(), new Color(255, 0, 0));
-                        disableEditing();
+                        //disableEditing();
                     }
 
                     @Override
@@ -220,6 +196,7 @@ public class ScrabbleBoard extends JFrame {
         add(board, BorderLayout.CENTER);
     }
 
+    /*
     private void setButtons() {
         btn_grids = new GridLayout(button_layout_row, button_count);
         buttons = new JPanel();
@@ -240,6 +217,7 @@ public class ScrabbleBoard extends JFrame {
         board.add(buttons);
         //add(buttons, BorderLayout.SOUTH);
     }
+    */
 
     private void markInitialization() {
         mark_grids = new GridLayout(1, 2);
@@ -253,6 +231,7 @@ public class ScrabbleBoard extends JFrame {
         add(mark, BorderLayout.NORTH);
     }
 
+    /*
     private void setSubmit() {
         // submit button
         submit = new JButton("submit");
@@ -309,94 +288,7 @@ public class ScrabbleBoard extends JFrame {
             }
         });
     }
-
-    private int highlightTouchedLetters(int x, int y) {
-        int count = 0;
-        count += highlightTouchedLetters_South(x, y);
-        count += highlightTouchedLetters_North(x, y);
-        count += highlightTouchedLetters_East(x, y);
-        count += highlightTouchedLetters_West(x, y);
-        return count;
-    }
-
-    private int highlightTouchedLetters_West(int x, int y) {
-        int count = 0;
-        if(txt[x][y].getText().isEmpty()) {
-            return count;
-        }
-        else {
-            txt[x][y].setForeground(Color.green);
-            count++;
-            if(y - 1 >= 0) {
-                count += highlightTouchedLetters_West(x, y - 1);
-            }
-            return count;
-        }
-    }
-
-    private int highlightTouchedLetters_East(int x, int y) {
-        int count = 0;
-        if(txt[x][y].getText().isEmpty()) {
-            return count;
-        }
-        else {
-            txt[x][y].setForeground(Color.green);
-            count++;
-            if(y + 1 <= board_colomns - 1) {
-                count += highlightTouchedLetters_East(x, y + 1);
-            }
-            return count;
-        }
-    }
-
-    private int highlightTouchedLetters_North(int x, int y) {
-        int count = 0;
-        if(txt[x][y].getText().isEmpty()) {
-            return count;
-        }
-        else {
-            txt[x][y].setForeground(Color.green);
-            count++;
-            if(x - 1 >= 0) {
-                count += highlightTouchedLetters_North(x - 1, y);
-            }
-            return count;
-        }
-    }
-
-    private int highlightTouchedLetters_South(int x, int y) {
-        int count = 0;
-        if(txt[x][y].getText().isEmpty()) {
-            return count;
-        }
-        else {
-            txt[x][y].setForeground(Color.green);
-            count++;
-            if(x + 1 <= board_rows - 1) {
-                count += highlightTouchedLetters_South(x + 1, y);
-            }
-            return count;
-        }
-    }
-
-    private void disableEditing() {
-        // disable editing
-        for(int i = 0; i < txt.length; i++) {
-            for(int j = 0; j < txt[i].length; j++) {
-                txt[i][j].setEditable(false);
-            }
-        }
-    }
-
-    private void ableEditing() {
-        for(int i = 0; i < txt.length; i++) {
-            for(int j = 0; j < txt[i].length; j++) {
-                if(txt[i][j].getText().isEmpty()) {
-                    txt[i][j].setEditable(true);
-                }
-            }
-        }
-    }
+    */
 
     private void removeChar(int x, int y) {
         txt[x][y].setText(null);
@@ -404,5 +296,70 @@ public class ScrabbleBoard extends JFrame {
 
     public static void main(String[] args) {
         ScrabbleBoard scrabbleBoard = new ScrabbleBoard();
+    }
+
+    private void createUIComponents() {
+        //board = new JPanel();
+        //board.setBorder(new EmptyBorder(5, 5, 5, 5));
+        //board.setLayout(new FlowLayout());
+
+        //DefaultTableModel defaultTableModel = new DefaultTableModel(board_rows, board_colomns);
+        table = new JTable(board_rows, board_colomns) {
+            @Override
+            public Component prepareRenderer(TableCellRenderer r, int row, int col) {
+                Component comp = super.prepareRenderer(r, row, col);
+
+                if (modification != null &&
+                        row == modification.getX() &&
+                        col == modification.getY())
+                    comp.setBackground(Color.green);
+                else if (is_part_of_word(row, col))
+                    comp.setBackground(Color.yellow);
+                else
+                    comp.setBackground(Color.white);
+
+                comp.setForeground(Color.black);
+
+                return comp;
+            }
+        };
+
+        // this is the parent of table
+        scrollTable = new JScrollPane(table);
+
+        table.getParent().getParent().addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(final ComponentEvent e) {
+                table.setRowHeight(table.getParent().getHeight() / table.getRowCount());
+
+                Font curr_font = table.getFont();
+                double dist = Math.sqrt(
+                        Math.pow(table.getColumnModel().getColumn(0).getWidth(), 2) +
+                        Math.pow(table.getRowHeight(), 2));
+
+                // TODO: MAGIC NUMBER
+                table.setFont(new Font(curr_font.getFontName(), Font.PLAIN, (int)(dist/2.4)));
+            }
+        });
+
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+        table.setDefaultRenderer(Object.class, centerRenderer);
+
+        //table.setPreferredSize(new Dimension(20, 20));
+        MatteBorder matteBorder = new MatteBorder(1, 1, 0, 0, Color.black);
+        table.setBorder(matteBorder);
+        table.setGridColor(Color.black);
+
+        table.setTableHeader(null);
+        //table.setPreferredScrollableViewportSize(table.getPreferredSize());
+
+
+        //JScrollPane tableContainer = new JScrollPane(table);
+        //board.add(tableContainer, BorderLayout.CENTER);
+
+        setTableCellListener();
+
+        setTableCellEditor();
     }
 }
