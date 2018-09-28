@@ -1,9 +1,5 @@
 package server;
 
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -20,12 +16,13 @@ public class MainClass {
         p = new Player("dummy name");
 
         // this is for the client
-        Thread t = new Thread(() -> client_run(args[0], Integer.parseInt(args[1])));
-        t.start();
+        //Thread t = new Thread(() -> client_run(args[0], Integer.parseInt(args[1])));
+        //t.start();
 
         // TODO: Handle if player wants to be the host
     }
 
+    /*
     private static void client_run(String ip, int port) {
         try {
             // IP:port address of server (TCP)
@@ -51,7 +48,7 @@ public class MainClass {
         JSONObject j = (JSONObject)parser.parse(s);
 
         // get type of query
-        Operations op = Operations.valueOf(
+        Operation op = Operation.valueOf(
                 j.get(JSONKeys.OPERATION.toString()).toString());
 
         switch (op) {
@@ -67,4 +64,5 @@ public class MainClass {
 
         return j;
     }
+    */
 }

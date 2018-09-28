@@ -14,8 +14,8 @@ public class SignAction implements ActionListener {
     }
     @Override
     public void actionPerformed(ActionEvent e) {
-        LoginGui loginGui = new LoginGui();
-        loginGui.initial();
+        LobbyWindow lobbyWindow = new LobbyWindow();
+        lobbyWindow.initial();
         frame.dispose();
     }
 }

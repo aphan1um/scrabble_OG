@@ -5,11 +5,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class StartAction implements ActionListener {
-    private LoginGui loginGui;
+    private LobbyWindow lobbyWindow;
     private JButton button;
     private JFrame frame;
-    public StartAction(LoginGui loginGui, JFrame frame, JButton button){
-        this.loginGui = loginGui;
+    public StartAction(LobbyWindow lobbyWindow, JFrame frame, JButton button){
+        this.lobbyWindow = lobbyWindow;
         this.button = button;
         this.frame = frame;
     }
@@ -22,7 +22,7 @@ public class StartAction implements ActionListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Room roomGUI = new Room();
-                roomGUI.initial(loginGui.getReceiver());
+                roomGUI.initial(lobbyWindow.getReceiver());
                 accept_window.dispose();
                 frame.dispose();
             }
