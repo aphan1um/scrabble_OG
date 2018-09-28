@@ -201,19 +201,19 @@ public class ResizeCanvas extends Pane {
             this.addEventHandler(KeyEvent.KEY_PRESSED, e -> {
                 switch (e.getCode()) {
                     case LEFT:
-                        if (selected_cell.getX() >= 0)
+                        if (selected_cell.getX() > 0)
                             selected_cell = new Point(selected_cell.x - 1, selected_cell.y);
                         break;
                     case RIGHT:
-                        if (selected_cell.getX() < num_cols)
+                        if (selected_cell.getX() < num_cols - 1)
                             selected_cell = new Point(selected_cell.x + 1, selected_cell.y);
                         break;
                     case DOWN:
-                        if (selected_cell.getY() < num_rows)
+                        if (selected_cell.getY() < num_rows - 1)
                             selected_cell = new Point(selected_cell.x, selected_cell.y + 1);
                         break;
                     case UP:
-                        if (selected_cell.getY() >= 0)
+                        if (selected_cell.getY() > 0)
                             selected_cell = new Point(selected_cell.x, selected_cell.y - 1);
                         break;
                     default:
@@ -321,6 +321,13 @@ public class ResizeCanvas extends Pane {
                 c.strokeLine(0, y * cell_size.getHeight(),
                         getWidth(), y * cell_size.getHeight());
             }
+
+            // faces of the table need bolder lines
+            c.setLineWidth(3.0);
+            c.strokeLine(0, 0,0, getHeight());
+            c.strokeLine(getWidth(), 0, getWidth(), getHeight());
+            c.strokeLine(0, 0, getWidth(), 0);
+            c.strokeLine(0, getHeight(), getWidth(), getHeight());
         }
     }
 }

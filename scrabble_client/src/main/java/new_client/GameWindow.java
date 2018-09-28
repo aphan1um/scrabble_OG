@@ -26,47 +26,14 @@ public class GameWindow extends Application {
 
     @Override
     public void start(Stage primaryStage) throws IOException {
-        final SwingNode sNode = new SwingNode();
-
-
-        prepareGameTable(sNode);
         DockStation station = AnchorageSystem.createStation();
-
-        // PREPARE TABLE SECTION
-
-        // prepare columns
-        TableView<String> table = new TableView() {
-            /*
-            @Override
-            public void resize(double width, double height) {
-                super.resize(width, height);
-                Pane header = (Pane) lookup("TableHeaderRow");
-                header.setMinHeight(0);
-                header.setPrefHeight(0);
-                header.setMaxHeight(0);
-                header.setVisible(false);
-            }
-            */
-        };
-        //TableColumn[] cols = new TableColumn[20];
-
-        for (int i = 0; i < 20; i++) {
-            TableColumn<String, String> tc = new TableColumn<>("Row");
-            tc.setCellFactory(TextFieldTableCell.forTableColumn());
-            table.getColumns().add(tc);
-        }
-        table.setEditable(true);
-
-        //table.getItems().add("abc");
-        table.getItems().add("Hello");
-        //table.getItems().add("abc");
-
 
 
         // END PREPARE TABLE SECTION
-
+        Parent root = FXMLLoader.load(getClass().getResource("../../resources/ScrabbleBoard.fxml"));
         DockNode node1 = AnchorageSystem.createDock("Game Board",
-                table);
+                root);
+        node1.setMinSize(500, 500);
         node1.dock(station, DockNode.DockPosition.LEFT);
 
         AnchorageSystem.installDefaultStyle();
@@ -75,10 +42,5 @@ public class GameWindow extends Application {
         primaryStage.setTitle("Scrabble Game");
         primaryStage.setScene(scene);
         primaryStage.show();
-    }
-
-    private void prepareGameTable(final SwingNode sNode) {
-        SwingUtilities.invokeLater(() ->
-                sNode.setContent(new ScrabbleTable(20,20)));
     }
 }
