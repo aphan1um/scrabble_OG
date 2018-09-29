@@ -328,8 +328,8 @@ public class ScrabblePane extends Pane {
         }
 
         public Font getLetterFont() {
-            double dist = Math.sqrt(Math.pow(cell_size.getWidth(), 2) + Math.pow(cell_size.getHeight(), 2));
-            return new Font("Arial", (int)(dist/2.0));
+            double size = Math.min(cell_size.getHeight(), cell_size.getWidth());
+            return new Font("Arial", (int)(size/1.1));
         }
 
         private Dimension2D measureText(Font f, String text) {
