@@ -1,8 +1,10 @@
 package new_client;
 
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 
 import java.net.URL;
@@ -19,6 +21,8 @@ public class ScrabbleBoardController implements Initializable {
     private Button btnVote;
     @FXML
     private HBox hbox;
+    @FXML
+    private ScrabblePane scrabblePane;
 
     public ScrabbleBoardController() {}
 
@@ -30,5 +34,23 @@ public class ScrabbleBoardController implements Initializable {
         btnPass.setFocusTraversable(false);
         btnClear.setFocusTraversable(false);
         btnVote.setFocusTraversable(false);
+
+        // TODO: Dummy toggle enabled/disable test on board
+        btnSubmit.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                scrabblePane.getCanvas().enabledProperty.set(!scrabblePane.getCanvas().enabledProperty.get());
+            }
+        });
+
+
+        btnClear.setOnMouseClicked(e -> scrabblePane.getCanvas().chosenCellProperty.set(null));
+
+        btnVote.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                scrabblePane.getCanvas().chosenCellProperty.set(scrabblePane.getCanvas().getSelectedCell());
+            }
+        });
     }
 }

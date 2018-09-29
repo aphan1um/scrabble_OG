@@ -1,5 +1,9 @@
 package new_client;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.EventHandler;
 import javafx.geometry.Dimension2D;
 import javafx.geometry.Insets;
@@ -68,18 +72,25 @@ public class ScrabblePane extends Pane {
                         canvas.requestFocus();
                         letterType.setVisible(false);
                         break;
-                    case LEFT:
                     case UP:
                     case DOWN:
-                    case RIGHT:
                         canvas.setLetter(
                                 canvas.getSelectedCell().x,
                                 canvas.getSelectedCell().y,
                                 letterType.getText().isEmpty() ? null : letterType.getText().charAt(0));
                         letterType.setVisible(false);
-
                         canvas.fireEvent(event);
+                        break;
+                    case LEFT:
+                    case RIGHT:
+                        if (!letterType.getText().isEmpty()) break;
 
+                        canvas.setLetter(
+                                canvas.getSelectedCell().x,
+                                canvas.getSelectedCell().y,
+                                letterType.getText().isEmpty() ? null : letterType.getText().charAt(0));
+                        letterType.setVisible(false);
+                        canvas.fireEvent(event);
                         break;
                     default:
                         break;
@@ -88,7 +99,6 @@ public class ScrabblePane extends Pane {
         });
 
         canvas.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
-            System.out.println("GOT CLICKED");
             if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2) {
                 openTextField();
             }
@@ -141,6 +151,12 @@ public class ScrabblePane extends Pane {
             letterType.autosize();
         } );
 
+        canvas.enabledProperty.addListener(
+                o -> {
+                    if (!canvas.enabledProperty.get())
+                        letterType.setVisible(false);
+                });
+
         // make sure canvas scrabble board changes size whenever we stretch window
         canvas.widthProperty().bind(this.widthProperty());
         canvas.heightProperty().bind(this.heightProperty());
@@ -149,7 +165,7 @@ public class ScrabblePane extends Pane {
         getChildren().add(letterType);
     }
 
-    public Canvas getCanvas() {
+    public ScrabbleCanvas getCanvas() {
         return canvas;
     }
 
@@ -173,7 +189,7 @@ public class ScrabblePane extends Pane {
     }
 
     private void openTextField() {
-        if (canvas.getSelectedCell() == null)
+        if (canvas.getSelectedCell() == null || !canvas.enabledProperty.get())
             return;
 
         positionTextField();
@@ -190,24 +206,55 @@ public class ScrabblePane extends Pane {
         letterType.requestFocus();
     }
 
-    private class ScrabbleCanvas extends Canvas {
+    public class ScrabbleCanvas extends Canvas {
         private int num_rows = 20;
         private int num_cols = 20;
 
         private Map<Point, Character> letters = new HashMap<>();
 
         private Dimension2D cell_size;
-        private Color select_color = Color.LIGHTBLUE;
+        private final Color SELECTED_COLOR  = Color.LIGHTBLUE;
+        private final Color NORMAL_COLOR = Color.WHITE;
+        private final Color DISABLED_COLOR = Color.LIGHTGREY;
+        private final Color PARTCHOSEN_COLOR = Color.YELLOW;
+        private final Color CHOSEN_COLOR = Color.GREENYELLOW;
+        private Color current_color = NORMAL_COLOR;
         private Point selected_cell;
         private double line_width = 1.2;
 
+        // TODO: The cell that was typed in.
+        public ObjectProperty<Point> chosenCellProperty;
+        public BooleanProperty enabledProperty;
+
         public ScrabbleCanvas(double width, double height) {
             super(width, height);
+
+            // BOOLEAN PROPERTIES
+
+            enabledProperty = new SimpleBooleanProperty(true);
+            enabledProperty.addListener(o -> {
+                if (enabledProperty.get() == false)
+                    selected_cell = null;
+
+                current_color = enabledProperty.get() ? NORMAL_COLOR : DISABLED_COLOR;
+                deepPaint();
+            });
+
+            chosenCellProperty = new SimpleObjectProperty<>(null);
+            chosenCellProperty.addListener(o -> {
+                deepPaint();
+            });
+
+            // END BOOLEAN PROPERTIES
+
             deepPaint();
 
             this.addEventHandler(MouseEvent.MOUSE_PRESSED, e -> {
-                shallowPaint(getCellHovering(e));
-                requestFocus();
+                if (enabledProperty.get()) {
+                    shallowPaint(getCellHovering(e));
+                    requestFocus();
+                }
+
             });
 
             this.addEventHandler(KeyEvent.KEY_PRESSED, e -> {
@@ -298,27 +345,42 @@ public class ScrabblePane extends Pane {
             return (int)val + 0.5;
         }
 
-        private void fillCell(GraphicsContext c, Point cell, Color color) {
+        private void fillCell(GraphicsContext c, Point cell, Color color, boolean drawLetter) {
             if (cell == null)
                 return;
 
-            c.setFill(color);
             Point2D cell_xy = toCell(cell);
-            System.out.println(c.getLineWidth());
-            c.fillRect(snap(cell_xy.getX()) + line_width * 0.8,
-                    snap(cell_xy.getY()) + line_width * 0.8,
-                    snap(cell_size.getWidth()) - line_width * 1.5,
-                    snap(cell_size.getHeight()) - line_width * 1.5);
 
-            drawBorders(c);
+            // fill it clear first
+            c.setFill(NORMAL_COLOR);
+            c.fillRect(snap(cell_xy.getX()) + line_width,
+                    snap(cell_xy.getY()) + line_width,
+                    snap(cell_size.getWidth()) - line_width * 2,
+                    snap(cell_size.getHeight()) - line_width * 2);
+
+            c.setFill(color);
+            c.fillRect(snap(cell_xy.getX()) + line_width * 1.2,
+                    snap(cell_xy.getY()) + line_width * 1.2,
+                    snap(cell_size.getWidth()) - line_width * 2.4,
+                    snap(cell_size.getHeight()) - line_width * 2.4);
+
+
+            if (drawLetter) {
+                drawLetter(cell, c);
+            }
+
+            //drawBorders(c);
         }
 
         private void shallowPaint(Point new_selected_cell) {
             GraphicsContext c = getGraphicsContext2D();
+
             Point old_selected_cell = selected_cell;
             selected_cell = new_selected_cell;
 
             refreshCell(c, old_selected_cell);
+            // TODO: ORDER IS IMPORTANT HERE. NEED TO FIX THIS.
+            highlightChosenCell(c, true);
             refreshCell(c, selected_cell);
         }
 
@@ -335,8 +397,11 @@ public class ScrabblePane extends Pane {
 
             System.out.println("DEEP PAINTING");
 
-            c.setFill(Color.WHITE);
+            c.setFill(current_color);
             c.fillRect(0, 0, getWidth(), getHeight());
+
+            // for the words horizontally/vertically part of the 'chosen cell'
+            highlightChosenCell(c, false);
 
             // for the selected one
             refreshCell(c, selected_cell);
@@ -351,21 +416,52 @@ public class ScrabblePane extends Pane {
             drawGrid(c);
         }
 
+        private void highlightChosenCell(GraphicsContext c, boolean drawLetters) {
+            if (chosenCellProperty.get() == null)
+                return;
+
+            fillCell(c, chosenCellProperty.get(), CHOSEN_COLOR, true);
+            System.out.println("CHOSEN: " + chosenCellProperty.get());
+
+            // TODO: Make this code better (prototyped for now)
+            for (int dir : new int[] {1, -1}) {
+                // horizontal
+                for (int x = chosenCellProperty.get().x + dir; x < num_cols && x >= 0 ; x += dir) {
+                    Point p = new Point(x, chosenCellProperty.get().y);
+                    Character letter = letters.get(p);
+
+                    if (letter != null)
+                        fillCell(c, p, PARTCHOSEN_COLOR, drawLetters);
+                    else
+                        break;
+                }
+
+                // vertical
+                for (int y = chosenCellProperty.get().y + dir; y < num_rows && y >= 0 ; y += dir) {
+                    Point p = new Point(chosenCellProperty.get().x, y);
+                    Character letter = letters.get(p);
+
+                    if (letter != null)
+                        fillCell(c, p, PARTCHOSEN_COLOR, drawLetters);
+                    else
+                        break;
+                }
+            }
+        }
+
         private void refreshCell(GraphicsContext c, Point cell) {
             if (cell == null)
                 return;
 
             Point2D cell_xy = toCell(cell);
-
-            fillCell(c, cell, cell.equals(selected_cell) ? select_color : Color.WHITE);
-            c.setFill(Color.BLACK);
-            drawLetter(cell, c);
+            fillCell(c, cell, cell.equals(selected_cell) ? SELECTED_COLOR : current_color, true);
         }
 
         private void drawLetter(Point cell, GraphicsContext c) {
             if (letters.get(cell) == null)
                 return;
 
+            c.setFill(Color.BLACK);
             Point2D cell_xy = toCell(cell);
             Dimension2D char_size = measureText(c.getFont(), letters.get(cell).toString());
 

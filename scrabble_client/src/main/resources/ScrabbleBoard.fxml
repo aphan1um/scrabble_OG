@@ -20,7 +20,7 @@
           <RowConstraints maxHeight="30.0" valignment="BOTTOM" vgrow="NEVER" />
         </rowConstraints>
          <children>
-            <ScrabblePane prefHeight="200.0" prefWidth="200.0" />
+            <ScrabblePane fx:id="scrabblePane" prefHeight="200.0" prefWidth="200.0" />
             <HBox prefHeight="100.0" prefWidth="200.0" spacing="3.0" GridPane.rowIndex="1">
                <children>
                   <Button fx:id="btnSubmit" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Submit" HBox.hgrow="ALWAYS" />
