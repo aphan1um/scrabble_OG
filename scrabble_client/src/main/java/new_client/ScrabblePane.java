@@ -57,16 +57,29 @@ public class ScrabblePane extends Pane {
             public void handle(KeyEvent event) {
                 switch (event.getCode()) {
                     case ENTER:
-                            canvas.setLetter(
-                                    canvas.getSelectedCell().x,
-                                    canvas.getSelectedCell().y,
-                                    letterType.getText().isEmpty() ? null : letterType.getText().charAt(0));
+                        canvas.setLetter(
+                                canvas.getSelectedCell().x,
+                                canvas.getSelectedCell().y,
+                                letterType.getText().isEmpty() ? null : letterType.getText().charAt(0));
                         letterType.setVisible(false);
                         canvas.requestFocus();
                         break;
                     case ESCAPE:
-                        letterType.setVisible(false);
                         canvas.requestFocus();
+                        letterType.setVisible(false);
+                        break;
+                    case LEFT:
+                    case UP:
+                    case DOWN:
+                    case RIGHT:
+                        canvas.setLetter(
+                                canvas.getSelectedCell().x,
+                                canvas.getSelectedCell().y,
+                                letterType.getText().isEmpty() ? null : letterType.getText().charAt(0));
+                        letterType.setVisible(false);
+
+                        canvas.fireEvent(event);
+
                         break;
                     default:
                         break;
@@ -128,6 +141,10 @@ public class ScrabblePane extends Pane {
             letterType.autosize();
         } );
 
+        // make sure canvas scrabble board changes size whenever we stretch window
+        canvas.widthProperty().bind(this.widthProperty());
+        canvas.heightProperty().bind(this.heightProperty());
+
         getChildren().add(canvas);
         getChildren().add(letterType);
     }
@@ -173,21 +190,6 @@ public class ScrabblePane extends Pane {
         letterType.requestFocus();
     }
 
-    @Override
-    protected void layoutChildren() {
-        super.layoutChildren();
-        final double x = snappedLeftInset();
-        final double y = snappedTopInset();
-        // Java 9 - snapSize is depricated used snapSizeX() and snapSizeY() accordingly
-        final double w = snapSize(getWidth()) - x - snappedRightInset();
-        final double h = snapSize(getHeight()) - y - snappedBottomInset();
-        canvas.setLayoutX(x);
-        canvas.setLayoutY(y);
-        canvas.setWidth(w);
-        canvas.setHeight(h);
-    }
-
-
     private class ScrabbleCanvas extends Canvas {
         private int num_rows = 20;
         private int num_cols = 20;
@@ -210,7 +212,7 @@ public class ScrabblePane extends Pane {
 
             this.addEventHandler(KeyEvent.KEY_PRESSED, e -> {
                 Point new_selected_cell = null;
-
+                System.out.println("I GOT PRESSED HERE");
                 switch (e.getCode()) {
                     case LEFT:
                         if (selected_cell.getX() > 0)
@@ -303,10 +305,10 @@ public class ScrabblePane extends Pane {
             c.setFill(color);
             Point2D cell_xy = toCell(cell);
             System.out.println(c.getLineWidth());
-            c.fillRect(snap(cell_xy.getX()) + line_width,
-                    snap(cell_xy.getY()) + line_width,
-                    snap(cell_size.getWidth()) - line_width * 2,
-                    snap(cell_size.getHeight()) - line_width * 2);
+            c.fillRect(snap(cell_xy.getX()) + line_width * 0.8,
+                    snap(cell_xy.getY()) + line_width * 0.8,
+                    snap(cell_size.getWidth()) - line_width * 1.5,
+                    snap(cell_size.getHeight()) - line_width * 1.5);
 
             drawBorders(c);
         }
