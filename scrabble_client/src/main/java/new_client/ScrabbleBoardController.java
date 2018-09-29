@@ -1,9 +1,14 @@
 package new_client;
 
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.layout.HBox;
 
-public class ScrabbleBoardController {
+import java.net.URL;
+import java.util.ResourceBundle;
+
+public class ScrabbleBoardController implements Initializable {
     @FXML
     private Button btnSubmit;
     @FXML
@@ -12,11 +17,13 @@ public class ScrabbleBoardController {
     private Button btnClear;
     @FXML
     private Button btnVote;
+    @FXML
+    private HBox hbox;
 
     public ScrabbleBoardController() {}
 
-    @FXML
-    public void initialize() {
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
         System.out.println("Hello World!");
 
         btnSubmit.setFocusTraversable(false);

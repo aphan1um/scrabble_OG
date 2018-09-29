@@ -14,8 +14,11 @@ public class ScrabbleBoard extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        Parent root = FXMLLoader.load(getClass().getResource("../../resources/ScrabbleBoard.fxml"));
-        Scene scene = new Scene(root);
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("../../resources/ScrabbleBoard.fxml"));
+
+        loader.setController(new ScrabbleBoardController());
+
+        Scene scene = new Scene(loader.load());
         primaryStage.setScene(scene);
 
         primaryStage.show();

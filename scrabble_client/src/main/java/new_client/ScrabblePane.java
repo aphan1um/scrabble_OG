@@ -1,7 +1,5 @@
 package new_client;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.geometry.Dimension2D;
 import javafx.geometry.Insets;
@@ -11,7 +9,6 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
-import javafx.scene.effect.BoxBlur;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
@@ -25,18 +22,20 @@ import java.util.HashMap;
 import java.util.Map;
 
 // TODO: Credit to: https://stackoverflow.com/a/31761362 for the code
-public class ResizeCanvas extends Pane {
-    private final ScrambleCanvas canvas;
+public class ScrabblePane extends Pane {
+    private final ScrabbleCanvas canvas;
     private final TextField letterType;
+    private Point letterType_cell;
 
-    public ResizeCanvas() {
+    public ScrabblePane() {
         super();
 
-        canvas = new ScrambleCanvas(getWidth(), getHeight());
+        canvas = new ScrabbleCanvas(getWidth(), getHeight());
         letterType = new TextField();
 
         letterType.setVisible(false);
         letterType.setAlignment(Pos.CENTER);
+
         // only allow one letter
         letterType.setTextFormatter(
                 new TextFormatter<String>((TextFormatter.Change change) -> {
@@ -76,6 +75,7 @@ public class ResizeCanvas extends Pane {
         });
 
         canvas.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
+            System.out.println("GOT CLICKED");
             if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2) {
                 openTextField();
             }
@@ -84,6 +84,14 @@ public class ResizeCanvas extends Pane {
         canvas.addEventHandler(MouseEvent.MOUSE_PRESSED, new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
+                if (letterType.isVisible()) {
+                    canvas.setLetter(
+                            letterType_cell.x,
+                            letterType_cell.y,
+                            letterType.getText().isEmpty() ? null : letterType.getText().charAt(0));
+                    canvas.requestFocus();
+                }
+
                 letterType.setVisible(false);
             }
         });
@@ -109,12 +117,13 @@ public class ResizeCanvas extends Pane {
         });
 
         canvas.widthProperty().addListener(o -> {
-            canvas.drawOnCanvas();
+            // TODO: Why do I have to put this together and not in canvas?
+            canvas.repaint();
             positionTextField();
             letterType.autosize();
         });
         canvas.heightProperty().addListener(o -> {
-            canvas.drawOnCanvas();
+            canvas.repaint();
             positionTextField();
             letterType.autosize();
         } );
@@ -152,6 +161,7 @@ public class ResizeCanvas extends Pane {
 
         positionTextField();
 
+        letterType_cell = canvas.getSelectedCell();
         Character letter = canvas.getLetter(canvas.getSelectedCell().x, canvas.getSelectedCell().y);
         if (letter != null)
             letterType.setText(letter.toString());
@@ -178,7 +188,7 @@ public class ResizeCanvas extends Pane {
     }
 
 
-    private class ScrambleCanvas extends Canvas {
+    private class ScrabbleCanvas extends Canvas {
         private int num_rows = 20;
         private int num_cols = 20;
 
@@ -187,44 +197,47 @@ public class ResizeCanvas extends Pane {
         private Dimension2D cell_size;
         private Color select_color = Color.LIGHTBLUE;
         private Point selected_cell;
+        private double line_width = 1.2;
 
-        public ScrambleCanvas(double width, double height) {
+        public ScrabbleCanvas(double width, double height) {
             super(width, height);
-            drawOnCanvas();
+            deepPaint();
 
             this.addEventHandler(MouseEvent.MOUSE_PRESSED, e -> {
-                selected_cell = getCellHovering(e);
+                shallowPaint(getCellHovering(e));
                 requestFocus();
-                drawOnCanvas();
             });
 
             this.addEventHandler(KeyEvent.KEY_PRESSED, e -> {
+                Point new_selected_cell = null;
+
                 switch (e.getCode()) {
                     case LEFT:
                         if (selected_cell.getX() > 0)
-                            selected_cell = new Point(selected_cell.x - 1, selected_cell.y);
+                            new_selected_cell = new Point(selected_cell.x - 1, selected_cell.y);
                         break;
                     case RIGHT:
                         if (selected_cell.getX() < num_cols - 1)
-                            selected_cell = new Point(selected_cell.x + 1, selected_cell.y);
+                            new_selected_cell = new Point(selected_cell.x + 1, selected_cell.y);
                         break;
                     case DOWN:
                         if (selected_cell.getY() < num_rows - 1)
-                            selected_cell = new Point(selected_cell.x, selected_cell.y + 1);
+                            new_selected_cell = new Point(selected_cell.x, selected_cell.y + 1);
                         break;
                     case UP:
                         if (selected_cell.getY() > 0)
-                            selected_cell = new Point(selected_cell.x, selected_cell.y - 1);
+                            new_selected_cell = new Point(selected_cell.x, selected_cell.y - 1);
                         break;
                     default:
                         return;
                 }
 
+                if (new_selected_cell != null) {
+                    shallowPaint(new_selected_cell);
+                }
+
                 requestFocus();
-                drawOnCanvas();
             });
-
-
         }
 
         public Dimension2D getCellSize() {
@@ -236,13 +249,15 @@ public class ResizeCanvas extends Pane {
         }
 
         public void setLetter(int row, int col, Character c) {
+            Point cell = new Point(row, col);
+
             if (c == null) {
-                letters.remove(new Point(row, col));
+                letters.remove(cell);
             } else {
-                letters.put(new Point(row, col), c);
+                letters.put(cell, c);
             }
 
-            drawOnCanvas();
+            refreshCell(getGraphicsContext2D(), cell);
         }
 
         private Point getCellHovering(MouseEvent e) {
@@ -276,54 +291,107 @@ public class ResizeCanvas extends Pane {
                     theText.getBoundsInLocal().getHeight());
         }
 
-        public void drawOnCanvas() {
+        private double snap(double val) {
+            // TODO: Refer to https://stackoverflow.com/a/27847190 . This allows sharper lines by drawing it in 'middle of pixel'
+            return (int)val + 0.5;
+        }
+
+        private void fillCell(GraphicsContext c, Point cell, Color color) {
+            if (cell == null)
+                return;
+
+            c.setFill(color);
+            Point2D cell_xy = toCell(cell);
+            System.out.println(c.getLineWidth());
+            c.fillRect(snap(cell_xy.getX()) + line_width,
+                    snap(cell_xy.getY()) + line_width,
+                    snap(cell_size.getWidth()) - line_width * 2,
+                    snap(cell_size.getHeight()) - line_width * 2);
+
+            drawBorders(c);
+        }
+
+        private void shallowPaint(Point new_selected_cell) {
+            GraphicsContext c = getGraphicsContext2D();
+            Point old_selected_cell = selected_cell;
+            selected_cell = new_selected_cell;
+
+            refreshCell(c, old_selected_cell);
+            refreshCell(c, selected_cell);
+        }
+
+        public void repaint() {
+            deepPaint();
+        }
+
+        private void deepPaint() {
             GraphicsContext c = this.getGraphicsContext2D();
+            // adjust cell sizes due to change in window size
+            cell_size = new Dimension2D(getWidth() / num_cols, getHeight() / num_rows);
+            c.setFont(getLetterFont());
+            c.setFill(Color.BLACK);
+
+            System.out.println("DEEP PAINTING");
 
             c.setFill(Color.WHITE);
             c.fillRect(0, 0, getWidth(), getHeight());
 
-            cell_size = new Dimension2D(getWidth() / num_cols, getHeight() / num_rows);
-
-            c.setLineWidth(1.2); // TODO: MAGIC NUMBER
-            c.setStroke(Color.BLACK);
-
             // for the selected one
-            if (selected_cell != null) {
-                c.setFill(select_color);
-                Point2D selected_xy = toCell(selected_cell);
-                c.fillRect(selected_xy.getX(), selected_xy.getY(), cell_size.getWidth(), cell_size.getHeight());
-            }
+            refreshCell(c, selected_cell);
 
             // draw letters
-            c.setFont(getLetterFont());
-            c.setFill(Color.BLACK);
-
             for (Point cell : letters.keySet()) {
-                Point2D cell_xy = toCell(cell);
-                Dimension2D char_size = measureText(c.getFont(), letters.get(cell).toString());
-
-                double x = cell_xy.getX() + (cell_size.getWidth() - char_size.getWidth())/2.0;
-                double y = cell_xy.getY() + cell_size.getHeight()/2.0 + char_size.getHeight()/3;
-
-                System.out.println(cell_size.getHeight() + " " + char_size.getHeight());
-                System.out.println("WRITE: " + cell + "\t\t" + new Point2D(x,y));
-
-                c.fillText(letters.get(cell).toString(), x, y);
+                drawLetter(cell, c);
             }
 
-            // draw grid
+            c.setLineWidth(line_width);
+            c.setStroke(Color.BLACK);
+            drawGrid(c);
+        }
+
+        private void refreshCell(GraphicsContext c, Point cell) {
+            if (cell == null)
+                return;
+
+            Point2D cell_xy = toCell(cell);
+
+            fillCell(c, cell, cell.equals(selected_cell) ? select_color : Color.WHITE);
+            c.setFill(Color.BLACK);
+            drawLetter(cell, c);
+        }
+
+        private void drawLetter(Point cell, GraphicsContext c) {
+            if (letters.get(cell) == null)
+                return;
+
+            Point2D cell_xy = toCell(cell);
+            Dimension2D char_size = measureText(c.getFont(), letters.get(cell).toString());
+
+            double x = cell_xy.getX() + (cell_size.getWidth() - char_size.getWidth())/2.0;
+            double y = cell_xy.getY() + cell_size.getHeight()/2.0 + char_size.getHeight()/3;
+
+            //System.out.println("WRITE: " + cell + "\t\t" + new Point2D(x,y));
+
+            c.fillText(letters.get(cell).toString(), x, y);
+        }
+
+        private void drawGrid(GraphicsContext c) {
             for (int x = 0; x < num_rows; x++) {
-                c.strokeLine(x * cell_size.getWidth(), 0,
-                        x * cell_size.getWidth(), getHeight());
+                c.strokeLine(snap(x * cell_size.getWidth()), 0,
+                        snap(x * cell_size.getWidth()), getHeight());
             }
 
             for (int y = 0; y < num_cols; y++) {
-                c.strokeLine(0, y * cell_size.getHeight(),
-                        getWidth(), y * cell_size.getHeight());
+                c.strokeLine(0, snap(y * cell_size.getHeight()),
+                        getWidth(), snap(y * cell_size.getHeight()));
             }
 
+            drawBorders(c);
+        }
+
+        private void drawBorders(GraphicsContext c) {
             // faces of the table need bolder lines
-            c.setLineWidth(3.0);
+            c.setLineWidth(line_width * 2);
             c.strokeLine(0, 0,0, getHeight());
             c.strokeLine(getWidth(), 0, getWidth(), getHeight());
             c.strokeLine(0, 0, getWidth(), 0);

@@ -22,9 +22,11 @@ public class GameWindow extends Application {
         DockStation station = AnchorageSystem.createStation();
 
         // END PREPARE TABLE SECTION
-        Parent root = FXMLLoader.load(getClass().getResource("../../resources/ScrabbleBoard.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("../../resources/ScrabbleBoard.fxml"));
+        loader.setController(new ScrabbleBoardController());
+
         DockNode node1 = AnchorageSystem.createDock("Game Board",
-                root);
+                loader.load());
         //node1.setMinSize(500, 500);
         node1.dock(station, DockNode.DockPosition.LEFT);
 
