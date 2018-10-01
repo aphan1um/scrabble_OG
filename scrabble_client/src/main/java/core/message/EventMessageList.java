@@ -2,12 +2,17 @@ package core.message;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import core.Player;
 import core.message.Message;
 import core.message.MessageEvent;
 import core.message.MessageType;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 // TODO: Handle thread-safety issues with add/removeEvent ??
 public class EventMessageList {
@@ -17,10 +22,15 @@ public class EventMessageList {
         events = HashMultimap.create();
     }
 
-    public void fireEvent(Message msg) {
-        for (MessageEvent e: events.get(msg.getMessageType())) {
-            e.onServerReceive(msg);
+    public List<SendableMessage> fireEvent(Message msg, Set<Player> players, Player sender) {
+        Collection<MessageEvent> eventsToFire = events.get(msg.getMessageType());
+        List<SendableMessage> msgs = new ArrayList<>(eventsToFire.size());
+
+        for (MessageEvent e: eventsToFire) {
+            msgs.add(e.onMsgReceive(msg, players, sender));
         }
+
+        return msgs;
     }
 
     public <T extends Message> void addEvent(MessageEvent<T> event) {

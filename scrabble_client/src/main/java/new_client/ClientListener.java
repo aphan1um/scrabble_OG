@@ -6,7 +6,7 @@ import com.google.gson.Gson;
 import core.message.Message;
 import core.message.MessageType;
 import core.Player;
-import core.messageType.ReqMessage;
+import core.messageType.RequestPDMsg;
 import new_server.ServerListener;
 
 import java.io.DataInputStream;
@@ -26,7 +26,7 @@ public class ClientListener {
         DataOutputStream out = new DataOutputStream(server.getOutputStream());
 
         // send welcome messageType
-        sendMessage(new ReqMessage(player_client), server);
+        sendMessage(new RequestPDMsg(player_client), server);
 
         // TODO: Make this thread-safe
         SetMultimap<MessageType, Message> events = HashMultimap.create();
@@ -46,6 +46,7 @@ public class ClientListener {
         while (true) {
             String txt = in.readUTF();
 
+            System.out.println(txt);
             Message msgrec = MessageType.fromJSON(txt, gson);
             System.out.println(msgrec.getMessageType());
         }

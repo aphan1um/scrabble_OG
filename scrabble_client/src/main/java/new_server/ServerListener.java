@@ -3,17 +3,17 @@ package new_server;
 import com.google.common.collect.*;
 import com.google.gson.Gson;
 import core.*;
-import core.message.EventMessageList;
-import core.message.Message;
-import core.message.MessageEvent;
-import core.message.MessageType;
-import core.messageType.PingMessage;
-import core.messageType.ReqMessage;
+import core.message.*;
+import core.messageType.PingMsg;
+import core.messageType.PlayerStatusMsg;
+import core.messageType.RequestPDMsg;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class ServerListener {
     public static final int PORT = 12345;
@@ -43,38 +43,59 @@ public class ServerListener {
         ServerSocket server = new ServerSocket(PORT);
         System.out.println("Started server...");
 
+        /**
         // TODO: Dummy test
-        MessageEvent test = new MessageEvent<PingMessage>() {
+        MessageEvent test = new MessageEvent<PingMsg>() {
             @Override
-            public Message onServerReceive(PingMessage recMessage) {
+            public Message onServerReceive(PingMsg recMessage) {
                 System.out.println(recMessage.getMessageType() + " IM HERE");
                 return null;
             }
 
             @Override
-            public Message onClientReceive(PingMessage recMessage) {
+            public Message onClientReceive(PingMsg recMessage) {
                 return null;
             }
         };
 
         eventList.addEvent(test);
 
-        eventList.fireEvent(new ReqMessage(dummy_player));
-        eventList.fireEvent(new PingMessage());
+        eventList.fireEvent(new RequestPDMsg(dummy_player));
+        eventList.fireEvent(new PingMsg());
 
         eventList.removeEvent(test);
-        eventList.fireEvent(new PingMessage());
+        eventList.fireEvent(new PingMsg());
 
         System.exit(0);
+        **/
 
+        // ================== EVENT LISTENERS HERE =================
+
+        eventList.addEvent(new MessageEvent<RequestPDMsg>() {
+            @Override
+            public SendableMessage onMsgReceive(RequestPDMsg recMessage, Set<Player> players, Player sender) {
+                //new PlayerStatusMsg()
+                // return list of players back to player who sent details
+                Message msg = new RequestPDMsg(connections.values());
+                Player sendTo = sender;
+                System.out.println("Sending player list...");
+                return new SendableMessage(msg, sendTo);
+            }
+        });
+
+        // ================= END EVENT LISTENERS HERE ==============
 
         while (true) {
             Socket client = server.accept();
 
-            // TODO: Fix this null
+            // initially we have the connection but do not know user details
             synchronized (connections) {
                 connections.put(client, null);
             }
+
+            Thread client_thread = new Thread(() -> run_client(client));
+            client_thread.setDaemon(true);
+            client_thread.start();
 
             Thread heartbeat_thread = new Thread(() -> run_heartbeat(client));
             heartbeat_thread.setDaemon(true);
@@ -88,7 +109,6 @@ public class ServerListener {
      * @param client
      */
     public static void run_client(Socket client) {
-
         try {
             DataInputStream in = new DataInputStream(client.getInputStream());
 
@@ -96,11 +116,46 @@ public class ServerListener {
                 String read = in.readUTF();
                 System.out.println(read);
 
-                Message msgrec = MessageType.fromJSON(read, gson);
+                Message msgRec = MessageType.fromJSON(read, gson);
+
+                // ensure we get credientials
+                if (connections.get(client) == null) {
+                    if (msgRec.getMessageType() != MessageType.REQUEST)
+                        continue;
+                    // TODO: Error message?
+                    System.out.println("GOT REC MESSAGE");
+                    Player joinedPlayer = (Player)((RequestPDMsg)msgRec).getPlayerList().toArray()[0];
+                    connections.put(client, joinedPlayer);
+                }
+
+                processMessages(eventList.fireEvent(
+                        msgRec,
+                        connections.inverse().keySet(),
+                        connections.get(client)));
             }
         } catch (IOException e) {
             // client disconnect (most likely)
             e.printStackTrace();
+            handleDisconnect(client);
+        }
+    }
+
+    // TODO: A VERY BAD PROCESSOR
+    // TODO: A VERY BAD BROADCASTER
+    public static void processMessages(List<SendableMessage> msgList) {
+        for (SendableMessage smsg : msgList) {
+            processMessage(smsg);
+        }
+    }
+
+    // TODO: Redundant, doing it for ease
+    public static void processMessage(SendableMessage smsg) {
+        for (Player p : smsg.getSendTo()) {
+            try {
+                sendMessage(smsg.getMessage(), connections.inverse().get(p));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -111,33 +166,31 @@ public class ServerListener {
         // TODO: Document something about write error while using TCP.
         try {
             while (true) {
-                sendMessage(new PingMessage(dummy_player), client);
+                sendMessage(new PingMsg(), client);
                 Thread.sleep(HEARTBEAT_PERIOD);
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+            handleDisconnect(client);
         }
     }
 
     private static void handleDisconnect(Socket s) {
+        Player disconnectedPlayer = connections.get(s);
+
         synchronized (connections) {
+            // TODO: This may get called twice due to two threads
+            System.out.println("A player disconnected");
             connections.remove(s);
         }
-    }
 
-    // TODO: A VERY BAD BROADCASTER
-    private void broadcastMessage(Message msg) {
-        new Thread(() -> {
-            for (Socket socket : new HashSet<Socket>(connections.keySet())) {
-                try {
-                    sendMessage(msg, socket);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
+        // broadcast to other players
+        Message msg = new PlayerStatusMsg(disconnectedPlayer,
+                PlayerStatusMsg.NewStatus.DISCONNECTED);
+
+        processMessage(new SendableMessage(msg, connections.values()));
     }
 
     private static void sendMessage(Message msg, Socket dest) throws IOException {

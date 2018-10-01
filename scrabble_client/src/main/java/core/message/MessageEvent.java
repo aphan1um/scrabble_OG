@@ -1,6 +1,9 @@
 package core.message;
 
+import core.Player;
+
+import java.util.Set;
+
 public interface MessageEvent<T extends Message> {
-    public Message onServerReceive(T recMessage);
-    public Message onClientReceive(T recMessage);
+    public SendableMessage onMsgReceive(T recMessage, Set<Player> players, Player sender);
 }

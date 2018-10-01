@@ -6,15 +6,17 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import core.messageType.ChatMessage;
-import core.messageType.PingMessage;
-import core.messageType.ReqMessage;
+import core.messageType.ChatMsg;
+import core.messageType.PingMsg;
+import core.messageType.PlayerStatusMsg;
+import core.messageType.RequestPDMsg;
 
 public enum MessageType {
     EMPTY(null),
-    REQUEST(ReqMessage.class),
-    CHAT(ChatMessage.class),
-    PING(PingMessage.class);
+    REQUEST(RequestPDMsg.class),
+    CHAT(ChatMsg.class),
+    PING(PingMsg.class),
+    STATUS(PlayerStatusMsg.class);
 
     private final Class<? extends Message> cl;
 
