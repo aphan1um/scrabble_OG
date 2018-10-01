@@ -39,6 +39,7 @@ public class EventMessageList {
                 .getActualTypeArguments()[0];
         Class<? extends Message> t = (Class<? extends Message>)generic_type;
 
+
         events.put(MessageType.fromMessageClass(t), event);
     }
 

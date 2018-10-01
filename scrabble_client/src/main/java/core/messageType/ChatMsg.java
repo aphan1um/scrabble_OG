@@ -10,4 +10,8 @@ public class ChatMsg extends Message {
         super();
         this.text = text;
     }
+
+    public String getChatMsg() {
+        return text;
+    }
 }

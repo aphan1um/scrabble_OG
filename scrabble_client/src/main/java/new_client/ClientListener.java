@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import core.message.Message;
 import core.message.MessageType;
 import core.Player;
+import core.messageType.ChatMsg;
 import core.messageType.RequestPDMsg;
 import new_server.ServerListener;
 
@@ -13,6 +14,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Scanner;
 
 public class ClientListener {
     private static Gson gson = new Gson();
@@ -38,6 +40,12 @@ public class ClientListener {
                 e.printStackTrace();
             }
         }).start();
+
+        System.out.println("Reading....");
+        Scanner scan = new Scanner(System.in);
+        while (scan.hasNextLine()) {
+            sendMessage(new ChatMsg(player_client, scan.nextLine()), server);
+        }
     }
 
     public static void listener(Socket s) throws IOException {
@@ -46,9 +54,9 @@ public class ClientListener {
         while (true) {
             String txt = in.readUTF();
 
-            System.out.println(txt);
+            //System.out.println(txt);
             Message msgrec = MessageType.fromJSON(txt, gson);
-            System.out.println(msgrec.getMessageType());
+            //System.out.println(msgrec.getMessageType());
         }
     }
 

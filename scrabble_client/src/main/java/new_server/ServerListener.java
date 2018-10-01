@@ -4,6 +4,7 @@ import com.google.common.collect.*;
 import com.google.gson.Gson;
 import core.*;
 import core.message.*;
+import core.messageType.ChatMsg;
 import core.messageType.PingMsg;
 import core.messageType.PlayerStatusMsg;
 import core.messageType.RequestPDMsg;
@@ -70,16 +71,41 @@ public class ServerListener {
         **/
 
         // ================== EVENT LISTENERS HERE =================
+        // TODO: Weird thing if we use lambda expressions. Is there a better way to do this?
 
+        // return list of players back to player who sent details
         eventList.addEvent(new MessageEvent<RequestPDMsg>() {
             @Override
-            public SendableMessage onMsgReceive(RequestPDMsg recMessage, Set<Player> players, Player sender) {
+            public SendableMessage onMsgReceive(RequestPDMsg recv, Set<Player> p, Player sender) {
                 //new PlayerStatusMsg()
                 // return list of players back to player who sent details
                 Message msg = new RequestPDMsg(connections.values());
-                Player sendTo = sender;
                 System.out.println("Sending player list...");
-                return new SendableMessage(msg, sendTo);
+                return new SendableMessage(msg, sender);
+            }
+        });
+
+        // tell other players a player has joined
+        eventList.addEvent(new MessageEvent<RequestPDMsg>() {
+            @Override
+            public SendableMessage onMsgReceive(RequestPDMsg recv, Set<Player> p, Player sender) {
+                //new PlayerStatusMsg()
+                // return list of players back to player who sent details
+                Message msg = new PlayerStatusMsg(sender, PlayerStatusMsg.NewStatus.JOINED);
+
+                // TODO: Is there a cleaner way to do this?
+                Set<Player> retSend = new HashSet<Player>(p);
+                retSend.remove(sender);
+
+                return new SendableMessage(msg, retSend);
+            }
+        });
+
+        eventList.addEvent(new MessageEvent<ChatMsg>() {
+            @Override
+            public SendableMessage onMsgReceive(ChatMsg recMessage, Set<Player> players, Player sender) {
+                System.out.println("Chat: " + recMessage.getChatMsg());
+                return null;
             }
         });
 
@@ -143,6 +169,9 @@ public class ServerListener {
     // TODO: A VERY BAD PROCESSOR
     // TODO: A VERY BAD BROADCASTER
     public static void processMessages(List<SendableMessage> msgList) {
+        if (msgList == null)
+            return;
+
         for (SendableMessage smsg : msgList) {
             processMessage(smsg);
         }
@@ -150,6 +179,9 @@ public class ServerListener {
 
     // TODO: Redundant, doing it for ease
     public static void processMessage(SendableMessage smsg) {
+        if (smsg == null)
+            return;
+
         for (Player p : smsg.getSendTo()) {
             try {
                 sendMessage(smsg.getMessage(), connections.inverse().get(p));
