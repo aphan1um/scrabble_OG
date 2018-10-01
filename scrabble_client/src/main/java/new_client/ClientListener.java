@@ -3,10 +3,10 @@ package new_client;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 import com.google.gson.Gson;
-import core.Message;
-import core.MessageType;
+import core.message.Message;
+import core.message.MessageType;
 import core.Player;
-import core.message.ReqMessage;
+import core.messageType.ReqMessage;
 import new_server.ServerListener;
 
 import java.io.DataInputStream;
@@ -25,7 +25,7 @@ public class ClientListener {
         Socket server = new Socket("localhost", ServerListener.PORT);
         DataOutputStream out = new DataOutputStream(server.getOutputStream());
 
-        // send welcome message
+        // send welcome messageType
         sendMessage(new ReqMessage(player_client), server);
 
         // TODO: Make this thread-safe

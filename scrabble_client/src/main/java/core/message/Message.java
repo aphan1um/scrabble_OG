@@ -1,19 +1,17 @@
-package core;
+package core.message;
 
-import com.google.gson.Gson;
-
-import java.io.IOException;
+import core.Player;
 
 public abstract class Message {
     private Player sender;
-    private transient Player sendto; // Player to send message to
-    /*** If message should be sent to all players in some lobby. */
+    private transient Player sendto; // Player to send messageType to
+    /*** If messageType should be sent to all players in some lobby. */
     private transient boolean broadcast;
     private MessageType msgType;
 
-    public Message(Player sender, MessageType msgType) {
+    public Message(Player sender) {
         this.sender = sender;
-        this.msgType = msgType;
+        msgType = MessageType.fromMessageClass(this.getClass());
     }
 
     public Message() {

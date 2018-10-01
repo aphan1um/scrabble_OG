@@ -2,21 +2,18 @@ package new_server;
 
 import com.google.common.collect.*;
 import com.google.gson.Gson;
-import core.Message;
-import core.MessageEvent;
-import core.MessageType;
-import core.Player;
-import core.message.PingMessage;
-import core.message.ReqMessage;
+import core.*;
+import core.message.EventMessageList;
+import core.message.Message;
+import core.message.MessageEvent;
+import core.message.MessageType;
+import core.messageType.PingMessage;
+import core.messageType.ReqMessage;
 
 import java.io.*;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 
 public class ServerListener {
     public static final int PORT = 12345;
@@ -30,7 +27,7 @@ public class ServerListener {
     // TODO: Explain why I used this. A bijective mapping.
     private static BiMap<Socket, Player> connections = HashBiMap.create();
 
-    private static Multimap<MessageType, MessageEvent> events = HashMultimap.create();
+    private static EventMessageList eventList = new EventMessageList();
 
     /**
      * TODO:
@@ -46,9 +43,8 @@ public class ServerListener {
         ServerSocket server = new ServerSocket(PORT);
         System.out.println("Started server...");
 
-
         // TODO: Dummy test
-        addEvent(MessageType.PING, new MessageEvent<PingMessage>() {
+        MessageEvent test = new MessageEvent<PingMessage>() {
             @Override
             public Message onServerReceive(PingMessage recMessage) {
                 System.out.println(recMessage.getMessageType() + " IM HERE");
@@ -59,10 +55,15 @@ public class ServerListener {
             public Message onClientReceive(PingMessage recMessage) {
                 return null;
             }
-        });
+        };
 
-        fireEvent(new ReqMessage(dummy_player));
-        fireEvent(new PingMessage());
+        eventList.addEvent(test);
+
+        eventList.fireEvent(new ReqMessage(dummy_player));
+        eventList.fireEvent(new PingMessage());
+
+        eventList.removeEvent(test);
+        eventList.fireEvent(new PingMessage());
 
         System.exit(0);
 
@@ -101,32 +102,6 @@ public class ServerListener {
             // client disconnect (most likely)
             e.printStackTrace();
         }
-    }
-
-    private static void fireEvent(Message msg) {
-        for (MessageEvent e: events.get(msg.getMessageType())) {
-            e.onServerReceive(msg);
-        }
-    }
-
-    public static <T extends Message> void addEvent(MessageType mtype, MessageEvent<T> event) {
-        // verify the messagetype and event are 'related'
-        Class<? extends Message> cl = mtype.getCorrespondingClass();
-        Type generic_type = ((ParameterizedType)
-                event.getClass().getGenericInterfaces()[0])
-                .getActualTypeArguments()[0];
-
-        // TODO: Explain this code. And this assert here for debug
-        if (!generic_type.getTypeName().equals(cl.getName())) {
-            try {
-                throw new Exception();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        System.out.println(generic_type.getTypeName().equals(cl.getName()));
-
-        events.put(mtype, event);
     }
 
     /***
