@@ -1,7 +1,5 @@
 package new_client;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.SetMultimap;
 import com.google.gson.Gson;
 import core.message.Message;
 import core.message.MessageType;
@@ -17,21 +15,17 @@ import java.net.Socket;
 import java.util.Scanner;
 
 public class ClientListener {
-    private static Gson gson = new Gson();
+    private Gson gson = new Gson();
+    private Player playerID;
 
-    // TODO: Dummy player
-    private static final Player player_client = new Player("Mario");
+    public ClientListener(String name, String ip, int port) throws IOException {
+        playerID = new Player(name);
 
-    public static void main(String[] args) throws IOException {
-        // TODO: Need to put this in another thread.
-        Socket server = new Socket("localhost", ServerListener.PORT);
+        Socket server = new Socket(ip, port);
         DataOutputStream out = new DataOutputStream(server.getOutputStream());
 
         // send welcome messageType
-        sendMessage(new RequestPDMsg(player_client), server);
-
-        // TODO: Make this thread-safe
-        SetMultimap<MessageType, Message> events = HashMultimap.create();
+        sendMessage(new RequestPDMsg(playerID), server);
 
         new Thread(() -> {
             try {
@@ -41,14 +35,21 @@ public class ClientListener {
             }
         }).start();
 
+        /**
+        // TODO: For debug purposes
         System.out.println("Reading....");
         Scanner scan = new Scanner(System.in);
         while (scan.hasNextLine()) {
-            sendMessage(new ChatMsg(player_client, scan.nextLine()), server);
+            sendMessage(new ChatMsg(playerID, scan.nextLine()), server);
         }
+         **/
     }
 
-    public static void listener(Socket s) throws IOException {
+    public Player getPlayer() {
+        return playerID;
+    }
+
+    public void listener(Socket s) throws IOException {
         DataInputStream in = new DataInputStream(s.getInputStream());
 
         while (true) {
@@ -60,7 +61,7 @@ public class ClientListener {
         }
     }
 
-    private static void sendMessage(Message msg, Socket dest) throws IOException {
+    private void sendMessage(Message msg, Socket dest) throws IOException {
         DataOutputStream out = new DataOutputStream(dest.getOutputStream());
         out.writeUTF(gson.toJson(msg));
     }

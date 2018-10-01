@@ -4,10 +4,7 @@ import com.google.common.collect.*;
 import com.google.gson.Gson;
 import core.*;
 import core.message.*;
-import core.messageType.ChatMsg;
-import core.messageType.PingMsg;
-import core.messageType.PlayerStatusMsg;
-import core.messageType.RequestPDMsg;
+import core.messageType.*;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -23,7 +20,7 @@ public class ServerListener {
     private static final Gson gson = new Gson();
 
     // TODO: Dummy player
-    private static Player dummy_player = new Player();
+    private static Player dummy_player = new Player("Dummy player");
 
     // TODO: Explain why I used this. A bijective mapping.
     private static BiMap<Socket, Player> connections = HashBiMap.create();
@@ -148,9 +145,19 @@ public class ServerListener {
                 if (connections.get(client) == null) {
                     if (msgRec.getMessageType() != MessageType.REQUEST)
                         continue;
+
+                    Player joinedPlayer = (Player)((RequestPDMsg)msgRec).getPlayerList().toArray()[0];
+
+                    // if connecting player shares ID to another player in server
+                    // TODO: We close connection in this case.
+                    if (connections.inverse().get(joinedPlayer) != null) {
+                        sendMessage(new ErrorMsg(ErrorMsg.ErrorType.DUPLICATE_ID), client);
+                        client.close();
+                    }
+
                     // TODO: Error message?
                     System.out.println("GOT REC MESSAGE");
-                    Player joinedPlayer = (Player)((RequestPDMsg)msgRec).getPlayerList().toArray()[0];
+
                     connections.put(client, joinedPlayer);
                 }
 

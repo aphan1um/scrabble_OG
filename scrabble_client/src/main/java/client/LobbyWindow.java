@@ -1,59 +1,42 @@
 package client;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.ArrayList;
 
 public class LobbyWindow {
-    private JPanel Login;
-    private JButton startButton;
-    private JButton cancelButton;
-    private JList Userlist;
-    private JTextArea Welcome;
-    private JLabel Username;
-    private JLabel label1;
-    private ArrayList Receiver;
-    private final static int Maxplayer = 100;
-    TestUser user1 = new TestUser("Xun Sun", "1", "Signin");
-    TestUser user2 = new TestUser("Jing Bi", "2", "Signout");
-    TestUser user3 = new TestUser("Chaodi Tang", "2", "Signin");
+    private JList RoomMember;
+    private JPanel room;
+    private JButton readyButton;
+    private JTextArea textArea1;
+    private ArrayList player = new ArrayList<String>();
     JFrame frame = new JFrame("LobbyWindow");
-    LoginWindow loginWindow = new LoginWindow();
 
-    public LobbyWindow() {
-        Receiver = new ArrayList(Maxplayer);
+    public void setPlayer(ArrayList player) {
+        this.player = (ArrayList) player.clone();
     }
 
-    public void initial() {
-        LobbyWindow lobbyWindow = new LobbyWindow();
-        frame.setContentPane(lobbyWindow.Login);
+    public ArrayList getPlayer() {
+        return player;
+    }
+
+    public LobbyWindow(Component comp) {
+        //roomGUI.setPlayer(Player);
+        frame.setContentPane(room);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        CancelAction Cancel = new CancelAction(lobbyWindow.cancelButton);
-        StartAction Start = new StartAction(lobbyWindow, frame, lobbyWindow.startButton);
-        MouseAction Click = new MouseAction(lobbyWindow);
-        lobbyWindow.cancelButton.addActionListener(Cancel);
-        lobbyWindow.startButton.addActionListener(Start);
-        lobbyWindow.Userlist.addMouseListener(Click);
         frame.pack();
         frame.setSize(900, 500);
-        //这部分后面增添协议后再增加 There will be additional part in this section
-        DefaultListModel model = new DefaultListModel();
-        model.addElement(user1.getUsername());
-        model.addElement(user2.getUsername());
-        model.addElement(user3.getUsername());
-        lobbyWindow.Userlist.setModel(model);
+        //showRoomMember(roomGUI.player, roomGUI.RoomMember);
+        frame.setLocationRelativeTo(comp);
         frame.setVisible(true);
     }
 
-    public ArrayList getReceiver() {
-        return Receiver;
-    }
-
-    public JList getUserlist() {
-        return Userlist;
-    }
-
-    public JTextArea getWelcome() {
-        return Welcome;
+    public void showRoomMember(ArrayList player, JList list1) {
+        DefaultListModel model = new DefaultListModel();
+        for (int i = 0; i < player.size(); i++) {
+            model.addElement(player.get(i));
+        }
+        list1.setModel(model);
     }
 
 }

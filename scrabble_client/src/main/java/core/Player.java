@@ -7,5 +7,12 @@ public class Player {
         this.name = name;
     }
 
-    public Player() {}
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return (obj instanceof Player && ((Player)obj).name.equals(name));
+    }
 }
