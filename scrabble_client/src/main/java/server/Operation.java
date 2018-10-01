@@ -1,6 +1,6 @@
 package server;
 
-public enum Operations {
+public enum Operation {
     REQUEST_ID,
     GAME_START,
     PLAYER_STATUS_CHANGED,

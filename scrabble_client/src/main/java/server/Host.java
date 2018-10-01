@@ -4,10 +4,6 @@ package server;
  *  Can figure out some further details later.
  */
 
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -62,13 +58,13 @@ public class Host extends Player {
             DataInputStream in = new DataInputStream(s.getInputStream());
 
             // send request for username
-            out.writeUTF(request_id().toJSONString());
+            //out.writeUTF(request_id().toJSONString());
             String resp = in.readUTF();
             System.out.println("[INFO] Received request from IP: " +
                     s.getInetAddress().getHostAddress());
 
             while (!s.isClosed() && !s.isInputShutdown()) {
-                handle_request(s, in.readUTF());
+                //handle_request(s, in.readUTF());
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -84,9 +80,9 @@ public class Host extends Player {
 
             while (true) {
                 // Refer to: https://stackoverflow.com/questions/6265731/do-java-sockets-support-full-duplex for details
-                JSONObject json_hb = new JSONObject();
-                json_hb.put(JSONKeys.OPERATION, Operations.PING.toString());
-                out.writeUTF(json_hb.toJSONString());
+                //JSONObject json_hb = new JSONObject();
+                //json_hb.put(JSONKeys.OPERATION, Operation.PING.toString());
+                //out.writeUTF(json_hb.toJSONString());
 
                 Thread.sleep(HEARTBEAT_PERIOD);
             }
@@ -97,10 +93,11 @@ public class Host extends Player {
         // heartbeat failure
         synchronized (players) {
             players.remove(p);
-            new Thread(() -> broadcast_message(json_player_status(p, PlayerStatus.LEFT))).start();
+            //new Thread(() -> broadcast_message(json_player_status(p, PlayerStatus.LEFT))).start();
         }
     }
 
+    /*
     public void broadcast_message(JSONObject j) {
         for (Map.Entry<Player, Socket> p : players.entrySet()) {
             try {
@@ -111,6 +108,7 @@ public class Host extends Player {
             }
         }
     }
+    */
 
     /***
      * Check if the player's sent ID is unique.
@@ -125,12 +123,13 @@ public class Host extends Player {
         return true;
     }
 
+    /*
     private void handle_request(Socket player, String s) {
         JSONParser parser = new JSONParser();
         try {
             JSONObject req = (JSONObject)parser.parse(s);
 
-            Operations op = Operations.valueOf(
+            Operation op = Operation.valueOf(
                     req.get(JSONKeys.OPERATION.toString()).toString());
 
             switch (op) {
@@ -176,20 +175,22 @@ public class Host extends Player {
             e.printStackTrace();
         }
     }
+    */
 
     /***
      * Requests for a player's username.
      * @return
      */
+    /*
     private static JSONObject request_id() {
         JSONObject ret = new JSONObject();
-        ret.put(JSONKeys.OPERATION, Operations.REQUEST_ID.toString());
+        ret.put(JSONKeys.OPERATION, Operation.REQUEST_ID.toString());
         return ret;
     }
 
     private static JSONObject json_player_status(Player p, PlayerStatus status) {
         JSONObject ret = new JSONObject();
-        ret.put(JSONKeys.OPERATION, Operations.PLAYER_STATUS_CHANGED.toString());
+        ret.put(JSONKeys.OPERATION, Operation.PLAYER_STATUS_CHANGED.toString());
         ret.put(JSONKeys.PLAYER, p.toString());
         ret.put(JSONKeys.VALUE, status);
         return ret;
@@ -198,4 +199,5 @@ public class Host extends Player {
     public static void main(String[] args) {
         System.out.println(request_id().toJSONString());
     }
+    */
 }

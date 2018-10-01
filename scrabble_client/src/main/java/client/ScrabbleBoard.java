@@ -31,8 +31,6 @@ public class ScrabbleBoard extends JFrame {
     private final int scrabble_board_width = 400;
     private final int scrabble_board_height = 500;
 
-    private JTable table;
-
     private final int board_rows = 20;
     private final int board_colomns = 20;
 
@@ -55,21 +53,15 @@ public class ScrabbleBoard extends JFrame {
     private Modification modification;
     private int myScore = 0;
 
-    private JPanel panel1;
-    private JButton submitButton;
-    private JButton passTurnButton;
-    private JButton clearButton;
-    private JButton voteButton;
-    private JScrollPane scrollTable;
-
     public ScrabbleBoard() {
         frame = new JFrame();
 
         //setButtons();
 
-        //frame.getContentPane().add(board);
-        frame.setContentPane(panel1);
+        frame.getContentPane().add(panel1);
+        //frame.setContentPane(panel1);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setTitle("Scrabble Board");
         frame.pack();
         //frame.setSize(scrabble_board_width, scrabble_board_height);
         frame.setVisible(true);
@@ -94,6 +86,16 @@ public class ScrabbleBoard extends JFrame {
 //        setVisible(true);
 //        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 //        validate();
+        clearButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (modification != null) {
+                    table.setValueAt(null, modification.getX(), modification.getY());
+                    modification = null;
+                    table.repaint();
+                }
+            }
+        });
     }
 
     private boolean is_part_of_word(int row, int col) {
@@ -315,12 +317,26 @@ public class ScrabbleBoard extends JFrame {
                     comp.setBackground(Color.green);
                 else if (is_part_of_word(row, col))
                     comp.setBackground(Color.yellow);
+                else if (modification != null)
+                    comp.setBackground(Color.lightGray);
                 else
-                    comp.setBackground(Color.white);
+                    comp.setBackground(table.getBackground());
 
                 comp.setForeground(Color.black);
 
                 return comp;
+            }
+
+            @Override
+            public boolean isCellEditable(int row, int col) {
+                /** TODO: Add in final product; we're debugging for now.
+                if (modification != null && (modification.getX() != row ||
+                modification.getY() != col)) {
+                    return false;
+                }
+                 */
+
+                return true;
             }
         };
 
@@ -351,6 +367,7 @@ public class ScrabbleBoard extends JFrame {
         table.setBorder(matteBorder);
         table.setGridColor(Color.black);
 
+        // hide column headings
         table.setTableHeader(null);
         //table.setPreferredScrollableViewportSize(table.getPreferredSize());
 
@@ -362,4 +379,17 @@ public class ScrabbleBoard extends JFrame {
 
         setTableCellEditor();
     }
+
+    // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
+    // Generated using JFormDesigner Evaluation license - Andy
+    private JPanel panel1;
+    private JButton submitButton;
+    private JButton passTurnButton;
+    private JButton clearButton;
+    private JButton voteButton;
+    private JScrollPane scrollTable;
+    private JTable table;
+    private JButton sendButton;
+    private JTextField textField1;
+    // JFormDesigner - End of variables declaration  //GEN-END:variables
 }
