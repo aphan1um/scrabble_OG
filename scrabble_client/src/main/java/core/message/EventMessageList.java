@@ -22,8 +22,9 @@ public class EventMessageList {
         events = HashMultimap.create();
     }
 
-    public List<SendableMessage> fireEvent(Message msg, Set<Player> players, Player sender) {
-        Collection<MessageEvent> eventsToFire = events.get(msg.getMessageType());
+    public List<SendableMessage> fireEvent(Message msg, MessageType msgType,
+                                           Set<Player> players, Player sender) {
+        Collection<MessageEvent> eventsToFire = events.get(msgType);
         List<SendableMessage> msgs = new ArrayList<>(eventsToFire.size());
 
         for (MessageEvent e: eventsToFire) {

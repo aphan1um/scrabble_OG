@@ -4,15 +4,13 @@ import com.google.gson.Gson;
 import core.message.Message;
 import core.message.MessageType;
 import core.Player;
-import core.messageType.ChatMsg;
+import core.message.SendableMessage;
 import core.messageType.RequestPDMsg;
-import new_server.ServerListener;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.Scanner;
 
 public class ClientListener {
     private Gson gson = new Gson();
@@ -55,14 +53,14 @@ public class ClientListener {
         while (true) {
             String txt = in.readUTF();
 
-            //System.out.println(txt);
-            Message msgrec = MessageType.fromJSON(txt, gson);
+            System.out.println(txt);
+            SendableMessage msgrec = MessageType.fromJSON(txt, gson);
             //System.out.println(msgrec.getMessageType());
         }
     }
 
     private void sendMessage(Message msg, Socket dest) throws IOException {
         DataOutputStream out = new DataOutputStream(dest.getOutputStream());
-        out.writeUTF(gson.toJson(msg));
+        out.writeUTF(gson.toJson(new SendableMessage(msg)));
     }
 }

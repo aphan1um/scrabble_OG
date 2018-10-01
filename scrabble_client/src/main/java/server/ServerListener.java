@@ -1,4 +1,4 @@
-package new_server;
+package server;
 
 import com.google.common.collect.*;
 import com.google.gson.Gson;
@@ -139,14 +139,16 @@ public class ServerListener {
                 String read = in.readUTF();
                 System.out.println(read);
 
-                Message msgRec = MessageType.fromJSON(read, gson);
+                SendableMessage msgRec = MessageType.fromJSON(read, gson);
 
                 // ensure we get credientials
                 if (connections.get(client) == null) {
                     if (msgRec.getMessageType() != MessageType.REQUEST)
                         continue;
 
-                    Player joinedPlayer = (Player)((RequestPDMsg)msgRec).getPlayerList().toArray()[0];
+                    Player joinedPlayer = (Player)(
+                            (RequestPDMsg)msgRec.getMessage())
+                            .getPlayerList().toArray()[0];
 
                     // if connecting player shares ID to another player in server
                     // TODO: We close connection in this case.
@@ -162,7 +164,7 @@ public class ServerListener {
                 }
 
                 processMessages(eventList.fireEvent(
-                        msgRec,
+                        msgRec.getMessage(), msgRec.getMessageType(),
                         connections.inverse().keySet(),
                         connections.get(client)));
             }
@@ -191,7 +193,11 @@ public class ServerListener {
 
         for (Player p : smsg.getSendTo()) {
             try {
-                sendMessage(smsg.getMessage(), connections.inverse().get(p));
+                Socket socket_send = connections.inverse().get(p);
+
+                // send message to client's socket
+                DataOutputStream out = new DataOutputStream(socket_send.getOutputStream());
+                out.writeUTF(gson.toJson(smsg));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -208,9 +214,7 @@ public class ServerListener {
                 sendMessage(new PingMsg(), client);
                 Thread.sleep(HEARTBEAT_PERIOD);
             }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        }  catch (IOException | InterruptedException e) {
             e.printStackTrace();
             handleDisconnect(client);
         }
@@ -232,8 +236,8 @@ public class ServerListener {
         processMessage(new SendableMessage(msg, connections.values()));
     }
 
-    private static void sendMessage(Message msg, Socket dest) throws IOException {
-        DataOutputStream out = new DataOutputStream(dest.getOutputStream());
-        out.writeUTF(gson.toJson(msg));
+    private static void sendMessage(Message msg, Socket s) throws IOException {
+        DataOutputStream out = new DataOutputStream(s.getOutputStream());
+        out.writeUTF(gson.toJson(new SendableMessage(msg)));
     }
 }

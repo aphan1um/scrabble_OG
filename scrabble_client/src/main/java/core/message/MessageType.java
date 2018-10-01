@@ -1,7 +1,6 @@
 package core.message;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
+import com.google.common.collect.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -9,38 +8,35 @@ import com.google.gson.JsonParser;
 import core.messageType.*;
 
 public enum MessageType {
-    EMPTY(null),
-    REQUEST(RequestPDMsg.class),
-    CHAT(ChatMsg.class),
-    PING(PingMsg.class),
-    STATUS(PlayerStatusMsg.class),
-    GAME_ACTION(GameActionMsg.class),
-    GAME_VOTE(GameVoteMsg.class),
-    GAME_STATUS_CHANGED(GameStatusMsg.class),
-    ERROR(ErrorMsg.class);
+    REQUEST,
+    CHAT,
+    PING,
+    STATUS,
+    GAME_ACTION,
+    GAME_VOTE,
+    GAME_STATUS_CHANGED,
+    ERROR;
 
-    private final Class<? extends Message> cl;
+    private static final BiMap<MessageType,Class<? extends Message>> classMaps;
 
-    // TODO: Clean up
-    private static final BiMap<MessageType, Class<? extends Message>> map;
     static {
-        map = HashBiMap.create();
-
-        for (MessageType m : MessageType.values()) {
-            map.put(m, m.cl);
-        }
+        classMaps = ImmutableBiMap.<MessageType, Class<? extends Message>>builder()
+                .put(REQUEST, RequestPDMsg.class)
+                .put(CHAT, ChatMsg.class)
+                .put(PING, PingMsg.class)
+                .put(STATUS, PlayerStatusMsg.class)
+                .put(GAME_ACTION, GameActionMsg.class)
+                .put(GAME_VOTE, GameVoteMsg.class)
+                .put(GAME_STATUS_CHANGED, GameStatusMsg.class)
+                .put(ERROR, ErrorMsg.class).build();
     }
 
     public static <T extends Message> MessageType fromMessageClass(Class<T> cl) {
-        return map.inverse().get(cl);
+        return classMaps.inverse().get(cl);
     }
 
-    private MessageType(Class<? extends Message> cl) {
-        this.cl = cl;
-    }
-
-    public Class<? extends Message> getCorrespondingClass() {
-        return cl;
+    public static Class<? extends Message> getEnumClass(MessageType mType) {
+        return classMaps.get(mType);
     }
 
     /***
@@ -50,18 +46,22 @@ public enum MessageType {
      * @param gson
      * @return
      */
-    public static Message fromJSON(String str, Gson gson) {
+    public static SendableMessage fromJSON(String str, Gson gson) {
         // TODO: Thanks to https://stackoverflow.com/a/31094365 for the hint
+
         JsonParser parser = new JsonParser();
         JsonElement element = parser.parse(str);
         JsonObject obj = element.getAsJsonObject();
 
-        MessageType msgType = MessageType.valueOf(obj.get("msgType").getAsString());
-        Class<? extends Message> c = msgType.getCorrespondingClass();
+        // TODO: Constants need to be better placed
+        String json_msgType = obj.get("msgType").getAsString();
+        JsonObject json_msg = obj.getAsJsonObject("msg");
 
-        if (c != null)
-            return gson.fromJson(element, c);
+        Class<? extends Message> enumClass = getEnumClass(valueOf(json_msgType));
 
-        return null;
+        SendableMessage recvMsg = new SendableMessage(
+                gson.fromJson(json_msg, enumClass));
+
+        return recvMsg;
     }
 }

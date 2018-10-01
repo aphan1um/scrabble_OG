@@ -70,7 +70,6 @@ public class LoginWindow {
                 try {
                     Thread.sleep(700);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
                     break;
                 }
             }
@@ -93,7 +92,7 @@ public class LoginWindow {
                             JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-                System.out.println("SUCCESS");
+
                 // if we connect, we end up here
                 t1.interrupt();
                 frame.dispose();
