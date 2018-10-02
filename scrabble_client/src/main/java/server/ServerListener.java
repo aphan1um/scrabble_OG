@@ -2,15 +2,15 @@ package server;
 
 import com.google.common.collect.*;
 import com.google.gson.Gson;
-import core.*;
+import core.game.Player;
 import core.message.*;
 import core.messageType.*;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class ServerListener {
@@ -73,19 +73,19 @@ public class ServerListener {
         // return list of players back to player who sent details
         eventList.addEvent(new MessageEvent<RequestPDMsg>() {
             @Override
-            public SendableMessage onMsgReceive(RequestPDMsg recv, Set<Player> p, Player sender) {
+            public MessageWrapper onMsgReceive(RequestPDMsg recv, Set<Player> p, Player sender) {
                 //new PlayerStatusMsg()
                 // return list of players back to player who sent details
                 Message msg = new RequestPDMsg(connections.values());
                 System.out.println("Sending player list...");
-                return new SendableMessage(msg, sender);
+                return new MessageWrapper(msg, sender);
             }
         });
 
         // tell other players a player has joined
         eventList.addEvent(new MessageEvent<RequestPDMsg>() {
             @Override
-            public SendableMessage onMsgReceive(RequestPDMsg recv, Set<Player> p, Player sender) {
+            public MessageWrapper onMsgReceive(RequestPDMsg recv, Set<Player> p, Player sender) {
                 //new PlayerStatusMsg()
                 // return list of players back to player who sent details
                 Message msg = new PlayerStatusMsg(sender, PlayerStatusMsg.NewStatus.JOINED);
@@ -94,13 +94,13 @@ public class ServerListener {
                 Set<Player> retSend = new HashSet<Player>(p);
                 retSend.remove(sender);
 
-                return new SendableMessage(msg, retSend);
+                return new MessageWrapper(msg, retSend);
             }
         });
 
         eventList.addEvent(new MessageEvent<ChatMsg>() {
             @Override
-            public SendableMessage onMsgReceive(ChatMsg recMessage, Set<Player> players, Player sender) {
+            public MessageWrapper onMsgReceive(ChatMsg recMessage, Set<Player> players, Player sender) {
                 System.out.println("Chat: " + recMessage.getChatMsg());
                 return null;
             }
@@ -139,28 +139,34 @@ public class ServerListener {
                 String read = in.readUTF();
                 System.out.println(read);
 
-                SendableMessage msgRec = MessageType.fromJSON(read, gson);
+                MessageWrapper msgRec = Message.fromJSON(read, gson);
+
+                // TODO: Fix this PING from client (do we need it)
+                if (msgRec.getMessageType() == Message.MessageType.PING)
+                    continue;
 
                 // ensure we get credientials
                 if (connections.get(client) == null) {
-                    if (msgRec.getMessageType() != MessageType.REQUEST)
+                    if (msgRec.getMessageType() != Message.MessageType.REQUEST) {
+                        sendMessage(
+                                new ErrorMsg(ErrorMsg.ErrorType.DEMAND_PLAYER_DETAILS),
+                                client);
                         continue;
+                    }
 
                     Player joinedPlayer = (Player)(
                             (RequestPDMsg)msgRec.getMessage())
                             .getPlayerList().toArray()[0];
 
                     // if connecting player shares ID to another player in server
+                    // TODO: The player should only send their details once. This is
+                    // a limitation if the player wants to change their name, for example
                     // TODO: We close connection in this case.
                     if (connections.inverse().get(joinedPlayer) != null) {
                         sendMessage(new ErrorMsg(ErrorMsg.ErrorType.DUPLICATE_ID), client);
                         client.close();
-                    }
-
-                    // TODO: Error message?
-                    System.out.println("GOT REC MESSAGE");
-
-                    connections.put(client, joinedPlayer);
+                    } else
+                        connections.put(client, joinedPlayer);
                 }
 
                 processMessages(eventList.fireEvent(
@@ -177,17 +183,17 @@ public class ServerListener {
 
     // TODO: A VERY BAD PROCESSOR
     // TODO: A VERY BAD BROADCASTER
-    public static void processMessages(List<SendableMessage> msgList) {
-        if (msgList == null)
+    public static void processMessages(Collection<MessageWrapper> msgList) {
+        if (msgList == null || msgList.contains(null))
             return;
 
-        for (SendableMessage smsg : msgList) {
+        for (MessageWrapper smsg : msgList) {
             processMessage(smsg);
         }
     }
 
     // TODO: Redundant, doing it for ease
-    public static void processMessage(SendableMessage smsg) {
+    public static void processMessage(MessageWrapper smsg) {
         if (smsg == null)
             return;
 
@@ -233,11 +239,11 @@ public class ServerListener {
         Message msg = new PlayerStatusMsg(disconnectedPlayer,
                 PlayerStatusMsg.NewStatus.DISCONNECTED);
 
-        processMessage(new SendableMessage(msg, connections.values()));
+        processMessage(new MessageWrapper(msg, connections.values()));
     }
 
     private static void sendMessage(Message msg, Socket s) throws IOException {
         DataOutputStream out = new DataOutputStream(s.getOutputStream());
-        out.writeUTF(gson.toJson(new SendableMessage(msg)));
+        out.writeUTF(gson.toJson(new MessageWrapper(msg)));
     }
 }

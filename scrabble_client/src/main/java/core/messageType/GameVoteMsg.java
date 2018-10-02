@@ -1,6 +1,6 @@
 package core.messageType;
 
-import core.LetterRange;
+import core.game.LetterRange;
 import core.message.Message;
 
 /**
@@ -9,7 +9,7 @@ import core.message.Message;
  *
  * From server: Broadcasts to all players the verdict via accepted.
  */
-public class GameVoteMsg extends Message {
+public class GameVoteMsg implements Message {
     private LetterRange lrange;
     private boolean accepted;
 

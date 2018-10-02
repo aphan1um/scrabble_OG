@@ -1,9 +1,9 @@
 package core.messageType;
 
-import core.Player;
+import core.game.Player;
 import core.message.Message;
 
-public class GameStatusMsg extends Message {
+public class GameStatusMsg implements Message {
     public enum GameStatus {
         START,
         ENDED

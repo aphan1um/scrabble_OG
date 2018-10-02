@@ -1,4 +1,4 @@
-package core;
+package core.game;
 
 public class Player {
     public String name;

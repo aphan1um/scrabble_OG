@@ -1,10 +1,10 @@
 package core.messageType;
 
-import core.Player;
+import core.game.Player;
 import core.message.Message;
 
 // Request Player Data (PD) Message
-public class PlayerStatusMsg extends Message {
+public class PlayerStatusMsg implements Message {
     private Player player;
     private NewStatus status;
 

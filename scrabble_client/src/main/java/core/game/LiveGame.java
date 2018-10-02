@@ -1,4 +1,4 @@
-package core;
+package core.game;
 
 import java.util.Map;
 

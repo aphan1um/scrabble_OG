@@ -2,10 +2,7 @@ package core.message;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import core.Player;
-import core.message.Message;
-import core.message.MessageEvent;
-import core.message.MessageType;
+import core.game.Player;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -16,16 +13,16 @@ import java.util.Set;
 
 // TODO: Handle thread-safety issues with add/removeEvent ??
 public class EventMessageList {
-    private Multimap<MessageType, MessageEvent> events;
+    private Multimap<Message.MessageType, MessageEvent> events;
 
     public EventMessageList() {
         events = HashMultimap.create();
     }
 
-    public List<SendableMessage> fireEvent(Message msg, MessageType msgType,
-                                           Set<Player> players, Player sender) {
+    public List<MessageWrapper> fireEvent(Message msg, Message.MessageType msgType,
+                                          Set<Player> players, Player sender) {
         Collection<MessageEvent> eventsToFire = events.get(msgType);
-        List<SendableMessage> msgs = new ArrayList<>(eventsToFire.size());
+        List<MessageWrapper> msgs = new ArrayList<>(eventsToFire.size());
 
         for (MessageEvent e: eventsToFire) {
             msgs.add(e.onMsgReceive(msg, players, sender));
@@ -40,8 +37,7 @@ public class EventMessageList {
                 .getActualTypeArguments()[0];
         Class<? extends Message> t = (Class<? extends Message>)generic_type;
 
-
-        events.put(MessageType.fromMessageClass(t), event);
+        events.put(Message.fromMessageClass(t), event);
     }
 
     public <T extends Message> void removeEvent(MessageEvent<T> event) {
@@ -50,6 +46,6 @@ public class EventMessageList {
                 .getActualTypeArguments()[0];
         Class<? extends Message> t = (Class<? extends Message>)generic_type;
 
-        events.remove(MessageType.fromMessageClass(t), event);
+        events.remove(Message.fromMessageClass(t), event);
     }
 }

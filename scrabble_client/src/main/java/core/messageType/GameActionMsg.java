@@ -4,7 +4,7 @@ import core.message.Message;
 
 import java.awt.*;
 
-public class GameActionMsg extends Message {
+public class GameActionMsg implements Message {
     private Point moveLocation;
     private Character letter;
 

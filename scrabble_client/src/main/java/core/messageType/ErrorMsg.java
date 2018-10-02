@@ -2,9 +2,10 @@ package core.messageType;
 
 import core.message.Message;
 
-public class ErrorMsg extends Message {
+public class ErrorMsg implements Message {
     public enum ErrorType {
-        DUPLICATE_ID
+        DUPLICATE_ID,
+        DEMAND_PLAYER_DETAILS,
     }
 
     public ErrorType errorType;

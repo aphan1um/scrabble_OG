@@ -1,13 +1,12 @@
 package core.messageType;
 
 import core.message.Message;
-import core.Player;
+import core.game.Player;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
-public class RequestPDMsg extends Message {
+public class RequestPDMsg implements Message {
     private Collection<Player> playerList;
 
     public RequestPDMsg(Player... players) {
