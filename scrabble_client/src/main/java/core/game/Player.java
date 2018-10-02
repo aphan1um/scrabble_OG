@@ -15,4 +15,14 @@ public class Player {
     public boolean equals(Object obj) {
         return (obj instanceof Player && ((Player)obj).name.equals(name));
     }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return name;
+    }
 }

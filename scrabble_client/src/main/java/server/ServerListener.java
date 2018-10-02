@@ -8,6 +8,7 @@ import core.messageType.*;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -118,9 +119,9 @@ public class ServerListener extends SocketListener {
             // TODO: The player should only send their details once. This is
             // a limitation if the player wants to change their name, for example
             // TODO: We close connection in this case.
-            if (connections.inverse().get(joinedPlayer) != null) {
+            System.out.println(Arrays.toString(connections.values().toArray()) + "\t" + joinedPlayer.getName());
+            if (connections.values().contains(joinedPlayer)) {
                 sendMessage(new ErrorMsg(ErrorMsg.ErrorType.DUPLICATE_ID), s);
-                s.close();
             } else {
                 connections.put(s, joinedPlayer);
             }

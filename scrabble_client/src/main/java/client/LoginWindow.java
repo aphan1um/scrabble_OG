@@ -60,9 +60,9 @@ public class LoginWindow {
         });
     }
 
-    // TODO: Horrible code
     public void displayPleaseWait_Client() {
         ready = false;
+        ClientMain.prepareServer();
         LobbyWindow lobbyWind = new LobbyWindow(frame);
 
         JDialog dialog = new JDialog();
@@ -73,44 +73,39 @@ public class LoginWindow {
 
         panel.add(lblWait);
 
-        lblWait.setText("<html>" +
-                WAIT_STR + "..." + "<br/>" +
-                "<center>" + txtIP.getText() + ":" + txtPort.getText() + "<center>" +
-                "</html>");
+        lblWait.setText("Creating server...");
 
         Thread t1 = new Thread(() -> {
             int i = 0;
 
+            dialog.setModal(true);
+
             while (true) {
                 i = (i + 1) % 4;
-                lblWait.setText("<html>" +
-                        WAIT_STR + "...".substring(0, i) + "<br/>" +
-                        "<center>" + txtIP.getText() + ":" + txtPort.getText() + "<center>" +
-                        "</html>");
-                System.out.println(txtIP.getText());
+                lblWait.setText("Creating server" + "...".substring(0, i));
 
                 try {
-                    Thread.sleep(700);
+                    Thread.sleep(500);
                 } catch (InterruptedException e) {
                     break;
                 }
             }
-
-            dialog.dispose();
         });
 
         Thread t2 = new Thread(new Runnable() {
             @Override
             public void run() {
+                t1.start();
+
                 try {
                     ClientMain.connectToServer(txtID.getText(),
                             txtIP.getText(), Integer.parseInt(txtPort.getText()));
-                } catch (IOException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
 
                     t1.interrupt();
                     JOptionPane.showMessageDialog(panel1, "There was an error while connecting to the " +
-                            "server. It is likely the server does not exist.", "Unable to connect",
+                                    "server. It is likely the server does not exist.", "Unable to connect",
                             JOptionPane.ERROR_MESSAGE);
                     lobbyWind.frame.dispose();
                     return;
@@ -118,12 +113,12 @@ public class LoginWindow {
 
                 // if we connect, we end up here
                 t1.interrupt();
-                frame.dispose();
                 ready = true;
+                System.out.println("Already got past this bit.");
+                dialog.dispose();
             }
         });
 
-        t1.start();
         t2.start();
 
         dialog.add(panel);
@@ -132,7 +127,10 @@ public class LoginWindow {
         dialog.setModal(true);
         dialog.setVisible(true);
 
+        // TODO: Weird issue with window not showing.
+        System.out.println("New window loading...");
         if (ready) {
+            frame.dispose();
             lobbyWind.show();
         }
     }
@@ -156,23 +154,25 @@ public class LoginWindow {
         Thread t1 = new Thread(() -> {
             int i = 0;
 
+            dialog.setModal(true);
+
             while (true) {
                 i = (i + 1) % 4;
                 lblWait.setText("Creating server" + "...".substring(0, i));
 
                 try {
-                    Thread.sleep(700);
+                    Thread.sleep(500);
                 } catch (InterruptedException e) {
                     break;
                 }
             }
-
-            dialog.dispose();
         });
 
         Thread t2 = new Thread(new Runnable() {
             @Override
             public void run() {
+                t1.start();
+
                 try {
                     ClientMain.createServer(txtID.getText(), Integer.parseInt(txtPort.getText()));
                 } catch (IOException e) {
@@ -188,12 +188,12 @@ public class LoginWindow {
 
                 // if we connect, we end up here
                 t1.interrupt();
-                frame.dispose();
                 ready = true;
+                System.out.println("Already got past this bit.");
+                dialog.dispose();
             }
         });
 
-        t1.start();
         t2.start();
 
         dialog.add(panel);
@@ -202,7 +202,12 @@ public class LoginWindow {
         dialog.setModal(true);
         dialog.setVisible(true);
 
+        System.out.println("Got HERE");
+
+        // TODO: Weird issue with window not showing.
+        System.out.println("New window loading...");
         if (ready) {
+            frame.dispose();
             lobbyWind.show();
         }
     }

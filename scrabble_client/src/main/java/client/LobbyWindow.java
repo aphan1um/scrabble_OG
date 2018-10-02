@@ -74,6 +74,7 @@ public class LobbyWindow {
 
     public void show() {
         frame.setVisible(true);
+        System.out.println("Window is now showing.");
     }
 
     public void registerClientEvents() {

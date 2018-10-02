@@ -20,7 +20,7 @@ import java.util.Collection;
 public abstract class SocketListener {
     private static final int HEARTBEAT_PERIOD = 10000; // in ms
 
-    public final String listenerName;
+    public String listenerName;
 
     public final EventMessageList eventList;
     protected final Gson gson;
@@ -69,6 +69,9 @@ public abstract class SocketListener {
         // separate thread for connector
         new Thread(() -> run_client(socket)).start();
 
+        // TODO: Have some acknowledgement/condition here.
+        // and then return an exception if failure
+
         return socket;
     }
 
@@ -96,7 +99,8 @@ public abstract class SocketListener {
                         connections.get(client)));
             }
         } catch (IOException e) {
-            // client disconnect (most likely)
+            // client disconnect (most likely)\
+            System.out.println("Error coming from: " + listenerName);
             e.printStackTrace();
             triggerDisconnect(client);
         }
@@ -151,18 +155,19 @@ public abstract class SocketListener {
     protected void triggerDisconnect(Socket s) {
         Player disconnectedPlayer = connections.get(s);
         // DO WE NEED THIS?
+
+        /**
         try {
             s.close();
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        } */
 
         synchronized (connections) {
             // TODO: This may get called twice due to two threads
-            System.out.println("Player " + disconnectedPlayer.getName() + " has disconnected.");
+            //System.out.println("Player " + disconnectedPlayer.getName() + " has disconnected.");
             connections.remove(s);
         }
-
         onUserDisconnect(disconnectedPlayer);
     }
 
