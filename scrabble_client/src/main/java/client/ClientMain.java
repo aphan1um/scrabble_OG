@@ -16,19 +16,22 @@ public class ClientMain {
 
     public static void main(String[] args) {
         // start Login window first
+        listener = new ClientListener();
         LoginWindow loginWind = new LoginWindow();
     }
 
     public static void connectToServer(String idName, String ip, int port) throws IOException {
         playerID = new Player(idName);
-        listener = new ClientListener();
 
         listener.start(ip, port);
     }
 
+    public static void prepareServer() {
+        server = new ServerListener();
+    }
+
     public static void createServer(String idName, int port) throws IOException {
         playerID = new Player(idName);
-        ServerListener server = new ServerListener();
 
         Thread t = new Thread() {
             public void run() {
@@ -42,7 +45,6 @@ public class ClientMain {
         t.start();
 
         // now connect the host to its own server
-        listener = new ClientListener();
         listener.start("localhost", port);
     }
 }

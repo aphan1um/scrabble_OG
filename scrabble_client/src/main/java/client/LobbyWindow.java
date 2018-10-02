@@ -1,10 +1,13 @@
 package client;
 
+import com.sun.security.ntlm.Client;
 import core.game.Player;
 import core.message.Message;
 import core.message.MessageEvent;
 import core.message.MessageWrapper;
 import core.messageType.ChatMsg;
+import core.messageType.PlayerStatusMsg;
+import core.messageType.RequestPDMsg;
 
 import javax.swing.*;
 import java.awt.*;
@@ -14,14 +17,17 @@ import java.util.ArrayList;
 import java.util.Set;
 
 public class LobbyWindow {
-    private JList RoomMember;
+    private JList lstPlayers;
     private JPanel room;
     private JButton btnReady;
     private JTextArea txtChat;
     private JTextPane txtChatInput;
     private JButton btnSendMsg;
     private ArrayList player = new ArrayList<String>();
-    JFrame frame = new JFrame("Lobby Window");
+    // TODO: For debug reasons
+    public JFrame frame = new JFrame("Lobby Window");
+
+    private DefaultListModel model = new DefaultListModel();
 
     public void setPlayer(ArrayList player) {
         this.player = (ArrayList) player.clone();
@@ -44,6 +50,7 @@ public class LobbyWindow {
 
         // =========== END EVENT LISTENERS
 
+        lstPlayers.setModel(model);
         registerClientEvents();
 
         // check if player is host
@@ -54,10 +61,12 @@ public class LobbyWindow {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setSize(900, 500);
-        //showRoomMember(roomGUI.player, roomGUI.RoomMember);
+        //showRoomMember(roomGUI.player, roomGUI.lstPlayers);
         frame.setLocationRelativeTo(comp);
-        frame.setVisible(true);
+    }
 
+    public void show() {
+        frame.setVisible(true);
     }
 
     public void registerClientEvents() {
@@ -70,15 +79,37 @@ public class LobbyWindow {
             }
         });
 
-        System.out.println("Added event");
-    }
+        ClientMain.listener.eventList.addEvent(new MessageEvent<PlayerStatusMsg>() {
+            @Override
+            public MessageWrapper onMsgReceive(PlayerStatusMsg recMessage, Set<Player> players, Player sender) {
+                switch (recMessage.getStatus()) {
+                    case JOINED:
+                        txtChat.append("\n" + recMessage.getPlayer().getName() + " has joined.");
+                        model.addElement(recMessage.getPlayer().getName());
+                        break;
+                    case DISCONNECTED:
+                        txtChat.append("\n" + recMessage.getPlayer().getName() + " has left the room.");
+                        model.removeElement(recMessage.getPlayer().getName());
+                        break;
+                }
 
-    public void showRoomMember(ArrayList player, JList list1) {
-        DefaultListModel model = new DefaultListModel();
-        for (int i = 0; i < player.size(); i++) {
-            model.addElement(player.get(i));
-        }
-        list1.setModel(model);
+                return null;
+            }
+        });
+
+        // TODO: This should only get called once, or better code the protocol.
+        ClientMain.listener.eventList.addEvent(new MessageEvent<RequestPDMsg>() {
+            @Override
+            public MessageWrapper onMsgReceive(RequestPDMsg recMessage, Set<Player> players, Player sender) {
+                for (Player p : recMessage.getPlayerList()) {
+                    model.addElement(p.getName());
+                }
+
+                return null;
+            }
+        });
+
+        System.out.println("Added event");
     }
 
 }

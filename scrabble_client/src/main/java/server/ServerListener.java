@@ -7,6 +7,7 @@ import core.messageType.*;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -67,7 +68,7 @@ public class ServerListener extends SocketListener {
             public MessageWrapper onMsgReceive(RequestPDMsg recv, Set<Player> p, Player sender) {
                 //new PlayerStatusMsg()
                 // return list of players back to player who sent details
-                Message msg = new PlayerStatusMsg(sender, PlayerStatusMsg.NewStatus.JOINED);
+                PlayerStatusMsg msg = new PlayerStatusMsg(sender, PlayerStatusMsg.NewStatus.JOINED);
 
                 // TODO: Is there a cleaner way to do this?
                 Set<Player> retSend = new HashSet<Player>(p);
@@ -118,5 +119,12 @@ public class ServerListener extends SocketListener {
         }
 
         return true;
+    }
+
+    @Override
+    protected void onUserDisconnect(Player p) {
+        processMessage(new MessageWrapper(
+                new PlayerStatusMsg(p, PlayerStatusMsg.NewStatus.DISCONNECTED),
+                connections.values()));
     }
 }

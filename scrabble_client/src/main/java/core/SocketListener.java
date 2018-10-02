@@ -29,6 +29,7 @@ public abstract class SocketListener {
     protected abstract void onUserConnect(Socket s) throws IOException;
     protected abstract void prepareEvents();
     protected abstract boolean onMessageReceived(MessageWrapper msgRec, Socket s) throws IOException;
+    protected abstract void onUserDisconnect(Player p);
 
     public SocketListener(String name) {
         eventList = new EventMessageList();
@@ -125,7 +126,7 @@ public abstract class SocketListener {
         }
     }
 
-    private void processMessage(MessageWrapper smsg) {
+    protected void processMessage(MessageWrapper smsg) {
         if (smsg == null)
             return;
 
@@ -158,15 +159,11 @@ public abstract class SocketListener {
 
         synchronized (connections) {
             // TODO: This may get called twice due to two threads
-            System.out.println("A player disconnected");
+            System.out.println("Player " + disconnectedPlayer.getName() + " has disconnected.");
             connections.remove(s);
         }
 
-        // broadcast to other players
-        Message msg = new PlayerStatusMsg(disconnectedPlayer,
-                PlayerStatusMsg.NewStatus.DISCONNECTED);
-
-        processMessage(new MessageWrapper(msg, connections.values()));
+        onUserDisconnect(disconnectedPlayer);
     }
 
     public void sendMessage(Message msg, Socket s) throws IOException {

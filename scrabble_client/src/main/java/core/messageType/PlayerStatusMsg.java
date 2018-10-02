@@ -18,4 +18,12 @@ public class PlayerStatusMsg implements Message {
         this.player = player;
         this.status = status;
     }
+
+    public Player getPlayer() {
+        return player;
+    }
+
+    public NewStatus getStatus() {
+        return status;
+    }
 }

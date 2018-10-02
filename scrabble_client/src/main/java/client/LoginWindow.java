@@ -54,6 +54,8 @@ public class LoginWindow {
 
     // TODO: Horrible code
     public void displayPleaseWait_Client() {
+        LobbyWindow lobbyWind = new LobbyWindow(frame);
+
         JDialog dialog = new JDialog();
         dialog.setUndecorated(true);
         JPanel panel = new JPanel();
@@ -101,13 +103,14 @@ public class LoginWindow {
                     JOptionPane.showMessageDialog(panel1, "There was an error while connecting to the " +
                             "server. It is likely the server does not exist.", "Unable to connect",
                             JOptionPane.ERROR_MESSAGE);
+                    lobbyWind.frame.dispose();
                     return;
                 }
 
                 // if we connect, we end up here
                 t1.interrupt();
                 frame.dispose();
-                new LobbyWindow(frame);
+                lobbyWind.show();
             }
         });
 
@@ -123,6 +126,9 @@ public class LoginWindow {
 
     // TODO: Horrible code
     public void displayPleaseWait_Server() {
+        ClientMain.prepareServer();
+        LobbyWindow lobbyWind = new LobbyWindow(frame);
+
         JDialog dialog = new JDialog();
         dialog.setUndecorated(true);
         JPanel panel = new JPanel();
@@ -162,13 +168,14 @@ public class LoginWindow {
                     JOptionPane.showMessageDialog(panel1, "There was an error while creating the server",
                             "Unable to create server",
                             JOptionPane.ERROR_MESSAGE);
+                    lobbyWind.frame.dispose();
                     return;
                 }
 
                 // if we connect, we end up here
                 t1.interrupt();
                 frame.dispose();
-                new LobbyWindow(frame);
+                lobbyWind.show();
             }
         });
 
