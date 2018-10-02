@@ -1,16 +1,23 @@
 package client;
 
+import core.game.Player;
+import core.message.Message;
+import core.message.MessageEvent;
+import core.message.MessageWrapper;
+import core.messageType.ChatMsg;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Set;
 
 public class LobbyWindow {
     private JList RoomMember;
     private JPanel room;
     private JButton btnReady;
-    private JTextArea welcomeToTheLobbyTextArea;
+    private JTextArea txtChat;
     private JTextPane txtChatInput;
     private JButton btnSendMsg;
     private ArrayList player = new ArrayList<String>();
@@ -30,13 +37,17 @@ public class LobbyWindow {
         btnSendMsg.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                ClientMain.listener.sendChatMessage(btnSendMsg.getText());
+                ClientMain.listener.sendChatMessage(txtChatInput.getText());
+                txtChatInput.setText("");
             }
         });
 
         // =========== END EVENT LISTENERS
 
         registerClientEvents();
+
+        // check if player is host
+        btnReady.setEnabled(ClientMain.server != null);
 
         //roomGUI.setPlayer(Player);
         frame.setContentPane(room);
@@ -51,6 +62,15 @@ public class LobbyWindow {
 
     public void registerClientEvents() {
         // TODO: Static method nightmare
+        ClientMain.listener.eventList.addEvent(new MessageEvent<ChatMsg>() {
+            @Override
+            public MessageWrapper onMsgReceive(ChatMsg recMessage, Set<Player> players, Player sender) {
+                txtChat.append("\n[" + recMessage.getSender().getName() + "]:\t" + recMessage.getChatMsg());
+                return null;
+            }
+        });
+
+        System.out.println("Added event");
     }
 
     public void showRoomMember(ArrayList player, JList list1) {

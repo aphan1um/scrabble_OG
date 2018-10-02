@@ -18,20 +18,23 @@ import java.net.Socket;
 import java.util.Collection;
 
 public abstract class SocketListener {
-    protected final EventMessageList eventList;
+    private static final int HEARTBEAT_PERIOD = 10000; // in ms
+
+    public final String listenerName;
+
+    public final EventMessageList eventList;
     protected final Gson gson;
     protected final BiMap<Socket, Player> connections;
-
-    private static final int HEARTBEAT_PERIOD = 9000;
 
     protected abstract void onUserConnect(Socket s) throws IOException;
     protected abstract void prepareEvents();
     protected abstract boolean onMessageReceived(MessageWrapper msgRec, Socket s) throws IOException;
 
-    public SocketListener() {
+    public SocketListener(String name) {
         eventList = new EventMessageList();
         gson = new Gson();
         connections = HashBiMap.create();
+        this.listenerName = name;
 
         prepareEvents();
     }
@@ -79,7 +82,7 @@ public abstract class SocketListener {
 
             while (true) {
                 String read = in.readUTF();
-                System.out.println(read);
+                System.out.println("[" + listenerName + " gets]:\t" + read);
 
                 MessageWrapper msgRec = Message.fromJSON(read, gson);
 
@@ -168,6 +171,10 @@ public abstract class SocketListener {
 
     public void sendMessage(Message msg, Socket s) throws IOException {
         DataOutputStream out = new DataOutputStream(s.getOutputStream());
+        String json = gson.toJson(new MessageWrapper(msg));
+
+        System.out.println("[" + listenerName + " sends]:\t" + json);
+
         out.writeUTF(gson.toJson(new MessageWrapper(msg)));
     }
 }

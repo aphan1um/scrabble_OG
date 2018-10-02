@@ -13,7 +13,7 @@ import java.util.Set;
 public class ServerListener extends SocketListener {
 
     public ServerListener() {
-        super();
+        super("Server");
         System.out.println("Started server...");
 
         /**
@@ -81,7 +81,7 @@ public class ServerListener extends SocketListener {
             @Override
             public MessageWrapper onMsgReceive(ChatMsg recMessage, Set<Player> players, Player sender) {
                 System.out.println("Chat: " + recMessage.getChatMsg());
-                return null;
+                return new MessageWrapper(recMessage, players);
             }
         });
     }
@@ -112,8 +112,9 @@ public class ServerListener extends SocketListener {
             if (connections.inverse().get(joinedPlayer) != null) {
                 sendMessage(new ErrorMsg(ErrorMsg.ErrorType.DUPLICATE_ID), s);
                 s.close();
-            } else
+            } else {
                 connections.put(s, joinedPlayer);
+            }
         }
 
         return true;

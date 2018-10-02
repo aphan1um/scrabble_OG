@@ -23,8 +23,18 @@ public class LoginWindow {
         btnSignIn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (validateTexts()) {
-                    displayPleaseWait();
+                if (validateTexts(false)) {
+                    displayPleaseWait_Client();
+                }
+            }
+        });
+
+        // press Host button
+        btnHostGame.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (validateTexts(true)) {
+                    displayPleaseWait_Server();
                 }
             }
         });
@@ -39,10 +49,11 @@ public class LoginWindow {
         // centre to screen
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
+
     }
 
     // TODO: Horrible code
-    public void displayPleaseWait() {
+    public void displayPleaseWait_Client() {
         JDialog dialog = new JDialog();
         dialog.setUndecorated(true);
         JPanel panel = new JPanel();
@@ -110,8 +121,71 @@ public class LoginWindow {
         dialog.setVisible(true);
     }
 
-    public boolean validateTexts() {
-        if (txtPort.getText().isEmpty() || txtIP.getText().isEmpty() || txtPort.getText().isEmpty()) {
+    // TODO: Horrible code
+    public void displayPleaseWait_Server() {
+        JDialog dialog = new JDialog();
+        dialog.setUndecorated(true);
+        JPanel panel = new JPanel();
+
+        JLabel lblWait = new JLabel();
+
+        panel.add(lblWait);
+
+        lblWait.setText("Creating server...");
+
+        Thread t1 = new Thread(() -> {
+            int i = 0;
+
+            while (true) {
+                i = (i + 1) % 4;
+                lblWait.setText("Creating server" + "...".substring(0, i));
+
+                try {
+                    Thread.sleep(700);
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+
+            dialog.dispose();
+        });
+
+        Thread t2 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    ClientMain.createServer(txtID.getText(), Integer.parseInt(txtPort.getText()));
+                } catch (IOException e) {
+                    e.printStackTrace();
+
+                    t1.interrupt();
+                    JOptionPane.showMessageDialog(panel1, "There was an error while creating the server",
+                            "Unable to create server",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                // if we connect, we end up here
+                t1.interrupt();
+                frame.dispose();
+                new LobbyWindow(frame);
+            }
+        });
+
+        t1.start();
+        t2.start();
+
+        dialog.add(panel);
+        dialog.pack();
+        dialog.setLocationRelativeTo(panel1);
+        dialog.setModal(true);
+        dialog.setVisible(true);
+    }
+
+    public boolean validateTexts(boolean isHosting) {
+        if (txtPort.getText().isEmpty() ||
+                (txtIP.getText().isEmpty() && !isHosting) ||
+                txtPort.getText().isEmpty()) {
             JOptionPane.showMessageDialog(panel1,
                     "One of the entries is empty. Make sure they are filled with valid values.",
                     "Empty entry detected", JOptionPane.WARNING_MESSAGE);

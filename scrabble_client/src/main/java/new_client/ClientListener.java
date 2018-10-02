@@ -13,7 +13,7 @@ public class ClientListener extends SocketListener {
     public Socket socket;
 
     public ClientListener() {
-        super();
+        super("Player");
     }
 
     public void start(String ip, int port) throws IOException {
@@ -22,7 +22,7 @@ public class ClientListener extends SocketListener {
 
     public void sendChatMessage(String txt) {
         try {
-            sendMessage(new ChatMsg(txt), socket);
+            sendMessage(new ChatMsg(txt, ClientMain.playerID), socket);
         } catch (IOException e) {
             e.printStackTrace();
             triggerDisconnect(socket);
@@ -42,6 +42,6 @@ public class ClientListener extends SocketListener {
 
     @Override
     protected boolean onMessageReceived(MessageWrapper msgRec, Socket s) {
-        return false;
+        return true;
     }
 }
