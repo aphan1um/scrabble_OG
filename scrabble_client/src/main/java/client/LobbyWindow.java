@@ -1,13 +1,13 @@
 package client;
 
-import com.sun.security.ntlm.Client;
 import core.game.Player;
-import core.message.Message;
 import core.message.MessageEvent;
 import core.message.MessageWrapper;
 import core.messageType.ChatMsg;
+import core.messageType.GameStatusMsg;
 import core.messageType.PlayerStatusMsg;
 import core.messageType.RequestPDMsg;
+import new_client.GameWindow;
 
 import javax.swing.*;
 import java.awt.*;
@@ -48,6 +48,13 @@ public class LobbyWindow {
             }
         });
 
+        btnReady.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                 ClientMain.listener.sendGameStart();
+            }
+        });
+
         // =========== END EVENT LISTENERS
 
         lstPlayers.setModel(model);
@@ -70,16 +77,16 @@ public class LobbyWindow {
     }
 
     public void registerClientEvents() {
-        // TODO: Static method nightmare
-        ClientMain.listener.eventList.addEvent(new MessageEvent<ChatMsg>() {
+
+        MessageEvent<ChatMsg> event_Chat = new MessageEvent<ChatMsg>() {
             @Override
             public MessageWrapper onMsgReceive(ChatMsg recMessage, Set<Player> players, Player sender) {
                 txtChat.append("\n[" + recMessage.getSender().getName() + "]:\t" + recMessage.getChatMsg());
                 return null;
             }
-        });
+        };
 
-        ClientMain.listener.eventList.addEvent(new MessageEvent<PlayerStatusMsg>() {
+        MessageEvent<PlayerStatusMsg> event_PlayerStatus = new MessageEvent<PlayerStatusMsg>() {
             @Override
             public MessageWrapper onMsgReceive(PlayerStatusMsg recMessage, Set<Player> players, Player sender) {
                 switch (recMessage.getStatus()) {
@@ -95,10 +102,9 @@ public class LobbyWindow {
 
                 return null;
             }
-        });
+        };
 
-        // TODO: This should only get called once, or better code the protocol.
-        ClientMain.listener.eventList.addEvent(new MessageEvent<RequestPDMsg>() {
+        MessageEvent<RequestPDMsg> event_RecvPlayers = new MessageEvent<RequestPDMsg>() {
             @Override
             public MessageWrapper onMsgReceive(RequestPDMsg recMessage, Set<Player> players, Player sender) {
                 for (Player p : recMessage.getPlayerList()) {
@@ -107,7 +113,33 @@ public class LobbyWindow {
 
                 return null;
             }
-        });
+        };
+
+        MessageEvent<GameStatusMsg> event_GameStart = new MessageEvent<GameStatusMsg>() {
+            @Override
+            public MessageWrapper onMsgReceive(GameStatusMsg recMessage, Set<Player> players, Player sender) {
+                if (recMessage.getGameStatus() == GameStatusMsg.GameStatus.STARTED) {
+                    // remove events
+                    ClientMain.listener.eventList.removeEvent(event_Chat);
+                    ClientMain.listener.eventList.removeEvent(event_PlayerStatus);
+                    ClientMain.listener.eventList.removeEvent(event_RecvPlayers);
+                    ClientMain.listener.eventList.removeEvent(this);
+
+                    // open new window
+                    frame.dispose();
+                    // start new window
+                    GameWindow.main(new String[] {});
+                }
+                return null;
+            }
+        };
+
+        // TODO: Static method nightmare
+        ClientMain.listener.eventList.addEvent(event_Chat);
+        ClientMain.listener.eventList.addEvent(event_PlayerStatus);
+        // TODO: This should only get called once, or better code the protocol.
+        ClientMain.listener.eventList.addEvent(event_RecvPlayers);
+        ClientMain.listener.eventList.addEvent(event_GameStart);
 
         System.out.println("Added event");
     }

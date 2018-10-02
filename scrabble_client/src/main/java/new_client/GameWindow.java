@@ -4,6 +4,7 @@ import com.anchorage.docks.node.DockNode;
 import com.anchorage.docks.stations.DockStation;
 import com.anchorage.system.AnchorageSystem;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -40,6 +41,10 @@ public class GameWindow extends Application {
         Scene scene = new Scene(station, 600, 700);
         primaryStage.setTitle("Scrabble Game");
         primaryStage.setScene(scene);
+
+        // TODO: This is silly with Swing and JavaFX
+        primaryStage.setOnCloseRequest(e -> System.exit(0));
+
         primaryStage.show();
     }
 }

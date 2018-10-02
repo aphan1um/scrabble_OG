@@ -5,6 +5,7 @@ import core.SocketListener;
 import core.game.Player;
 import core.message.MessageWrapper;
 import core.messageType.ChatMsg;
+import core.messageType.GameStatusMsg;
 import core.messageType.RequestPDMsg;
 
 import javax.swing.*;
@@ -25,6 +26,17 @@ public class ClientListener extends SocketListener {
     public void sendChatMessage(String txt) {
         try {
             sendMessage(new ChatMsg(txt, ClientMain.playerID), socket);
+        } catch (IOException e) {
+            e.printStackTrace();
+            triggerDisconnect(socket);
+        }
+    }
+
+    public void sendGameStart() {
+        try {
+            // TODO: Host starts the game lol..
+            sendMessage(new GameStatusMsg(GameStatusMsg.GameStatus.STARTED,
+                    ClientMain.playerID), socket);
         } catch (IOException e) {
             e.printStackTrace();
             triggerDisconnect(socket);

@@ -85,6 +85,14 @@ public class ServerListener extends SocketListener {
                 return new MessageWrapper(recMessage, players);
             }
         });
+
+        // when host says to start game
+        eventList.addEvent(new MessageEvent<GameStatusMsg>() {
+            @Override
+            public MessageWrapper onMsgReceive(GameStatusMsg recMessage, Set<Player> players, Player sender) {
+                return new MessageWrapper(recMessage, players);
+            }
+        });
     }
 
     @Override

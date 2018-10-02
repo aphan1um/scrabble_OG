@@ -18,6 +18,8 @@ public class LoginWindow {
 
     private static final String WAIT_STR = "Please wait while we connect";
 
+    private volatile boolean ready = false;
+
     public LoginWindow() {
         // press Sign In button
         btnSignIn.addActionListener(new ActionListener() {
@@ -50,10 +52,17 @@ public class LoginWindow {
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
 
+        btnExit.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
+            }
+        });
     }
 
     // TODO: Horrible code
     public void displayPleaseWait_Client() {
+        ready = false;
         LobbyWindow lobbyWind = new LobbyWindow(frame);
 
         JDialog dialog = new JDialog();
@@ -110,7 +119,7 @@ public class LoginWindow {
                 // if we connect, we end up here
                 t1.interrupt();
                 frame.dispose();
-                lobbyWind.show();
+                ready = true;
             }
         });
 
@@ -122,10 +131,15 @@ public class LoginWindow {
         dialog.setLocationRelativeTo(panel1);
         dialog.setModal(true);
         dialog.setVisible(true);
+
+        if (ready) {
+            lobbyWind.show();
+        }
     }
 
     // TODO: Horrible code
     public void displayPleaseWait_Server() {
+        ready = false;
         ClientMain.prepareServer();
         LobbyWindow lobbyWind = new LobbyWindow(frame);
 
@@ -175,7 +189,7 @@ public class LoginWindow {
                 // if we connect, we end up here
                 t1.interrupt();
                 frame.dispose();
-                lobbyWind.show();
+                ready = true;
             }
         });
 
@@ -187,6 +201,10 @@ public class LoginWindow {
         dialog.setLocationRelativeTo(panel1);
         dialog.setModal(true);
         dialog.setVisible(true);
+
+        if (ready) {
+            lobbyWind.show();
+        }
     }
 
     public boolean validateTexts(boolean isHosting) {
