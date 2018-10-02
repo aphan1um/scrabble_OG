@@ -24,9 +24,9 @@ public abstract class SocketListener {
 
     private static final int HEARTBEAT_PERIOD = 9000;
 
-    protected abstract void onUserConnect(Socket s);
+    protected abstract void onUserConnect(Socket s) throws IOException;
     protected abstract void prepareEvents();
-    protected abstract boolean onMessageReceived(MessageWrapper msgRec, Socket s);
+    protected abstract boolean onMessageReceived(MessageWrapper msgRec, Socket s) throws IOException;
 
     public SocketListener() {
         eventList = new EventMessageList();

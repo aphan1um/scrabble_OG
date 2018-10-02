@@ -10,7 +10,7 @@ import core.messageType.*;
 
 public interface Message {
     public enum MessageType {
-        REQUEST,
+        REQUEST_PLAYER_DETAILS,
         CHAT,
         PING,
         STATUS,
@@ -23,7 +23,7 @@ public interface Message {
 
         static {
             classMaps = ImmutableBiMap.<MessageType, Class<? extends Message>>builder()
-                    .put(REQUEST, RequestPDMsg.class)
+                    .put(REQUEST_PLAYER_DETAILS, RequestPDMsg.class)
                     .put(CHAT, ChatMsg.class)
                     .put(PING, PingMsg.class)
                     .put(STATUS, PlayerStatusMsg.class)

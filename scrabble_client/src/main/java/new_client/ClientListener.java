@@ -1,8 +1,10 @@
 package new_client;
 
+import client.ClientMain;
 import core.SocketListener;
 import core.message.MessageWrapper;
 import core.messageType.ChatMsg;
+import core.messageType.RequestPDMsg;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -28,8 +30,9 @@ public class ClientListener extends SocketListener {
     }
 
     @Override
-    protected void onUserConnect(Socket s) {
-
+    protected void onUserConnect(Socket s) throws IOException {
+        // TODO: STATIC NIGHTMARE
+        sendMessage(new RequestPDMsg(ClientMain.playerID), s);
     }
 
     @Override
