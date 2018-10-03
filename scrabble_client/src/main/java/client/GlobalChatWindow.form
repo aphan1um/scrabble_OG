@@ -39,7 +39,7 @@
         <properties>
           <editable value="false"/>
           <selectionStart value="78"/>
-          <text value="Welcome to the Scrabble World!!&#10;Choose the player to start a game right now!!!"/>
+          <text value="Welcome to the Scrabble World!!&#10;Choose the agent to start a game right now!!!"/>
         </properties>
       </component>
       <component id="f9d56" class="javax.swing.JButton" binding="startButton">

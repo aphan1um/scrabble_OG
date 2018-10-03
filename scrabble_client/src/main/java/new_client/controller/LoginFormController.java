@@ -1,5 +1,9 @@
 package new_client.controller;
 
+import core.ClientListener;
+import core.game.Agent;
+import javafx.concurrent.Task;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
@@ -10,10 +14,16 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
+import new_client.ClientMain;
+import server.ScrabbleServerListener;
 
 import java.io.InputStream;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.ResourceBundle;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 public class LoginFormController implements Initializable {
     @FXML
@@ -53,17 +63,13 @@ public class LoginFormController implements Initializable {
 
         // add events
         btnConnect.setOnAction(e -> {
-            if (validateConnect(false)) {
-                Stage stage = (Stage)btnConnect.getScene().getWindow();
-                stage.close();
-
-                // load lobby window
-                LobbyController.createStage().show();
-            }
+            if (validateConnect(false))
+                connect(false );
         });
         btnCreateGame.setOnAction(e -> {
-            WaitDialogController.showDialog((Stage)btnCreateGame.getScene().getWindow());
-            validateConnect(true);
+            //WaitDialogController.showDialog((Stage)btnCreateGame.getScene().getWindow());
+            if (validateConnect(true))
+                connect(true);
         });
     }
 
@@ -79,30 +85,71 @@ public class LoginFormController implements Initializable {
 
             return false;
         }
-
         return true;
     }
 
-    /**
-    private void waitForConnectResponse() {
+    private void handleConnectError(Throwable th) {
+        Exception ex = new Exception(th);
+        String descript;
+
+        if (th == null) {
+            descript = "Cause of error unknown.";
+        } else if (th instanceof UnknownHostException) {
+            descript = "Unable to connect at specified IP address:\n" + th.getMessage();
+        } else {
+            descript = ex.toString();
+        }
+
+        new Alert(Alert.AlertType.ERROR,
+                "There was an error while connecting. Description:\n\n" +
+                descript)
+                .showAndWait();
+    }
+
+    private void connect(boolean isHosting) {
+        Stage stage = (Stage) btnConnect.getScene().getWindow();
+        Stage dialog = WaitDialogController.createDialog(stage);
+
+        // set player details
+        ClientMain.agentID = new Agent(txtName.getText(), Agent.AgentType.PLAYER);
+
         Task<Boolean> task = new Task<Boolean>() {
-            @Override public Boolean call() {
-                // do your operation in here
-                return myService.operate();
+            @Override
+            public Boolean call() throws Exception {
+                if (isHosting) {
+                    ClientMain.server = new ScrabbleServerListener();
+                    ClientMain.server.startListener(Integer.parseInt(txtPort.getText()));
+
+                    return ClientMain.listener.startListener(
+                            "localhost",
+                            Integer.parseInt(txtPort.getText()));
+                } else {
+                    return ClientMain.listener.startListener(
+                            txtIP.getText(),
+                            Integer.parseInt(txtPort.getText()));
+                }
             }
-        };
+        };// load lobby window
 
-        task.setOnRunning((e) -> loadingDialog.show());
+        task.setOnRunning(e -> dialog.show());
         task.setOnSucceeded((e) -> {
-            loadingDialog.hide();
-            Boolean returnValue = task.get();
-            // process return value again in JavaFX thread
+            dialog.close();
+
+            if ((Boolean)e.getSource().getValue()) {
+                stage.close();
+                LobbyController.createStage().show();
+            } else {
+                handleConnectError(null);
+            }
+
         });
+        // happens if exception is thrown (e.g. server doesn't exist)
         task.setOnFailed((e) -> {
-            // eventual error handling by catching exceptions from task.get()
+            dialog.close();
+            handleConnectError(task.getException());
         });
-        new Thread(task).start();
-    } */
 
-
+        Thread t = new Thread(task);
+        t.start();
+    }
 }

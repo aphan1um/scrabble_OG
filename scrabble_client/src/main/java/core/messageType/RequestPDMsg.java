@@ -1,25 +1,25 @@
 package core.messageType;
 
+import core.game.Agent;
 import core.message.Message;
-import core.game.Player;
 
 import java.util.Arrays;
 import java.util.Collection;
 
 public class RequestPDMsg implements Message {
-    private Collection<Player> playerList;
+    private Collection<Agent> agentList;
 
-    public RequestPDMsg(Player... players) {
+    public RequestPDMsg(Agent... agents) {
         super();
-        this.playerList = Arrays.asList(players);
+        this.agentList = Arrays.asList(agents);
     }
 
-    public RequestPDMsg(Collection<Player> players) {
+    public RequestPDMsg(Collection<Agent> agents) {
         super();
-        this.playerList = players;
+        this.agentList = agents;
     }
 
-    public Collection<Player> getPlayerList() {
-        return playerList;
+    public Collection<Agent> getAgentList() {
+        return agentList;
     }
 }

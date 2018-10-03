@@ -3,17 +3,15 @@ package core;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.gson.Gson;
-import core.game.Player;
+import core.game.Agent;
 import core.message.EventMessageList;
 import core.message.Message;
 import core.message.MessageWrapper;
 import core.messageType.PingMsg;
-import core.messageType.PlayerStatusMsg;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Collection;
 
@@ -24,12 +22,12 @@ public abstract class SocketListener {
 
     public final EventMessageList eventList;
     protected final Gson gson;
-    protected final BiMap<Socket, Player> connections;
+    protected final BiMap<Socket, Agent> connections;
 
     protected abstract void onUserConnect(Socket s) throws IOException;
     protected abstract void prepareEvents();
     protected abstract boolean onMessageReceived(MessageWrapper msgRec, Socket s) throws IOException;
-    protected abstract void onUserDisconnect(Player p);
+    protected abstract void onUserDisconnect(Agent p);
 
     public SocketListener(String name) {
         eventList = new EventMessageList();
@@ -40,48 +38,12 @@ public abstract class SocketListener {
         prepareEvents();
     }
 
-    // This is for servers
-    public void startListener(ServerSocket server) throws IOException {
-        while (true) {
-            Socket client = server.accept();
-
-            synchronized (connections) {
-                connections.put(client, null);
-            }
-
-            // heartbeat
-            new Thread(() -> run_heartbeat(client)).start();
-            // separate thread for connector
-            new Thread(() -> run_client(client)).start();
-
-            onUserConnect(client);
-        }
-    }
-
-    // This is for client
-    public Socket startListener(String ip, int port) throws IOException {
-        Socket socket = new Socket(ip, port);
-        connections.put(socket, null);
-        onUserConnect(socket);
-
-        // heartbeat
-        new Thread(() -> run_heartbeat(socket)).start();
-        // separate thread for connector
-        new Thread(() -> run_client(socket)).start();
-
-        // TODO: Have some acknowledgement/condition here.
-        // Client listens and returns response.
-        // and then return an exception if failure
-
-        return socket;
-    }
-
     /***
      * For listening to messages from a client/player.
      * Should be handled by separate threads.
      * @param client
      */
-    private void run_client(Socket client) {
+    void run_client(Socket client) {
         try {
             DataInputStream in = new DataInputStream(client.getInputStream());
 
@@ -107,7 +69,7 @@ public abstract class SocketListener {
         }
     }
 
-    private void run_heartbeat(Socket client) {
+    void run_heartbeat(Socket client) {
         // TODO: Document something about write error while using TCP.
         try {
             while (true) {
@@ -135,7 +97,7 @@ public abstract class SocketListener {
         if (smsg == null)
             return;
 
-        for (Player p : smsg.getSendTo()) {
+        for (Agent p : smsg.getSendTo()) {
             try {
                 Socket socket_send = connections.inverse().get(p);
 
@@ -154,7 +116,7 @@ public abstract class SocketListener {
      * @param s Socket of player.
      */
     protected void triggerDisconnect(Socket s) {
-        Player disconnectedPlayer = connections.get(s);
+        Agent disconnectedAgent = connections.get(s);
         // DO WE NEED THIS?
 
         /**
@@ -166,10 +128,10 @@ public abstract class SocketListener {
 
         synchronized (connections) {
             // TODO: This may get called twice due to two threads
-            //System.out.println("Player " + disconnectedPlayer.getName() + " has disconnected.");
+            //System.out.println("Agent " + disconnectedAgent.getName() + " has disconnected.");
             connections.remove(s);
         }
-        onUserDisconnect(disconnectedPlayer);
+        onUserDisconnect(disconnectedAgent);
     }
 
     public void sendMessage(Message msg, Socket s) throws IOException {

@@ -26,7 +26,7 @@
             <VBox prefHeight="200.0" prefWidth="100.0">
                <children>
                   <ListView maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" />
-                  <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Kick player">
+                  <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Kick agent">
                      <VBox.margin>
                         <Insets />
                      </VBox.margin></Button>

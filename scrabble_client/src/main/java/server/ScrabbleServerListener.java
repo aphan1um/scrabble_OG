@@ -1,48 +1,21 @@
 package server;
 
+import core.ServerListener;
 import core.SocketListener;
-import core.game.Player;
+import core.game.Agent;
 import core.message.*;
 import core.messageType.*;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public class ServerListener extends SocketListener {
+public class ScrabbleServerListener extends ServerListener {
 
-    public ServerListener() {
+    public ScrabbleServerListener() {
         super("Server");
-        System.out.println("Started server...");
-
-        /**
-        // TODO: Dummy test
-        MessageEvent test = new MessageEvent<PingMsg>() {
-            @Override
-            public Message onServerReceive(PingMsg recMessage) {
-                System.out.println(recMessage.getMessageType() + " IM HERE");
-                return null;
-            }
-
-            @Override
-            public Message onClientReceive(PingMsg recMessage) {
-                return null;
-            }
-        };
-
-        eventList.addEvent(test);
-
-        eventList.fireEvent(new RequestPDMsg(dummy_player));
-        eventList.fireEvent(new PingMsg());
-
-        eventList.removeEvent(test);
-        eventList.fireEvent(new PingMsg());
-
-        System.exit(0);
-        **/
     }
 
     @Override
@@ -54,7 +27,7 @@ public class ServerListener extends SocketListener {
         // return list of players back to player who sent details
         eventList.addEvent(new MessageEvent<RequestPDMsg>() {
             @Override
-            public MessageWrapper onMsgReceive(RequestPDMsg recv, Set<Player> p, Player sender) {
+            public MessageWrapper onMsgReceive(RequestPDMsg recv, Set<Agent> p, Agent sender) {
                 //new PlayerStatusMsg()
                 // return list of players back to player who sent details
                 Message msg = new RequestPDMsg(connections.values());
@@ -66,13 +39,13 @@ public class ServerListener extends SocketListener {
         // tell other players a player has joined
         eventList.addEvent(new MessageEvent<RequestPDMsg>() {
             @Override
-            public MessageWrapper onMsgReceive(RequestPDMsg recv, Set<Player> p, Player sender) {
+            public MessageWrapper onMsgReceive(RequestPDMsg recv, Set<Agent> p, Agent sender) {
                 //new PlayerStatusMsg()
                 // return list of players back to player who sent details
                 PlayerStatusMsg msg = new PlayerStatusMsg(sender, PlayerStatusMsg.NewStatus.JOINED);
 
                 // TODO: Is there a cleaner way to do this?
-                Set<Player> retSend = new HashSet<Player>(p);
+                Set<Agent> retSend = new HashSet<Agent>(p);
                 retSend.remove(sender);
 
                 return new MessageWrapper(msg, retSend);
@@ -81,17 +54,17 @@ public class ServerListener extends SocketListener {
 
         eventList.addEvent(new MessageEvent<ChatMsg>() {
             @Override
-            public MessageWrapper onMsgReceive(ChatMsg recMessage, Set<Player> players, Player sender) {
+            public MessageWrapper onMsgReceive(ChatMsg recMessage, Set<Agent> agents, Agent sender) {
                 System.out.println("Chat: " + recMessage.getChatMsg());
-                return new MessageWrapper(recMessage, players);
+                return new MessageWrapper(recMessage, agents);
             }
         });
 
         // when host says to start game
         eventList.addEvent(new MessageEvent<GameStatusMsg>() {
             @Override
-            public MessageWrapper onMsgReceive(GameStatusMsg recMessage, Set<Player> players, Player sender) {
-                return new MessageWrapper(recMessage, players);
+            public MessageWrapper onMsgReceive(GameStatusMsg recMessage, Set<Agent> agents, Agent sender) {
+                return new MessageWrapper(recMessage, agents);
             }
         });
     }
@@ -111,19 +84,19 @@ public class ServerListener extends SocketListener {
                 return false;
             }
 
-            Player joinedPlayer = (Player)(
+            Agent joinedAgent = (Agent)(
                     (RequestPDMsg)msgRec.getMessage())
-                    .getPlayerList().toArray()[0];
+                    .getAgentList().toArray()[0];
 
             // if connecting player shares ID to another player in server
             // TODO: The player should only send their details once. This is
             // a limitation if the player wants to change their name, for example
             // TODO: We close connection in this case.
-            System.out.println(Arrays.toString(connections.values().toArray()) + "\t" + joinedPlayer.getName());
-            if (connections.values().contains(joinedPlayer)) {
+            System.out.println(Arrays.toString(connections.values().toArray()) + "\t" + joinedAgent.getName());
+            if (connections.values().contains(joinedAgent)) {
                 sendMessage(new ErrorMsg(ErrorMsg.ErrorType.DUPLICATE_ID), s);
             } else {
-                connections.put(s, joinedPlayer);
+                connections.put(s, joinedAgent);
             }
         }
 
@@ -131,7 +104,7 @@ public class ServerListener extends SocketListener {
     }
 
     @Override
-    protected void onUserDisconnect(Player p) {
+    protected void onUserDisconnect(Agent p) {
         processMessage(new MessageWrapper(
                 new PlayerStatusMsg(p, PlayerStatusMsg.NewStatus.DISCONNECTED),
                 connections.values()));

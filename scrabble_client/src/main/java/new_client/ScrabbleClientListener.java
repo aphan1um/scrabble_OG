@@ -1,8 +1,7 @@
 package new_client;
 
-import client.ClientMain;
-import core.SocketListener;
-import core.game.Player;
+import core.ClientListener;
+import core.game.Agent;
 import core.message.Message;
 import core.message.MessageWrapper;
 import core.messageType.ChatMsg;
@@ -11,21 +10,21 @@ import core.messageType.GameStatusMsg;
 import core.messageType.RequestPDMsg;
 
 import javax.swing.*;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-public class ClientListener extends SocketListener {
-    public Socket socket;
+public class ScrabbleClientListener extends ClientListener {
     private boolean fail_res = false;
 
-    public ClientListener() {
-        super("Player");
+    public ScrabbleClientListener() {
+        super("Agent");
     }
 
 
     public void sendChatMessage(String txt) {
         try {
-            sendMessage(new ChatMsg(txt, ClientMain.playerID), socket);
+            sendMessage(new ChatMsg(txt, ClientMain.agentID), socket);
         } catch (IOException e) {
             e.printStackTrace();
             triggerDisconnect(socket);
@@ -36,7 +35,7 @@ public class ClientListener extends SocketListener {
         try {
             // TODO: Host starts the game lol..
             sendMessage(new GameStatusMsg(GameStatusMsg.GameStatus.STARTED,
-                    ClientMain.playerID), socket);
+                    ClientMain.agentID), socket);
         } catch (IOException e) {
             e.printStackTrace();
             triggerDisconnect(socket);
@@ -46,7 +45,7 @@ public class ClientListener extends SocketListener {
     @Override
     protected void onUserConnect(Socket s) throws IOException {
         // TODO: STATIC NIGHTMARE
-        sendMessage(new RequestPDMsg(ClientMain.playerID), s);
+        sendMessage(new RequestPDMsg(ClientMain.agentID), s);
     }
 
     @Override
@@ -72,7 +71,7 @@ public class ClientListener extends SocketListener {
     }
 
     @Override
-    protected void onUserDisconnect(Player p) {
+    protected void onUserDisconnect(Agent p) {
         // TODO: This is a simplification.
         if (!fail_res) {
             JOptionPane.showMessageDialog(null,
@@ -80,5 +79,29 @@ public class ClientListener extends SocketListener {
                             "The app will now exit.");
             System.exit(-1);
         }
+    }
+
+    @Override
+    public boolean onAuthenticate() throws IOException {
+        // sender player details
+        sendMessage(new RequestPDMsg(ClientMain.agentID), socket);
+
+        boolean not_ping = false;
+
+        // TODO: potential code dups, also dodgy code
+        DataInputStream in = new DataInputStream(socket.getInputStream());
+
+        // wait response from server (ignore pings)
+        while (!not_ping) {
+            String read = in.readUTF();
+            MessageWrapper msgRec = Message.fromJSON(read, gson);
+
+            if (msgRec.getMessageType() != Message.MessageType.PING) {
+                not_ping = true;
+                return onMessageReceived(msgRec, socket);
+            }
+        }
+
+        return true;
     }
 }

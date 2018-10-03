@@ -18,7 +18,7 @@ public class GlobalChatWindow {
     TestUser user3 = new TestUser("Chaodi Tang", "2", "Signin");
 
     JFrame frame = new JFrame("GlobalChatWindow");
-    LoginWindow loginWindow = new LoginWindow();
+    //LoginWindow loginWindow = new LoginWindow();
 
     public GlobalChatWindow() {
         Receiver = new ArrayList(Maxplayer);

@@ -5,12 +5,12 @@ import java.util.List;
 
 // TODO: Concurrency issues?
 public class Lobby {
-    private List<Player> playerList;
-    private transient Player owner;
+    private List<Agent> agentList;
+    private transient Agent owner;
 
-    public Lobby(Player owner) {
+    public Lobby(Agent owner) {
         this.owner = owner;
-        playerList = new ArrayList<>();
-        playerList.add(owner);
+        agentList = new ArrayList<>();
+        agentList.add(owner);
     }
 }

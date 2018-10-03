@@ -25,7 +25,7 @@ public class WaitDialogController implements Initializable {
         progress.setProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
     }
 
-    public static void showDialog(Stage stage) {
+    public static Stage createDialog(Stage stage) {
         FXMLLoader loader = new FXMLLoader(
                 StageUtils.getResource("fxml/WaitDialog.fxml"));
         loader.setController(new WaitDialogController());
@@ -44,9 +44,11 @@ public class WaitDialogController implements Initializable {
             // to make the dialog have round edges
             scene.setFill(Color.TRANSPARENT);
             newStage.setScene(scene);
-            newStage.showAndWait();
         } catch (IOException e) {
             e.printStackTrace();
+            return null;
         }
+
+        return newStage;
     }
 }

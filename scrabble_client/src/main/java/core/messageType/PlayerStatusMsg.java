@@ -1,11 +1,11 @@
 package core.messageType;
 
-import core.game.Player;
+import core.game.Agent;
 import core.message.Message;
 
-// Request Player Data (PD) Message
+// Request Agent Data (PD) Message
 public class PlayerStatusMsg implements Message {
-    private Player player;
+    private Agent agent;
     private NewStatus status;
 
     public enum NewStatus {
@@ -13,14 +13,14 @@ public class PlayerStatusMsg implements Message {
         JOINED
     }
 
-    public PlayerStatusMsg(Player player, NewStatus status) {
+    public PlayerStatusMsg(Agent agent, NewStatus status) {
         super();
-        this.player = player;
+        this.agent = agent;
         this.status = status;
     }
 
-    public Player getPlayer() {
-        return player;
+    public Agent getAgent() {
+        return agent;
     }
 
     public NewStatus getStatus() {
