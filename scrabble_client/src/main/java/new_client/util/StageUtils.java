@@ -1,5 +1,7 @@
 package new_client.util;
 
+import javafx.scene.control.Dialog;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.net.URL;
@@ -10,6 +12,11 @@ public class StageUtils {
     public static void centreStage(Stage parent, Stage child) {
         child.setX(parent.getX() + parent.getWidth() / 2 - child.getWidth() / 2);
         child.setY(parent.getY() + parent.getHeight() / 2 - child.getHeight() / 2);
+    }
+
+    public static void dialogCenter(Stage parent, Dialog dialog) {
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.initOwner(parent);
     }
 
     public static URL getResource(String name) {

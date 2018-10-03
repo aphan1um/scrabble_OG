@@ -7,6 +7,8 @@ import core.messageType.AgentChangedMsg;
 import core.messageType.ChatMsg;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -15,6 +17,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import new_client.ClientMain;
@@ -98,6 +102,20 @@ public class LobbyController implements Initializable {
         ClientMain.listener.eventList.addEvent(chatEvent);
         ClientMain.listener.eventList.addEvent(getPlayersEvent);
         ClientMain.listener.eventList.addEvent(getPlayerStatus);
+
+
+        // pressing ENTER key sends the chat msg, SHIFT+ENTER creates a new line
+        txtInput.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent event) {
+                if (event.getCode() == KeyCode.ENTER) {
+                    if (event.isShiftDown())
+                        txtInput.appendText("\n");
+                    else
+                        btnSend.fireEvent(new ActionEvent());
+                }
+            }
+        });
     }
 
     public void appendText(String txt, Color color) {

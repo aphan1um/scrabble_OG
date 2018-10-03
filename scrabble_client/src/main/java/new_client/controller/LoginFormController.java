@@ -14,10 +14,12 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import new_client.ClientMain;
 import new_client.ScrabbleClientListener;
+import new_client.util.StageUtils;
 import server.ScrabbleServerListener;
 
 import java.io.IOException;
@@ -46,7 +48,13 @@ public class LoginFormController implements Initializable {
     @FXML
     private Button btnCreateGame;
 
+    private Stage stage;
+
     private static final double IMG_RATIO = 0.75;
+
+    public LoginFormController(Stage stage) {
+        this.stage = stage;
+    }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -81,10 +89,12 @@ public class LoginFormController implements Initializable {
         if (txtIP.getText().isEmpty() ||
                 (!isHosting && txtIP.getText().isEmpty()) ||
         !txtPort.getText().matches("^[0-9]+$")) {
-            new Alert(Alert.AlertType.WARNING,
+            Alert alert = new Alert(Alert.AlertType.WARNING,
                     "One of the details is empty and/or the port number is empty.\n\n" +
-                    "Please ensure the details are correct, then try again.")
-                    .showAndWait();
+                    "Please ensure the details are correct, then try again.");
+
+            StageUtils.dialogCenter(stage, alert);
+            alert.showAndWait();
 
             return false;
         }
@@ -105,14 +115,14 @@ public class LoginFormController implements Initializable {
             descript = ex.toString();
         }
 
-        new Alert(Alert.AlertType.ERROR,
+        Alert alert = new Alert(Alert.AlertType.ERROR,
                 "There was an error while connecting. Description:\n\n" +
-                descript)
-                .showAndWait();
+                descript);
+        StageUtils.dialogCenter(stage, alert);
+        alert.showAndWait();
     }
 
     private void connect(boolean isHosting) {
-        Stage stage = (Stage) btnConnect.getScene().getWindow();
         Stage dialog = WaitDialogController.createDialog(stage);
         Stage lobbyStage = LobbyController.createStage();
 

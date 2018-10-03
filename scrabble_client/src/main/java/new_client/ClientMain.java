@@ -22,7 +22,7 @@ public class ClientMain extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         FXMLLoader loader = new FXMLLoader(StageUtils.getResource("fxml/LoginForm.fxml"));
-        loader.setController(new LoginFormController());
+        loader.setController(new LoginFormController(primaryStage));
 
         Scene scene = new Scene(loader.load());
         primaryStage.setScene(scene);
