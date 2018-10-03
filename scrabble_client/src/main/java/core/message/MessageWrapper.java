@@ -1,24 +1,24 @@
 package core.message;
 
-import core.game.Player;
+import core.game.Agent;
 
 import java.util.Arrays;
 import java.util.Collection;
 
 public class MessageWrapper {
-    private transient Collection<Player> sendTo;
+    private transient Collection<Agent> sendTo;
     private Message msg;
     private Message.MessageType msgType;
 
-    public MessageWrapper(Message msg, Collection<Player> sendTo) {
+    public MessageWrapper(Message msg, Collection<Agent> sendTo) {
         this.msg = msg;
         this.sendTo = sendTo;
         this.msgType = Message.fromMessageClass(msg.getClass());
     }
 
-    public MessageWrapper(Message msg, Player sendTo) {
+    public MessageWrapper(Message msg, Agent sendTo) {
         this.msg = msg;
-        this.sendTo = Arrays.asList(new Player[] { sendTo } );
+        this.sendTo = Arrays.asList(new Agent[] { sendTo } );
         this.msgType = Message.fromMessageClass(msg.getClass());
     }
 
@@ -33,7 +33,7 @@ public class MessageWrapper {
 
     public Message.MessageType getMessageType() { return msgType; }
 
-    public Collection<Player> getSendTo() {
+    public Collection<Agent> getSendTo() {
         return sendTo;
     }
 }

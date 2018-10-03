@@ -1,6 +1,6 @@
 package core.messageType;
 
-import core.game.Player;
+import core.game.Agent;
 import core.message.Message;
 
 public class GameStatusMsg implements Message {
@@ -10,18 +10,18 @@ public class GameStatusMsg implements Message {
     }
 
     private GameStatus status;
-    private Player targetPlayer;
+    private Agent targetAgent;
 
-    public GameStatusMsg(GameStatus status, Player targetPlayer) {
+    public GameStatusMsg(GameStatus status, Agent targetAgent) {
         this.status = status;
-        this.targetPlayer = targetPlayer;
+        this.targetAgent = targetAgent;
     }
 
     public GameStatus getGameStatus() {
         return status;
     }
 
-    public Player getTargetPlayer() {
-        return targetPlayer;
+    public Agent getTargetAgent() {
+        return targetAgent;
     }
 }

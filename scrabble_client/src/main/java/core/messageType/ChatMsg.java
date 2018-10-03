@@ -1,13 +1,13 @@
 package core.messageType;
 
-import core.game.Player;
+import core.game.Agent;
 import core.message.Message;
 
 public class ChatMsg implements Message {
     private String text;
-    private Player sender;
+    private Agent sender;
 
-    public ChatMsg(String text, Player sender) {
+    public ChatMsg(String text, Agent sender) {
         this.text = text;
         this.sender = sender;
     }
@@ -15,5 +15,5 @@ public class ChatMsg implements Message {
     public String getChatMsg() {
         return text;
     }
-    public Player getSender() { return sender; }
+    public Agent getSender() { return sender; }
 }

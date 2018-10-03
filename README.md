@@ -1,7 +1,6 @@
 # scrabble_OG
 Distributed Systems project 2
 
-By aphan1, murphy, david
-
-Draft document:
-https://docs.google.com/document/d/1F9yUfzmdfMzwzzjxHmIXkR9BOFRFcbK6rAqeqwoVZ3A/edit?usp=sharing
+*Branch javafx goals:*
+1. Replace Swing components with JavaFX.
+2. Fix server/client TCP issues by improving code structure.
