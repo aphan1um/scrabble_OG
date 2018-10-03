@@ -85,7 +85,7 @@ public class ScrabbleClientListener extends ClientListener {
     @Override
     public void onAuthenticate() throws Exception {
         // sender player details
-        sendMessage(new AgentChangedMsg(AgentChangedMsg.NewStatus.JOINED,
+        sendMessage(new AgentChangedMsg(AgentChangedMsg.NewStatus.REQUEST,
                 ClientMain.agentID), socket);
 
         // TODO: potential code dups, also dodgy code

@@ -79,11 +79,14 @@ public class ScrabbleServerListener extends ServerListener {
         if (connections.get(s) == null) {
             if (msgRec.getMessageType() == Message.MessageType.AGENT_CHANGED) {
                 Agent player = (Agent)((AgentChangedMsg)msgRec.getMessage()).getAgents().toArray()[0];
-                boolean is_unique = !connections.values().contains(player);
 
+                boolean is_unique = false;
                 synchronized (connections) {
-                    if (is_unique) // register user associated with socket
-                        connections.put(s, player);
+                    if (!connections.values().contains(player)) { // register user associated with socket
+                            System.out.println("ME SECOND");
+                            connections.put(s, player);
+                            is_unique = true;
+                    }
                 }
 
                 sendMessage(new QueryMsg(QueryMsg.QueryType.IS_ID_UNIQUE, is_unique), s);

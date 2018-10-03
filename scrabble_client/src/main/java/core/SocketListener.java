@@ -2,6 +2,7 @@ package core;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import core.game.Agent;
 import core.message.EventMessageList;
@@ -39,7 +40,7 @@ public abstract class SocketListener {
 
     // reset variables
     public void reset() {
-        connections = HashBiMap.create();
+        connections = Maps.synchronizedBiMap(HashBiMap.create());
     }
 
     /***
@@ -48,10 +49,6 @@ public abstract class SocketListener {
      * @param client
      */
     void run_client(Socket client, Thread heartbeat_t) {
-        synchronized (connections) {
-            connections.put(client, null);
-        }
-
         try {
             DataInputStream in = new DataInputStream(client.getInputStream());
 
@@ -120,11 +117,9 @@ public abstract class SocketListener {
         System.out.println("Disconnected called");
         Agent disconnectedAgent = connections.get(s);
 
-        if (connections.containsKey(s)) {
+        synchronized (connections) {
+            connections.remove(s);
             System.out.println("REMOVED SOMETHING");
-            synchronized (connections) {
-                connections.remove(s);
-            }
         }
 
         onUserDisconnect(disconnectedAgent);

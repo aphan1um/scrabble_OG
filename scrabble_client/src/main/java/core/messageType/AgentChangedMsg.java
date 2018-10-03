@@ -12,7 +12,8 @@ public class AgentChangedMsg implements Message {
 
     public enum NewStatus {
         DISCONNECTED,
-        JOINED
+        JOINED,
+        REQUEST
     }
 
     public AgentChangedMsg(NewStatus status, Agent... agents) {

@@ -15,6 +15,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.IndexRange;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.KeyCode;
@@ -23,6 +24,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import new_client.ClientMain;
 import new_client.util.StageUtils;
+import org.fxmisc.richtext.InlineCssTextArea;
 import org.fxmisc.richtext.StyleClassedTextArea;
 
 import java.io.IOException;
@@ -34,7 +36,7 @@ public class LobbyController implements Initializable {
     @FXML
     private Button btnSend;
     @FXML
-    private StyleClassedTextArea rtChat;
+    private InlineCssTextArea rtChat;
     @FXML
     private ListView lstPlayers;
     @FXML
@@ -85,7 +87,7 @@ public class LobbyController implements Initializable {
                     switch (recMessage.getStatus()) {
                         case JOINED:
                             appendText(String.format("%s has joined the lobby.\n", agent),
-                                    Color.GREENYELLOW);
+                                    Color.GREEN);
                             break;
                         case DISCONNECTED:
                             appendText(String.format("%s has left the lobby.\n", agent),
@@ -111,17 +113,29 @@ public class LobbyController implements Initializable {
                 if (event.getCode() == KeyCode.ENTER) {
                     if (event.isShiftDown())
                         txtInput.appendText("\n");
-                    else
+                    else {
+                        event.consume(); // prevents new line after pressing ENTER
                         btnSend.fireEvent(new ActionEvent());
+                    }
                 }
             }
         });
     }
 
-    public void appendText(String txt, Color color) {
+    public void appendText(String txt, Color c) {
         Platform.runLater(() -> {
-            rtChat.setStyle(color.toString());
+            int prevPos = rtChat.getLength();
             rtChat.appendText(txt);
+
+            String hex =  String.format("#%02x%02x%02x",
+                    (int)(c.getRed() * 255),
+                    (int)(c.getGreen() * 255),
+                    (int)(c.getBlue() * 255));
+
+            System.out.println(hex);
+
+            rtChat.setStyle(prevPos, rtChat.getLength(),
+                    String.format("-fx-fill: %s;", hex));
         });
     }
 
