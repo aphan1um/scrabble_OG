@@ -1,4 +1,4 @@
-package new_client;
+package client;
 
 import core.ClientListener;
 import core.game.Agent;
@@ -37,8 +37,7 @@ public class ScrabbleClientListener extends ClientListener {
     public void sendGameStart() {
         try {
             // TODO: Host starts the game lol..
-            sendMessage(new GameStatusMsg(GameStatusMsg.GameStatus.STARTED,
-                    ClientMain.agentID), socket);
+            sendMessage(new GameStatusMsg(GameStatusMsg.GameStatus.STARTED), socket);
         } catch (IOException e) {
             e.printStackTrace();
         }

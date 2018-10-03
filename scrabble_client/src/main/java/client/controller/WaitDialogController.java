@@ -1,4 +1,4 @@
-package new_client.controller;
+package client.controller;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -10,7 +10,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import new_client.util.StageUtils;
+import client.util.StageUtils;
 
 import java.io.IOException;
 import java.net.URL;

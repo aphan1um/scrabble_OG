@@ -1,12 +1,12 @@
-package new_client;
+package client;
 
 import core.game.Agent;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import new_client.controller.LoginFormController;
-import new_client.util.StageUtils;
+import client.controller.LoginFormController;
+import client.util.StageUtils;
 import server.ScrabbleServerListener;
 
 public class ClientMain extends Application {

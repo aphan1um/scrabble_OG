@@ -1,4 +1,4 @@
-package new_client;
+package client;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;

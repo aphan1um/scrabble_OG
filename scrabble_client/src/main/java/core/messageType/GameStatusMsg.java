@@ -10,18 +10,12 @@ public class GameStatusMsg implements Message {
     }
 
     private GameStatus status;
-    private Agent targetAgent;
 
-    public GameStatusMsg(GameStatus status, Agent targetAgent) {
+    public GameStatusMsg(GameStatus status) {
         this.status = status;
-        this.targetAgent = targetAgent;
     }
 
     public GameStatus getGameStatus() {
         return status;
-    }
-
-    public Agent getTargetAgent() {
-        return targetAgent;
     }
 }

@@ -1,4 +1,4 @@
-package new_client.controller;
+package client.controller;
 
 import core.game.Agent;
 import core.message.MessageEvent;
@@ -15,17 +15,15 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.IndexRange;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import new_client.ClientMain;
-import new_client.util.StageUtils;
+import client.ClientMain;
+import client.util.StageUtils;
 import org.fxmisc.richtext.InlineCssTextArea;
-import org.fxmisc.richtext.StyleClassedTextArea;
 
 import java.io.IOException;
 import java.net.URL;
@@ -127,12 +125,11 @@ public class LobbyController implements Initializable {
             int prevPos = rtChat.getLength();
             rtChat.appendText(txt);
 
+            // TODO: Thanks to https://stackoverflow.com/a/3607942 for the hint
             String hex =  String.format("#%02x%02x%02x",
                     (int)(c.getRed() * 255),
                     (int)(c.getGreen() * 255),
                     (int)(c.getBlue() * 255));
-
-            System.out.println(hex);
 
             rtChat.setStyle(prevPos, rtChat.getLength(),
                     String.format("-fx-fill: %s;", hex));

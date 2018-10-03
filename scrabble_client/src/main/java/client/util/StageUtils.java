@@ -1,4 +1,4 @@
-package new_client.util;
+package client.util;
 
 import javafx.scene.control.Dialog;
 import javafx.stage.Modality;

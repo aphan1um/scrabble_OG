@@ -1,4 +1,4 @@
-package new_client;
+package client;
 
 import com.anchorage.docks.node.DockNode;
 import com.anchorage.docks.stations.DockStation;
@@ -8,8 +8,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import new_client.controller.ScrabbleBoardController;
-import new_client.util.StageUtils;
+import client.controller.ScrabbleBoardController;
+import client.util.StageUtils;
 
 import java.io.IOException;
 

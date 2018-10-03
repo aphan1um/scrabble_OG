@@ -21,8 +21,8 @@ public abstract class SocketListener {
 
     public String listenerName;
 
-    public EventMessageList eventList;
-    protected Gson gson;
+    public final EventMessageList eventList;
+    protected final Gson gson;
     protected BiMap<Socket, Agent> connections;
 
     protected abstract void onUserConnect(Socket s) throws IOException;

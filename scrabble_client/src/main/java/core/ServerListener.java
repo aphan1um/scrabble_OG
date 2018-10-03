@@ -2,6 +2,7 @@ package core;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.google.common.collect.Maps;
 import core.game.Agent;
 import core.game.Lobby;
 
@@ -22,7 +23,7 @@ public abstract class ServerListener extends SocketListener {
     @Override
     public void reset() {
         super.reset();
-        lobbyMap = HashBiMap.create();
+        lobbyMap = Maps.synchronizedBiMap(HashBiMap.create());
         playerLobbyMap = new HashMap<>();
     }
 

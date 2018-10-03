@@ -83,7 +83,6 @@ public class ScrabbleServerListener extends ServerListener {
                 boolean is_unique = false;
                 synchronized (connections) {
                     if (!connections.values().contains(player)) { // register user associated with socket
-                            System.out.println("ME SECOND");
                             connections.put(s, player);
                             is_unique = true;
                     }
