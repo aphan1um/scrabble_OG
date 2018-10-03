@@ -5,6 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import new_client.controller.ScrabbleBoardController;
+import new_client.util.StageUtils;
 
 public class ScrabbleBoard extends Application {
 
@@ -14,7 +15,7 @@ public class ScrabbleBoard extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("../../resources/fxml/ScrabbleBoard.fxml"));
+        FXMLLoader loader = new FXMLLoader(StageUtils.getResource("fxml/ScrabbleBoard.fxml"));
 
         loader.setController(new ScrabbleBoardController());
 

@@ -9,6 +9,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import new_client.controller.ScrabbleBoardController;
+import new_client.util.StageUtils;
 
 import java.io.IOException;
 
@@ -23,7 +24,7 @@ public class GameWindow extends Application {
         DockStation station = AnchorageSystem.createStation();
 
         // END PREPARE TABLE SECTION
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("../../resources/fxml/ScrabbleBoard.fxml"));
+        FXMLLoader loader = new FXMLLoader(StageUtils.getResource("/fxml/ScrabbleBoard.fxml"));
         loader.setController(new ScrabbleBoardController());
 
         DockNode node1 = AnchorageSystem.createDock("Game Board",
@@ -31,7 +32,7 @@ public class GameWindow extends Application {
         //node1.setMinSize(500, 500);
         node1.dock(station, DockNode.DockPosition.LEFT);
 
-        Parent chat_root = FXMLLoader.load(getClass().getResource("../../resources/fxml/ChatBox.fxml"));
+        Parent chat_root = FXMLLoader.load(StageUtils.getResource("fxml/ChatBox.fxml"));
         DockNode node2 = AnchorageSystem.createDock("Chat", chat_root);
         //node2.setMinSize(500, 200);
         node2.dock(station, DockNode.DockPosition.BOTTOM, 0.75);

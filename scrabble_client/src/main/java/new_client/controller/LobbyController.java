@@ -5,6 +5,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import new_client.util.StageUtils;
 
 import java.io.IOException;
 import java.net.URL;
@@ -18,7 +19,7 @@ public class LobbyController implements Initializable {
 
     public static Stage createStage() {
         FXMLLoader loader = new FXMLLoader(
-                LoginFormController.class.getResource("../../resources/LobbyForm.fxml"));
+                StageUtils.getResource("fxml/LobbyForm.fxml"));
         loader.setController(new LobbyController());
 
         try {

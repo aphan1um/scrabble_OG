@@ -27,7 +27,7 @@ public class WaitDialogController implements Initializable {
 
     public static void showDialog(Stage stage) {
         FXMLLoader loader = new FXMLLoader(
-                WaitDialogController.class.getResource("../../resources/WaitDialog.fxml"));
+                StageUtils.getResource("fxml/WaitDialog.fxml"));
         loader.setController(new WaitDialogController());
 
         // ensure the dialog is owned by the parent stage
