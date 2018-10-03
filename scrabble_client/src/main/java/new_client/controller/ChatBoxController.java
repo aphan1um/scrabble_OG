@@ -1,4 +1,4 @@
-package new_client;
+package new_client.controller;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;

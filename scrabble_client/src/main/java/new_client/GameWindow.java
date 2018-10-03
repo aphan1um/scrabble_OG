@@ -4,11 +4,11 @@ import com.anchorage.docks.node.DockNode;
 import com.anchorage.docks.stations.DockStation;
 import com.anchorage.system.AnchorageSystem;
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import new_client.controller.ScrabbleBoardController;
 
 import java.io.IOException;
 
@@ -23,7 +23,7 @@ public class GameWindow extends Application {
         DockStation station = AnchorageSystem.createStation();
 
         // END PREPARE TABLE SECTION
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("../../resources/ScrabbleBoard.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("../../resources/fxml/ScrabbleBoard.fxml"));
         loader.setController(new ScrabbleBoardController());
 
         DockNode node1 = AnchorageSystem.createDock("Game Board",
@@ -31,7 +31,7 @@ public class GameWindow extends Application {
         //node1.setMinSize(500, 500);
         node1.dock(station, DockNode.DockPosition.LEFT);
 
-        Parent chat_root = FXMLLoader.load(getClass().getResource("../../resources/ChatBox.fxml"));
+        Parent chat_root = FXMLLoader.load(getClass().getResource("../../resources/fxml/ChatBox.fxml"));
         DockNode node2 = AnchorageSystem.createDock("Chat", chat_root);
         //node2.setMinSize(500, 200);
         node2.dock(station, DockNode.DockPosition.BOTTOM, 0.75);

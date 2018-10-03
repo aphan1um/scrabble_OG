@@ -1,6 +1,5 @@
-package new_client;
+package new_client.controller;
 
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -11,7 +10,6 @@ import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import javafx.stage.WindowEvent;
 import new_client.util.StageUtils;
 
 import java.io.IOException;
@@ -43,6 +41,7 @@ public class WaitDialogController implements Initializable {
 
         try {
             Scene scene = new Scene((Parent)loader.load());
+            // to make the dialog have round edges
             scene.setFill(Color.TRANSPARENT);
             newStage.setScene(scene);
             newStage.showAndWait();

@@ -4,7 +4,7 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
+import new_client.controller.LoginFormController;
 
 public class ClientMain extends Application {
 
@@ -14,7 +14,7 @@ public class ClientMain extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("../../resources/LoginForm.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("../../resources/fxml/LoginForm.fxml"));
         loader.setController(new LoginFormController());
 
         Scene scene = new Scene(loader.load());
