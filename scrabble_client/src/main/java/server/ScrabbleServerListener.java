@@ -2,6 +2,7 @@ package server;
 
 import core.ServerListener;
 import core.game.Agent;
+import core.game.Lobby;
 import core.message.*;
 import core.messageType.*;
 
@@ -27,6 +28,16 @@ public class ScrabbleServerListener extends ServerListener {
             @Override
             public MessageWrapper onMsgReceive(JoinLobbyMsg recv, Set<Agent> p, Agent sender) {
                 Message msg = new AgentChangedMsg(AgentChangedMsg.NewStatus.JOINED, connections.values());
+                Lobby lobby = lobbyMap.get(recv.getName());
+
+                if (lobby == null) { // if lobby hasn't been made yet, make player owner
+                    lobby = new Lobby(sender);
+                    lobbyMap.put(recv.getName(), lobby);
+                    playerLobbyMap.put(sender, lobby);
+                } else {
+                    playerLobbyMap.put(sender, lobby);
+                }
+
                 return new MessageWrapper(msg, sender);
             }
         });
@@ -86,6 +97,22 @@ public class ScrabbleServerListener extends ServerListener {
 
     @Override
     protected void onUserDisconnect(Agent p) {
+        if (p == null)
+            return;
+
+        // TODO [LOBBY FUNCTIONALITY]: Complete this (for multiple lobbies) in the future
+        boolean removeLobby = false;
+        Lobby lobby = playerLobbyMap.get(p);
+        synchronized (playerLobbyMap) {
+            playerLobbyMap.remove(p);
+        }
+
+        if (removeLobby) {
+            synchronized (lobbyMap) {
+                lobbyMap.remove(lobby);
+            }
+        }
+
         sendMessage(new MessageWrapper(
                 new AgentChangedMsg(AgentChangedMsg.NewStatus.DISCONNECTED, p),
                 connections.values()));

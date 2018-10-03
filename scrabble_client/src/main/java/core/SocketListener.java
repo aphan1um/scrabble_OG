@@ -48,6 +48,10 @@ public abstract class SocketListener {
      * @param client
      */
     void run_client(Socket client, Thread heartbeat_t) {
+        synchronized (connections) {
+            connections.put(client, null);
+        }
+
         try {
             DataInputStream in = new DataInputStream(client.getInputStream());
 
@@ -93,8 +97,6 @@ public abstract class SocketListener {
             }
         }  catch (IOException | InterruptedException e) {
             System.out.println("Error coming from: " + listenerName + "\t[HEARTBEAT] ");
-            e.printStackTrace();
-            triggerDisconnect(client);
         }
     }
 
@@ -115,23 +117,17 @@ public abstract class SocketListener {
      * @param s Socket of player.
      */
     protected void triggerDisconnect(Socket s) {
+        System.out.println("Disconnected called");
         Agent disconnectedAgent = connections.get(s);
-        // DO WE NEED THIS?
-
-        /**
-        try {
-            s.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } */
 
         if (connections.containsKey(s)) {
+            System.out.println("REMOVED SOMETHING");
             synchronized (connections) {
                 connections.remove(s);
             }
-
-            onUserDisconnect(disconnectedAgent);
         }
+
+        onUserDisconnect(disconnectedAgent);
     }
 
     public void sendMessage(Message msg, Socket s) throws IOException {

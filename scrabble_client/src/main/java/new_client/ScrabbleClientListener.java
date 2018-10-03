@@ -18,9 +18,9 @@ public class ScrabbleClientListener extends ClientListener {
 
 
     // TODO: Experimental and needs to be enforced better
-    public void joinLobby() {
+    public void joinLobby(String lobbyName) {
         try {
-            sendMessage(new JoinLobbyMsg(), socket);
+            sendMessage(new JoinLobbyMsg(lobbyName), socket);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -31,7 +31,6 @@ public class ScrabbleClientListener extends ClientListener {
             sendMessage(new ChatMsg(txt, ClientMain.agentID), socket);
         } catch (IOException e) {
             e.printStackTrace();
-            triggerDisconnect(socket);
         }
     }
 
@@ -42,7 +41,6 @@ public class ScrabbleClientListener extends ClientListener {
                     ClientMain.agentID), socket);
         } catch (IOException e) {
             e.printStackTrace();
-            triggerDisconnect(socket);
         }
     }
 

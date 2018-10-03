@@ -1,12 +1,29 @@
 package core;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import core.game.Agent;
+import core.game.Lobby;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class ServerListener extends SocketListener {
+    protected BiMap<String, Lobby> lobbyMap;
+    protected Map<Agent, Lobby> playerLobbyMap; // note this is not a bijection, so a BiMap can't be used
+
     public ServerListener(String name) {
         super(name);
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        lobbyMap = HashBiMap.create();
+        playerLobbyMap = new HashMap<>();
     }
 
     public void startListener(int port) throws IOException {
@@ -19,10 +36,6 @@ public abstract class ServerListener extends SocketListener {
             while (true) {
                 try {
                     Socket client = server.accept();
-
-                    synchronized (connections) {
-                        connections.put(client, null);
-                    }
 
                     // heartbeat
                     Thread t = new Thread(() -> run_heartbeat(client));

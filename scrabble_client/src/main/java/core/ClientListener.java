@@ -16,14 +16,22 @@ public abstract class ClientListener extends SocketListener {
     public abstract void onAuthenticate() throws Exception;
     public Socket socket;
 
+    @Override
+    public void reset() {
+        super.reset();
+        if (socket != null && !socket.isClosed()) {
+            try {
+                socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public void startListener(String ip, int port) throws Exception {
         reset();
 
-        if (socket != null && !socket.isClosed())
-            socket.close();
-
         socket = new Socket(ip, port);
-        connections.put(socket, new Agent("Server", Agent.AgentType.SERVER));
 
         // perform a simple authentication check
         // TODO: Maybe use executor on other threads here?

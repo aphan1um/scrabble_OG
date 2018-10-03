@@ -47,6 +47,8 @@ public class LoginFormController implements Initializable {
     private Button btnConnect;
     @FXML
     private Button btnCreateGame;
+    @FXML
+    private TextField txtLobby;
 
     private Stage stage;
 
@@ -171,7 +173,7 @@ public class LoginFormController implements Initializable {
             dialog.close();
             stage.close();
             // join lobby
-            ClientMain.listener.joinLobby();
+            ClientMain.listener.joinLobby(txtLobby.getText());
             lobbyStage.show();
         });
         // happens if exception is thrown (e.g. server doesn't exist)
