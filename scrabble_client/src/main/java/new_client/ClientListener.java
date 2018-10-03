@@ -22,9 +22,6 @@ public class ClientListener extends SocketListener {
         super("Player");
     }
 
-    public void start(String ip, int port) throws IOException {
-        socket = this.startListener(ip, port);
-    }
 
     public void sendChatMessage(String txt) {
         try {

@@ -70,6 +70,7 @@ public abstract class SocketListener {
         new Thread(() -> run_client(socket)).start();
 
         // TODO: Have some acknowledgement/condition here.
+        // Client listens and returns response.
         // and then return an exception if failure
 
         return socket;

@@ -1,5 +1,6 @@
 package new_client;
 
+import javafx.concurrent.Task;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -67,7 +68,10 @@ public class LoginFormController implements Initializable {
                 LobbyController.createStage().show();
             }
         });
-        btnCreateGame.setOnAction(e -> validateConnect(true));
+        btnCreateGame.setOnAction(e -> {
+            WaitDialogController.showDialog((Stage)btnCreateGame.getScene().getWindow());
+            validateConnect(true);
+        });
     }
 
     private boolean validateConnect(boolean isHosting) {
@@ -85,6 +89,27 @@ public class LoginFormController implements Initializable {
 
         return true;
     }
+
+    /**
+    private void waitForConnectResponse() {
+        Task<Boolean> task = new Task<Boolean>() {
+            @Override public Boolean call() {
+                // do your operation in here
+                return myService.operate();
+            }
+        };
+
+        task.setOnRunning((e) -> loadingDialog.show());
+        task.setOnSucceeded((e) -> {
+            loadingDialog.hide();
+            Boolean returnValue = task.get();
+            // process return value again in JavaFX thread
+        });
+        task.setOnFailed((e) -> {
+            // eventual error handling by catching exceptions from task.get()
+        });
+        new Thread(task).start();
+    } */
 
 
 }

@@ -43,7 +43,7 @@ public class ClientMain {
     public static void connectToServer(String idName, String ip, int port) throws IOException {
         playerID = new Player(idName);
         listener.listenerName = "P:" + playerID.getName();
-        listener.start(ip, port);
+        listener.startListener(ip, port);
     }
 
     public static void prepareServer() {
@@ -65,6 +65,6 @@ public class ClientMain {
         t.start();
 
         // now connect the host to its own server
-        listener.start("localhost", port);
+        listener.startListener("localhost", port);
     }
 }
