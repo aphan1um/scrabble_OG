@@ -11,7 +11,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-// TODO: Handle thread-safety issues with add/removeEvent ??
+// TODO: Handle thread-safety issues with add/removeEvents ??
 public class EventMessageList {
     private Multimap<Message.MessageType, MessageEvent> events;
 
@@ -31,25 +31,31 @@ public class EventMessageList {
         return msgs;
     }
 
-    public <T extends Message> void addEvent(MessageEvent<T> event) {
-        Type generic_type = ((ParameterizedType)
-                event.getClass().getGenericInterfaces()[0])
-                .getActualTypeArguments()[0];
-        Class<? extends Message> t = (Class<? extends Message>)generic_type;
-
+    public void addEvents(MessageEvent... eventList) {
         synchronized (events) {
-            events.put(Message.fromMessageClass(t), event);
+            for (MessageEvent e : eventList) {
+                Type generic_type = ((ParameterizedType)
+                        e.getClass().getGenericInterfaces()[0])
+                        .getActualTypeArguments()[0];
+                Class<? extends Message> t = (Class<? extends Message>)generic_type;
+
+                events.put(Message.fromMessageClass(t), e);
+            }
         }
     }
 
-    public <T extends Message> void removeEvent(MessageEvent<T> event) {
-        Type generic_type = ((ParameterizedType)
-                event.getClass().getGenericInterfaces()[0])
-                .getActualTypeArguments()[0];
-        Class<? extends Message> t = (Class<? extends Message>)generic_type;
-
+    public void removeEvents(MessageEvent... eventList) {
         synchronized (events) {
-            events.remove(Message.fromMessageClass(t), event);
+            for (MessageEvent e : eventList) {
+                Type generic_type = ((ParameterizedType)
+                        e.getClass().getGenericInterfaces()[0])
+                        .getActualTypeArguments()[0];
+                Class<? extends Message> t = (Class<? extends Message>)generic_type;
+
+                events.remove(Message.fromMessageClass(t), e);
+            }
+
+
         }
     }
 }

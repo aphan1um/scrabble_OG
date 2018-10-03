@@ -1,7 +1,6 @@
 package client.controller;
 
 import client.GameWindow;
-import core.ClientListener;
 import core.game.Agent;
 import core.message.MessageEvent;
 import core.message.MessageWrapper;
@@ -106,10 +105,8 @@ public class LobbyController implements Initializable {
             public MessageWrapper onMsgReceive(GameStatusMsg recMessage, Set<Agent> agents, Agent sender) {
                 // clear events
                 // TODO: There's got to be a better way to do this..
-                ClientMain.listener.eventList.removeEvent(chatEvent);
-                ClientMain.listener.eventList.removeEvent(getPlayersEvent);
-                ClientMain.listener.eventList.removeEvent(getPlayerStatus);
-                ClientMain.listener.eventList.removeEvent(this);
+                ClientMain.listener.eventList.removeEvents(chatEvent,
+                        getPlayersEvent, getPlayerStatus, this);
 
                 Platform.runLater(() -> {
                     ((Stage)btnKick.getScene().getWindow()).close();
@@ -122,10 +119,8 @@ public class LobbyController implements Initializable {
         };
 
         // add events to clientlistener
-        ClientMain.listener.eventList.addEvent(chatEvent);
-        ClientMain.listener.eventList.addEvent(getPlayersEvent);
-        ClientMain.listener.eventList.addEvent(getPlayerStatus);
-        ClientMain.listener.eventList.addEvent(gameStartEvent);
+        ClientMain.listener.eventList.addEvents(chatEvent,
+                getPlayersEvent, getPlayerStatus, gameStartEvent);
 
 
         // pressing ENTER key sends the chat msg, SHIFT+ENTER creates a new line

@@ -24,7 +24,7 @@ public class ScrabbleServerListener extends ServerListener {
     @Override
     protected void prepareEvents() {
         // return list of players back to player who sent details to join lobby
-        eventList.addEvent(new MessageEvent<JoinLobbyMsg>() {
+        eventList.addEvents(new MessageEvent<JoinLobbyMsg>() {
             @Override
             public MessageWrapper onMsgReceive(JoinLobbyMsg recv, Set<Agent> p, Agent sender) {
                 Message msg = new AgentChangedMsg(AgentChangedMsg.NewStatus.JOINED, connections.values());
@@ -41,10 +41,9 @@ public class ScrabbleServerListener extends ServerListener {
 
                 return new MessageWrapper(msg, sender);
             }
-        });
-
+        },
         // tell other players a player has joined
-        eventList.addEvent(new MessageEvent<JoinLobbyMsg>() {
+        new MessageEvent<JoinLobbyMsg>() {
             @Override
             public MessageWrapper onMsgReceive(JoinLobbyMsg recv, Set<Agent> p, Agent sender) {
                 //new AgentChangedMsg()
@@ -57,9 +56,9 @@ public class ScrabbleServerListener extends ServerListener {
 
                 return new MessageWrapper(msg, retSend);
             }
-        });
+        },
 
-        eventList.addEvent(new MessageEvent<ChatMsg>() {
+        new MessageEvent<ChatMsg>() {
             @Override
             public MessageWrapper onMsgReceive(ChatMsg recMessage, Set<Agent> agents, Agent sender) {
                 return new MessageWrapper(recMessage, agents);
@@ -67,7 +66,7 @@ public class ScrabbleServerListener extends ServerListener {
         });
 
         // when Start Game is pressed
-        eventList.addEvent(new MessageEvent<GameStatusMsg>() {
+        eventList.addEvents(new MessageEvent<GameStatusMsg>() {
             @Override
             public MessageWrapper onMsgReceive(GameStatusMsg msg, Set<Agent> agents, Agent sender) {
                 // TODO: This only works with one lobby..
