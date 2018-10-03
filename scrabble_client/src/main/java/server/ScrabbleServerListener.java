@@ -36,6 +36,7 @@ public class ScrabbleServerListener extends ServerListener {
                     playerLobbyMap.put(sender, lobby);
                 } else {
                     playerLobbyMap.put(sender, lobby);
+                    lobby.addPlayer(sender);
                 }
 
                 return new MessageWrapper(msg, sender);
@@ -65,11 +66,22 @@ public class ScrabbleServerListener extends ServerListener {
             }
         });
 
-        // when host says to start game
+        // when Start Game is pressed
         eventList.addEvent(new MessageEvent<GameStatusMsg>() {
             @Override
-            public MessageWrapper onMsgReceive(GameStatusMsg recMessage, Set<Agent> agents, Agent sender) {
-                return new MessageWrapper(recMessage, agents);
+            public MessageWrapper onMsgReceive(GameStatusMsg msg, Set<Agent> agents, Agent sender) {
+                // TODO: This only works with one lobby..
+                Lobby lobby = playerLobbyMap.get(sender);
+                if (lobby != null && lobby.getOwner().equals(sender)) {
+                    lobby.prepareGame();
+
+                    // send back the clients the initial game state
+                    return new MessageWrapper(new GameStatusMsg(
+                            GameStatusMsg.GameStatus.STARTED,
+                            lobby.getGameSession()), agents);
+                }
+
+                return null;
             }
         });
     }

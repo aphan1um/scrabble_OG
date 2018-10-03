@@ -4,6 +4,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import core.game.Agent;
 import core.message.EventMessageList;
 import core.message.Message;
@@ -33,7 +34,7 @@ public abstract class SocketListener {
     public SocketListener(String name) {
         this.listenerName = name;
         eventList = new EventMessageList();
-        gson = new Gson();
+        gson = new GsonBuilder().enableComplexMapKeySerialization().create();
         reset();
         prepareEvents();
     }
@@ -55,7 +56,7 @@ public abstract class SocketListener {
             while (true) {
                 String read = in.readUTF();
 
-                System.out.println("Premessage: " + read);
+                System.out.println("(Preparse from " + listenerName + ":)\t" + read);
                 MessageWrapper msgRec = Message.fromJSON(read, gson);
 
                 // TODO: debug
@@ -145,8 +146,10 @@ public abstract class SocketListener {
                 Socket socket_send = connections.inverse().get(p);
 
                 // send message to client's socket
+                String json = gson.toJson(smsg);
+                System.out.println("[" + listenerName + " sends to " + p + "]:\t" + json);
                 DataOutputStream out = new DataOutputStream(socket_send.getOutputStream());
-                out.writeUTF(gson.toJson(smsg));
+                out.writeUTF(json);
             } catch (IOException e) {
                 e.printStackTrace();
             }

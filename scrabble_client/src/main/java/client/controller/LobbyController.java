@@ -1,10 +1,13 @@
 package client.controller;
 
+import client.GameWindow;
+import core.ClientListener;
 import core.game.Agent;
 import core.message.MessageEvent;
 import core.message.MessageWrapper;
 import core.messageType.AgentChangedMsg;
 import core.messageType.ChatMsg;
+import core.messageType.GameStatusMsg;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.event.ActionEvent;
@@ -98,10 +101,31 @@ public class LobbyController implements Initializable {
             }
         };
 
+        MessageEvent<GameStatusMsg> gameStartEvent = new MessageEvent<GameStatusMsg>() {
+            @Override
+            public MessageWrapper onMsgReceive(GameStatusMsg recMessage, Set<Agent> agents, Agent sender) {
+                // clear events
+                // TODO: There's got to be a better way to do this..
+                ClientMain.listener.eventList.removeEvent(chatEvent);
+                ClientMain.listener.eventList.removeEvent(getPlayersEvent);
+                ClientMain.listener.eventList.removeEvent(getPlayerStatus);
+                ClientMain.listener.eventList.removeEvent(this);
+
+                Platform.runLater(() -> {
+                    ((Stage)btnKick.getScene().getWindow()).close();
+                    // TODO: Fix code structure of GameWindow
+                    GameWindow.startApp(recMessage.getGameData());
+                });
+
+                return null;
+            }
+        };
+
         // add events to clientlistener
         ClientMain.listener.eventList.addEvent(chatEvent);
         ClientMain.listener.eventList.addEvent(getPlayersEvent);
         ClientMain.listener.eventList.addEvent(getPlayerStatus);
+        ClientMain.listener.eventList.addEvent(gameStartEvent);
 
 
         // pressing ENTER key sends the chat msg, SHIFT+ENTER creates a new line
@@ -117,6 +141,12 @@ public class LobbyController implements Initializable {
                     }
                 }
             }
+        });
+
+
+        btnStartGame.setOnAction(e -> {
+            ClientMain.listener.sendGameStart();
+            btnStartGame.disableProperty().set(true); // TODO: debug
         });
     }
 

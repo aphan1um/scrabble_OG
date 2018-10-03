@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import client.ScrabblePane?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
-<?import client.ScrabblePane?>
+<?import javafx.scene.text.Font?>
 
 <AnchorPane fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1">
    <children>
@@ -16,12 +18,13 @@
             <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
         </columnConstraints>
         <rowConstraints>
+            <RowConstraints maxHeight="-Infinity" minHeight="30.0" prefHeight="30.0" vgrow="ALWAYS" />
           <RowConstraints maxHeight="1.7976931348623157E308" vgrow="ALWAYS" />
           <RowConstraints maxHeight="30.0" valignment="BOTTOM" vgrow="NEVER" />
         </rowConstraints>
          <children>
-            <ScrabblePane fx:id="scrabblePane" prefHeight="200.0" prefWidth="200.0" />
-            <HBox prefHeight="100.0" prefWidth="200.0" spacing="3.0" GridPane.rowIndex="1">
+            <ScrabblePane fx:id="scrabblePane" prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1" />
+            <HBox fx:id="hbox" prefHeight="100.0" prefWidth="200.0" spacing="3.0" GridPane.rowIndex="2">
                <children>
                   <Button fx:id="btnSubmit" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Submit" HBox.hgrow="ALWAYS" />
                   <Button fx:id="btnPass" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Pass Turn" HBox.hgrow="ALWAYS" />
@@ -35,6 +38,23 @@
                   <Insets left="2.0" right="2.0" top="5.0" />
                </padding>
             </HBox>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0">
+               <children>
+                  <Label fx:id="lblTurn" layoutX="-3.0" layoutY="6.0" text="It is (someone's) turn" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                     <padding>
+                        <Insets left="10.0" />
+                     </padding>
+                  </Label>
+                  <Label fx:id="lblScore" layoutX="537.0" layoutY="4.0" text="Your Score: XX" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                     <padding>
+                        <Insets right="5.0" />
+                     </padding>
+                  </Label>
+               </children>
+            </AnchorPane>
          </children>
          <opaqueInsets>
             <Insets />

@@ -37,7 +37,9 @@ public class EventMessageList {
                 .getActualTypeArguments()[0];
         Class<? extends Message> t = (Class<? extends Message>)generic_type;
 
-        events.put(Message.fromMessageClass(t), event);
+        synchronized (events) {
+            events.put(Message.fromMessageClass(t), event);
+        }
     }
 
     public <T extends Message> void removeEvent(MessageEvent<T> event) {
@@ -46,6 +48,8 @@ public class EventMessageList {
                 .getActualTypeArguments()[0];
         Class<? extends Message> t = (Class<? extends Message>)generic_type;
 
-        events.remove(Message.fromMessageClass(t), event);
+        synchronized (events) {
+            events.remove(Message.fromMessageClass(t), event);
+        }
     }
 }

@@ -11,6 +11,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class ServerListener extends SocketListener {
     protected BiMap<String, Lobby> lobbyMap;
@@ -24,7 +25,7 @@ public abstract class ServerListener extends SocketListener {
     public void reset() {
         super.reset();
         lobbyMap = Maps.synchronizedBiMap(HashBiMap.create());
-        playerLobbyMap = new HashMap<>();
+        playerLobbyMap = new ConcurrentHashMap<>(); // TODO: concurrent hash map
     }
 
     public void startListener(int port) throws IOException {

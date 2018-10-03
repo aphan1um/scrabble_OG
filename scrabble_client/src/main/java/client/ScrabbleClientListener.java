@@ -37,7 +37,7 @@ public class ScrabbleClientListener extends ClientListener {
     public void sendGameStart() {
         try {
             // TODO: Host starts the game lol..
-            sendMessage(new GameStatusMsg(GameStatusMsg.GameStatus.STARTED), socket);
+            sendMessage(new GameStatusMsg(GameStatusMsg.GameStatus.STARTED, null), socket);
         } catch (IOException e) {
             e.printStackTrace();
         }

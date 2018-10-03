@@ -9,6 +9,8 @@ public class Lobby {
     private transient LiveGame gameSession;
     private transient List<Agent> agents;
 
+    private transient int turnNumber = 0;
+
     public Lobby(Agent owner) {
         this.owner = owner;
         this.agents = new ArrayList<>();
@@ -16,12 +18,33 @@ public class Lobby {
         agents.add(owner);
     }
 
-    public boolean removePlayer(Agent agent) {
-        if (agent.equals(owner)) {
-            return true;
+    public void prepareGame() {
+        gameSession = new LiveGame(agents);
+        gameSession.setCurrentTurn(agents.get(turnNumber));
+    }
+
+    public Agent getOwner() {
+        return owner;
+    }
+
+    public void addPlayer(Agent agent) {
+        synchronized (agents) {
+            agents.add(agent);
         }
-        agents.remove(agent);
-        return agents.size() == 0;
+    }
+
+    public boolean removePlayer(Agent agent) {
+        synchronized (agents) {
+            if (agent.equals(owner)) {
+                return true;
+            }
+            agents.remove(agent);
+            return agents.size() == 0;
+        }
+    }
+
+    public LiveGame getGameSession() {
+        return gameSession;
     }
 
     // this is of course under the assumption one player can host one game
@@ -34,4 +57,6 @@ public class Lobby {
     public int hashCode() {
         return owner.hashCode();
     }
+
+
 }

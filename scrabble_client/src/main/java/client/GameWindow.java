@@ -3,6 +3,7 @@ package client;
 import com.anchorage.docks.node.DockNode;
 import com.anchorage.docks.stations.DockStation;
 import com.anchorage.system.AnchorageSystem;
+import core.game.LiveGame;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -25,7 +26,7 @@ public class GameWindow extends Application {
 
         // END PREPARE TABLE SECTION
         FXMLLoader loader = new FXMLLoader(StageUtils.getResource("/fxml/ScrabbleBoard.fxml"));
-        loader.setController(new ScrabbleBoardController());
+        loader.setController(new ScrabbleBoardController(null));
 
         DockNode node1 = AnchorageSystem.createDock("Game Board",
                 loader.load());
@@ -47,5 +48,45 @@ public class GameWindow extends Application {
         primaryStage.setOnCloseRequest(e -> System.exit(0));
 
         primaryStage.show();
+    }
+
+    public static void startApp(LiveGame initGame) {
+        DockStation station = AnchorageSystem.createStation();
+
+        // END PREPARE TABLE SECTION
+        FXMLLoader loader = new FXMLLoader(StageUtils.getResource("fxml/ScrabbleBoard.fxml"));
+        loader.setController(new ScrabbleBoardController(initGame));
+
+        DockNode node1 = null;
+        try {
+            node1 = AnchorageSystem.createDock("Game Board",
+                    loader.load());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        //node1.setMinSize(500, 500);
+        node1.dock(station, DockNode.DockPosition.LEFT);
+
+        Parent chat_root = null;
+        try {
+            chat_root = FXMLLoader.load(StageUtils.getResource("fxml/ChatBox.fxml"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        DockNode node2 = AnchorageSystem.createDock("Chat", chat_root);
+        //node2.setMinSize(500, 200);
+        node2.dock(station, DockNode.DockPosition.BOTTOM, 0.75);
+
+        AnchorageSystem.installDefaultStyle();
+
+        Stage stage = new Stage();
+        Scene scene = new Scene(station, 600, 700);
+        stage.setTitle("Scrabble Game");
+        stage.setScene(scene);
+
+        // TODO: Temporary fix
+        stage.setOnCloseRequest(e -> System.exit(0));
+
+        stage.show();
     }
 }
