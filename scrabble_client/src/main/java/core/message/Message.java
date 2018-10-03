@@ -10,27 +10,27 @@ import core.messageType.*;
 
 public interface Message {
     public enum MessageType {
-        REQUEST_PLAYER_DETAILS,
+        JOIN_LOBBY,
         CHAT,
         PING,
-        STATUS,
+        AGENT_CHANGED,
         GAME_ACTION,
         GAME_VOTE,
         GAME_STATUS_CHANGED,
-        ERROR;
+        QUERY;
 
         private static final BiMap<MessageType,Class<? extends Message>> classMaps;
 
         static {
             classMaps = ImmutableBiMap.<MessageType, Class<? extends Message>>builder()
-                    .put(REQUEST_PLAYER_DETAILS, RequestPDMsg.class)
+                    .put(JOIN_LOBBY, JoinLobbyMsg.class)
                     .put(CHAT, ChatMsg.class)
                     .put(PING, PingMsg.class)
-                    .put(STATUS, PlayerStatusMsg.class)
+                    .put(AGENT_CHANGED, AgentChangedMsg.class)
                     .put(GAME_ACTION, GameActionMsg.class)
                     .put(GAME_VOTE, GameVoteMsg.class)
                     .put(GAME_STATUS_CHANGED, GameStatusMsg.class)
-                    .put(ERROR, ErrorMsg.class).build();
+                    .put(QUERY, QueryMsg.class).build();
         }
     }
 

@@ -20,9 +20,9 @@ public abstract class SocketListener {
 
     public String listenerName;
 
-    public final EventMessageList eventList;
-    protected final Gson gson;
-    protected final BiMap<Socket, Agent> connections;
+    public EventMessageList eventList;
+    protected Gson gson;
+    protected BiMap<Socket, Agent> connections;
 
     protected abstract void onUserConnect(Socket s) throws IOException;
     protected abstract void prepareEvents();
@@ -30,12 +30,16 @@ public abstract class SocketListener {
     protected abstract void onUserDisconnect(Agent p);
 
     public SocketListener(String name) {
+        this.listenerName = name;
         eventList = new EventMessageList();
         gson = new Gson();
-        connections = HashBiMap.create();
-        this.listenerName = name;
-
+        reset();
         prepareEvents();
+    }
+
+    // reset variables
+    public void reset() {
+        connections = HashBiMap.create();
     }
 
     /***
@@ -43,15 +47,21 @@ public abstract class SocketListener {
      * Should be handled by separate threads.
      * @param client
      */
-    void run_client(Socket client) {
+    void run_client(Socket client, Thread heartbeat_t) {
         try {
             DataInputStream in = new DataInputStream(client.getInputStream());
 
             while (true) {
                 String read = in.readUTF();
-                System.out.println("[" + listenerName + " gets]:\t" + read);
 
+                System.out.println("Premessage: " + read);
                 MessageWrapper msgRec = Message.fromJSON(read, gson);
+
+                // TODO: debug
+                if (msgRec.getMessageType() != Message.MessageType.PING)
+                    System.out.println(String.format("[%s gets from %s]:\t" + read,
+                            listenerName, connections.get(client)));
+
 
                 if (!onMessageReceived(msgRec, client))
                     continue;
@@ -65,6 +75,11 @@ public abstract class SocketListener {
             // client disconnect (most likely)\
             System.out.println("Error coming from: " + listenerName);
             e.printStackTrace();
+
+            // stop heartbeating the same connection
+            if (heartbeat_t != null)
+                heartbeat_t.interrupt();
+
             triggerDisconnect(client);
         }
     }
@@ -77,6 +92,7 @@ public abstract class SocketListener {
                 Thread.sleep(HEARTBEAT_PERIOD);
             }
         }  catch (IOException | InterruptedException e) {
+            System.out.println("Error coming from: " + listenerName + "\t[HEARTBEAT] ");
             e.printStackTrace();
             triggerDisconnect(client);
         }
@@ -89,24 +105,7 @@ public abstract class SocketListener {
             return;
 
         for (MessageWrapper smsg : msgList) {
-            processMessage(smsg);
-        }
-    }
-
-    protected void processMessage(MessageWrapper smsg) {
-        if (smsg == null)
-            return;
-
-        for (Agent p : smsg.getSendTo()) {
-            try {
-                Socket socket_send = connections.inverse().get(p);
-
-                // send message to client's socket
-                DataOutputStream out = new DataOutputStream(socket_send.getOutputStream());
-                out.writeUTF(gson.toJson(smsg));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            sendMessage(smsg);
         }
     }
 
@@ -126,20 +125,40 @@ public abstract class SocketListener {
             e.printStackTrace();
         } */
 
-        synchronized (connections) {
-            // TODO: This may get called twice due to two threads
-            //System.out.println("Agent " + disconnectedAgent.getName() + " has disconnected.");
-            connections.remove(s);
+        if (connections.containsKey(s)) {
+            synchronized (connections) {
+                connections.remove(s);
+            }
+
+            onUserDisconnect(disconnectedAgent);
         }
-        onUserDisconnect(disconnectedAgent);
     }
 
     public void sendMessage(Message msg, Socket s) throws IOException {
         DataOutputStream out = new DataOutputStream(s.getOutputStream());
         String json = gson.toJson(new MessageWrapper(msg));
 
-        System.out.println("[" + listenerName + " sends]:\t" + json);
+        // todo: debug
+        if (!(msg instanceof PingMsg))
+            System.out.println("[" + listenerName + " sends]:\t" + json);
 
         out.writeUTF(gson.toJson(new MessageWrapper(msg)));
+    }
+
+    protected void sendMessage(MessageWrapper smsg) {
+        if (smsg == null)
+            return;
+
+        for (Agent p : smsg.getSendTo()) {
+            try {
+                Socket socket_send = connections.inverse().get(p);
+
+                // send message to client's socket
+                DataOutputStream out = new DataOutputStream(socket_send.getOutputStream());
+                out.writeUTF(gson.toJson(smsg));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

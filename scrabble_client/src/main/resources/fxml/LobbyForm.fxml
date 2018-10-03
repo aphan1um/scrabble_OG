@@ -10,7 +10,8 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.TextFlow?>
+<?import org.fxmisc.flowless.VirtualizedScrollPane?>
+<?import org.fxmisc.richtext.StyleClassedTextArea?>
 
 <AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1">
    <children>
@@ -25,18 +26,23 @@
          <children>
             <VBox prefHeight="200.0" prefWidth="100.0">
                <children>
-                  <ListView maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" />
-                  <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Kick agent">
+                  <ListView fx:id="lstPlayers" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" />
+                  <Button fx:id="btnKick" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Kick agent">
                      <VBox.margin>
                         <Insets />
                      </VBox.margin></Button>
+                  <Button fx:id="btnStartGame" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Start Game" />
                </children>
             </VBox>
             <SplitPane dividerPositions="0.7487437185929648" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" GridPane.columnIndex="1">
               <items>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                      <children>
-                        <TextFlow layoutX="-40.0" layoutY="14.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                        <VirtualizedScrollPane layoutX="14.0" layoutY="65.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <content>
+                              <StyleClassedTextArea fx:id="rtChat" editable="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" wrapText="true" />
+                           </content>
+                        </VirtualizedScrollPane>
                      </children>
                   </AnchorPane>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
@@ -50,12 +56,12 @@
                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                           </rowConstraints>
                            <children>
-                              <Button maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Send" GridPane.columnIndex="1">
+                              <Button fx:id="btnSend" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Send" GridPane.columnIndex="1">
                                  <GridPane.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </GridPane.margin>
                               </Button>
-                              <TextArea prefHeight="200.0" prefWidth="200.0" />
+                              <TextArea fx:id="txtInput" prefHeight="200.0" prefWidth="200.0" wrapText="true" />
                            </children>
                         </GridPane>
                      </children>

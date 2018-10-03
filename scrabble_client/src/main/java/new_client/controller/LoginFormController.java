@@ -2,6 +2,7 @@ package new_client.controller;
 
 import core.ClientListener;
 import core.game.Agent;
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -16,8 +17,10 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import new_client.ClientMain;
+import new_client.ScrabbleClientListener;
 import server.ScrabbleServerListener;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -92,6 +95,8 @@ public class LoginFormController implements Initializable {
         Exception ex = new Exception(th);
         String descript;
 
+        ex.printStackTrace();
+
         if (th == null) {
             descript = "Cause of error unknown.";
         } else if (th instanceof UnknownHostException) {
@@ -109,43 +114,60 @@ public class LoginFormController implements Initializable {
     private void connect(boolean isHosting) {
         Stage stage = (Stage) btnConnect.getScene().getWindow();
         Stage dialog = WaitDialogController.createDialog(stage);
+        Stage lobbyStage = LobbyController.createStage();
+
+        // TODO: DEBUG
+        lobbyStage.setOnCloseRequest(t -> {
+            Platform.exit();
+            System.exit(0);
+        });
+
+        if (isHosting) {
+            lobbyStage.setTitle(String.format("[%s] Lobby Room @ 127.0.0.1:%s",
+                    txtName.getText(), txtPort.getText()));
+        } else {
+            lobbyStage.setTitle(String.format("[%s] Lobby Room @ %s:%s",
+                    txtName.getText(), txtIP.getText(), txtPort.getText()));
+        }
+
 
         // set player details
         ClientMain.agentID = new Agent(txtName.getText(), Agent.AgentType.PLAYER);
+        // TODO: debug
+        ClientMain.listener.listenerName = "Agent " + txtName.getText();
 
-        Task<Boolean> task = new Task<Boolean>() {
+        Task task = new Task() {
             @Override
-            public Boolean call() throws Exception {
+            protected Object call() throws Exception {
                 if (isHosting) {
                     ClientMain.server = new ScrabbleServerListener();
                     ClientMain.server.startListener(Integer.parseInt(txtPort.getText()));
 
-                    return ClientMain.listener.startListener(
+                    ClientMain.listener.startListener(
                             "localhost",
                             Integer.parseInt(txtPort.getText()));
                 } else {
-                    return ClientMain.listener.startListener(
+                    ClientMain.listener.startListener(
                             txtIP.getText(),
                             Integer.parseInt(txtPort.getText()));
                 }
+
+                return null;
             }
-        };// load lobby window
+        };
 
         task.setOnRunning(e -> dialog.show());
         task.setOnSucceeded((e) -> {
             dialog.close();
-
-            if ((Boolean)e.getSource().getValue()) {
-                stage.close();
-                LobbyController.createStage().show();
-            } else {
-                handleConnectError(null);
-            }
-
+            stage.close();
+            // join lobby
+            ClientMain.listener.joinLobby();
+            lobbyStage.show();
         });
         // happens if exception is thrown (e.g. server doesn't exist)
         task.setOnFailed((e) -> {
             dialog.close();
+
             handleConnectError(task.getException());
         });
 
