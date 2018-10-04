@@ -9,6 +9,7 @@ import core.messageType.*;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 
+import java.awt.*;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.Socket;
@@ -21,6 +22,22 @@ public class ScrabbleClientListener extends ClientListener {
         super("Agent");
         timeSync = new TimeSync();
         serverTime = -1;
+    }
+
+    public void sendGameVote(GameVoteMsg.Orientation orient, boolean accepted) {
+        try {
+            sendMessage(new GameVoteMsg(orient, accepted), socket, null);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendGameMove(Point location, Character letter) {
+        try {
+            sendMessage(new GameActionMsg(location, letter), socket, null);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     // TODO: Experimental and needs to be enforced better

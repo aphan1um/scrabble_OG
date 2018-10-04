@@ -24,7 +24,7 @@ public class ScoreBoxController implements Initializable {
     @FXML
     private TableView tblScores;
 
-    private ObservableMap<Agent, Integer> scores;
+    public ObservableMap<Agent, Integer> scores;
 
     public ScoreBoxController(Map<Agent, Integer> scores) {
         super();
@@ -64,6 +64,9 @@ public class ScoreBoxController implements Initializable {
                         lst.remove(change.getKey());
                     else
                         lst.add(change.getKey());
+                } else {
+                    // update score
+                    tblScores.refresh();
                 }
             }
         });
@@ -71,11 +74,10 @@ public class ScoreBoxController implements Initializable {
         tblScores.setItems(lst);
         tblScores.getColumns().setAll(colNames, colPoints);
 
-        scores.put(new Agent("TestAgent", Agent.AgentType.PLAYER), 205);
-
-        scores.put(new Agent("Another", Agent.AgentType.PLAYER), 205);
-        scores.remove(new Agent("Another", Agent.AgentType.PLAYER));
-
         System.out.println(lst.size());
+    }
+
+    public void updateScore(Agent player, int newScore) {
+        scores.put(player, newScore);
     }
 }

@@ -1,10 +1,13 @@
 package client.controller;
 
+import client.ClientMain;
+import core.messageType.GameVoteMsg;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.layout.GridPane;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -22,6 +25,8 @@ public class VoteScreenForm implements Initializable {
     private Button verAccept;
     @FXML
     private Button verReject;
+    @FXML
+    private GridPane grdVote;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -30,6 +35,35 @@ public class VoteScreenForm implements Initializable {
 
         verAccept.visibleProperty().bind(Bindings.isEmpty(verWord.textProperty()).not());
         verReject.visibleProperty().bind(Bindings.isEmpty(verWord.textProperty()).not());
+
+
+        horAccept.setOnAction(e -> {
+            horAccept.setDisable(true);
+            horReject.setDisable(true);
+
+            ClientMain.listener.sendGameVote(GameVoteMsg.Orientation.HORIZONTAL, true);
+        });
+
+        horReject.setOnAction(e -> {
+            horAccept.setDisable(true);
+            horReject.setDisable(true);
+
+            ClientMain.listener.sendGameVote(GameVoteMsg.Orientation.HORIZONTAL, false);
+        });
+
+        verAccept.setOnAction(e -> {
+            verAccept.setDisable(true);
+            verReject.setDisable(true);
+
+            ClientMain.listener.sendGameVote(GameVoteMsg.Orientation.VERTICAL, true);
+        });
+
+        verReject.setOnAction(e -> {
+            verAccept.setDisable(true);
+            verReject.setDisable(true);
+
+            ClientMain.listener.sendGameVote(GameVoteMsg.Orientation.VERTICAL, false);
+        });
     }
 
     public void displayStrings(String str_hor, String str_ver) {

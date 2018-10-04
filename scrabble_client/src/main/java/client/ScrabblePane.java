@@ -53,7 +53,7 @@ public class ScrabblePane extends Pane {
         letterType.setTextFormatter(
                 new TextFormatter<String>((TextFormatter.Change change) -> {
             String newText = change.getControlNewText();
-            System.out.println(change + "\t\t" + newText);
+            //System.out.println(change + "\t\t" + newText);
 
             if (newText.length() > 1)
                 return null;
@@ -187,7 +187,7 @@ public class ScrabblePane extends Pane {
         if (canvas.getSelectedCell() == null)
             return;
 
-        System.out.println("NEW SIZE: " + getWidth() + " " + getHeight());
+        //System.out.println("NEW SIZE: " + getWidth() + " " + getHeight());
         Point2D selected_xy = canvas.toCell(canvas.getSelectedCell());
         Dimension2D cell_size = canvas.getCellSize();
         // move textbox to cell
@@ -254,7 +254,8 @@ public class ScrabblePane extends Pane {
         private int num_rows = NUM_ROWS;
         private int num_cols = NUM_COLS;
 
-        private Map<Point, Character> letters = new HashMap<>();
+        // TODO: Fix this..
+        public Map<Point, Character> letters = new HashMap<>();
 
         private Dimension2D cell_size;
         private final Color SELECTED_COLOR  = Color.LIGHTBLUE;
@@ -303,7 +304,6 @@ public class ScrabblePane extends Pane {
 
             this.addEventHandler(KeyEvent.KEY_PRESSED, e -> {
                 Point new_selected_cell = null;
-                System.out.println("I GOT PRESSED HERE");
                 switch (e.getCode()) {
                     case LEFT:
                         if (selected_cell.getX() > 0)
@@ -470,7 +470,6 @@ public class ScrabblePane extends Pane {
                 return;
 
             fillCell(c, chosenCellProperty.get(), CHOSEN_COLOR, true);
-            System.out.println("CHOSEN: " + chosenCellProperty.get());
 
             // TODO: Make this code better (prototyped for now)
             for (int dir : new int[] {1, -1}) {

@@ -68,7 +68,7 @@ public abstract class SocketListener {
             while (true) {
                 String read = in.readUTF();
 
-                System.out.println("(Preparse from " + listenerName + ":)\t" + read);
+                //System.out.println("(Preparse from " + listenerName + ":)\t" + read);
                 MessageWrapper msgRec = Message.fromJSON(read, gson);
 
                 // TODO: debug
@@ -148,7 +148,10 @@ public abstract class SocketListener {
         addTimestamp(smsg, timeStamps);
 
         String json = gson.toJson(smsg);
-        System.out.println("[" + listenerName + " sends:]\t" + json);
+
+        if (smsg.getMessageType() != Message.MessageType.PING)
+            System.out.println("[" + listenerName + " sends:]\t" + json);
+
         DataOutputStream out = new DataOutputStream(s.getOutputStream());
         out.writeUTF(json);
     }
@@ -176,7 +179,10 @@ public abstract class SocketListener {
 
                 // send message to client's socket
                 String json = gson.toJson(smsg);
-                System.out.println("[" + listenerName + " sends to " + p + "]:\t" + json);
+
+                if (smsg.getMessageType() != Message.MessageType.PING)
+                    System.out.println("[" + listenerName + " sends to " + p + "]:\t" + json);
+
                 DataOutputStream out = new DataOutputStream(socket_send.getOutputStream());
                 out.writeUTF(json);
             } catch (IOException e) {

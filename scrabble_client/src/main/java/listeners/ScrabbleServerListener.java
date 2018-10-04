@@ -106,11 +106,9 @@ public class ScrabbleServerListener extends ServerListener {
             @Override
             public MessageWrapper[] onMsgReceive(GameActionMsg msg, Agent sender) {
                 Lobby lobby = playerLobbyMap.get(sender);
-                // reset vote score
-                lobby.getGameSession().resetVotes();
                 lobby.getGameSession().incrementBoard(msg.getMoveLocation(), msg.getLetter());
 
-                if (msg.getMoveLocation() == null) { // player skipped turn
+                if (msg.getMoveLocation() == null || msg.getLetter() == null) { // player skipped turn
                     Agent prevPlayer = lobby.getGameSession().getCurrentTurn();
                     lobby.getGameSession().nextTurn(true);
 

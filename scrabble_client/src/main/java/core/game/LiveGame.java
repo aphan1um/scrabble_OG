@@ -35,11 +35,11 @@ public class LiveGame {
         // TODO: simple for now..
     }
 
-    public void resetVotes() {
+    private void resetVotes() {
         voteScore = new HashMap<>(2);
         numVoted = new HashMap<>(2);
 
-        for (GameVoteMsg.Orientation o : GameVoteMsg.Orientation.values()) {
+        for (GameVoteMsg.Orientation o : GameVoteMsg.getValidOrientations(board, lastLetterPos).keySet()) {
             voteScore.put(o, 0);
             numVoted.put(o, 0);
         }
@@ -54,9 +54,8 @@ public class LiveGame {
             numSkipConsecutive++;
         } else {
             numSkipConsecutive = 0;
+            scores.put(currentTurn, scores.get(currentTurn) + calculateScore());
         }
-
-        scores.put(currentTurn, scores.get(currentTurn) + calculateScore());
         currentTurn = players.get(new_idx);
     }
 
@@ -66,7 +65,9 @@ public class LiveGame {
 
     public void addVote(boolean accepted, GameVoteMsg.Orientation orient) {
         numVoted.put(orient, numVoted.get(orient) + 1);
-        voteScore.put(orient, voteScore.get(orient) + (accepted ? 0 : 1));
+
+        if (accepted)
+            voteScore.put(orient, voteScore.get(orient) + 1);
     }
 
     public boolean allVoted() {
@@ -81,9 +82,9 @@ public class LiveGame {
 
     private int calculateScore() {
         int totalAdd = 0;
-        Map<GameVoteMsg.Orientation, String> wordMap = GameVoteMsg.getAdjacentWords(board, lastLetterPos);
+        Map<GameVoteMsg.Orientation, String> wordMap = GameVoteMsg.getValidOrientations(board, lastLetterPos);
 
-        for (GameVoteMsg.Orientation o : GameVoteMsg.Orientation.values()) {
+        for (GameVoteMsg.Orientation o : wordMap.keySet()) {
             if (numVoted.get(o) == voteScore.get(o))
                 totalAdd += wordMap.get(o).length();
         }
@@ -91,13 +92,15 @@ public class LiveGame {
         return totalAdd;
     }
 
-    public void incrementBoard(Point pos, char letter) {
-        if (pos == null || letter == 0)
+    public void incrementBoard(Point pos, Character letter) {
+        if (pos == null || letter == null)
             return;
 
         board.put(pos, letter);
         lastLetterPos = pos;
         numFilled++;
+
+        resetVotes();
     }
 
     public boolean isBoardFull() {
