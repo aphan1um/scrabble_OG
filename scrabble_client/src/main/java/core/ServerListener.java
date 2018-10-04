@@ -14,18 +14,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class ServerListener extends SocketListener {
-    protected BiMap<String, Lobby> lobbyMap;
-    protected Map<Agent, Lobby> playerLobbyMap; // note this is not a bijection, so a BiMap can't be used
-
     public ServerListener(String name) {
         super(name);
-    }
-
-    @Override
-    public void reset() {
-        super.reset();
-        lobbyMap = Maps.synchronizedBiMap(HashBiMap.create());
-        playerLobbyMap = new ConcurrentHashMap<>(); // TODO: concurrent hash map
     }
 
     public void startListener(int port) throws IOException {

@@ -22,7 +22,9 @@ public abstract class SocketListener {
 
     public String listenerName;
 
-    public final EventMessageList eventList;
+    // TODO: This solves the issue of iterating through the list, but we must make
+    // sure only ONE thread can modify it.
+    public volatile EventMessageList eventList;
     protected final Gson gson;
     protected BiMap<Socket, Agent> connections;
 
@@ -40,9 +42,10 @@ public abstract class SocketListener {
     }
 
     // reset variables
-    public void reset() {
+    protected void reset() {
         connections = Maps.synchronizedBiMap(HashBiMap.create());
     }
+
 
     /***
      * For listening to messages from a client/player.
@@ -51,6 +54,13 @@ public abstract class SocketListener {
      */
     void run_client(Socket client, Thread heartbeat_t) {
         try {
+            /**
+            // TODO: Adding this line causes issues with ScrabbleServerListener [FIX]
+            synchronized (connections) {
+                connections.put(client, null);
+            }
+            **/
+
             DataInputStream in = new DataInputStream(client.getInputStream());
 
             while (true) {
@@ -70,7 +80,6 @@ public abstract class SocketListener {
 
                 processMessages(eventList.fireEvent(
                         msgRec.getMessage(), msgRec.getMessageType(),
-                        connections.inverse().keySet(),
                         connections.get(client)));
             }
         } catch (IOException e) {

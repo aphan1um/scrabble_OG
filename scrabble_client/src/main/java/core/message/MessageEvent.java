@@ -5,5 +5,5 @@ import core.game.Agent;
 import java.util.Set;
 
 public interface MessageEvent<T extends Message> {
-    public MessageWrapper onMsgReceive(T recMessage, Set<Agent> agents, Agent sender);
+    public MessageWrapper[] onMsgReceive(T recMessage, Agent sender);
 }

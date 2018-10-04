@@ -10,6 +10,10 @@ public class MessageWrapper {
     private Message msg;
     private Message.MessageType msgType;
 
+    public static MessageWrapper[] prepWraps(MessageWrapper... msgs) {
+        return msgs;
+    }
+
     public MessageWrapper(Message msg, Collection<Agent> sendTo) {
         this.msg = msg;
         this.sendTo = sendTo;

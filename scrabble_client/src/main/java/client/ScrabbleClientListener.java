@@ -5,6 +5,8 @@ import core.game.Agent;
 import core.message.Message;
 import core.message.MessageWrapper;
 import core.messageType.*;
+import javafx.application.Platform;
+import javafx.scene.control.Alert;
 
 import javax.swing.*;
 import java.io.DataInputStream;
@@ -75,10 +77,13 @@ public class ScrabbleClientListener extends ClientListener {
     @Override
     protected void onUserDisconnect(Agent p) {
         // TODO: This is a simplification.
-        JOptionPane.showMessageDialog(null,
-                "The server you've been connected to has closed down. " +
-                        "The app will now exit.");
-        System.exit(-1);
+        Platform.runLater(() -> {
+            new Alert(Alert.AlertType.ERROR,
+                    "The server you've been connected to has closed down. " +
+                            "The app will now exit.").showAndWait();
+            System.exit(-1);
+
+        });
     }
 
     @Override

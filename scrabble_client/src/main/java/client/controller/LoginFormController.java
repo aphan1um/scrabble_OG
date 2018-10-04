@@ -80,11 +80,11 @@ public class LoginFormController implements Initializable {
 
     private boolean validateConnect(boolean isHosting) {
         // ensure details aren't empty and port number is integer
-        if (txtIP.getText().isEmpty() ||
+        if (txtName.getText().isEmpty() ||
                 (!isHosting && txtIP.getText().isEmpty()) ||
         !txtPort.getText().matches("^[0-9]+$")) {
             Alert alert = new Alert(Alert.AlertType.WARNING,
-                    "One of the details is empty and/or the port number is empty.\n\n" +
+                    "One of the required fields is empty and/or the port number is not a number.\n\n" +
                     "Please ensure the details are correct, then try again.");
 
             StageUtils.dialogCenter(stage, alert);

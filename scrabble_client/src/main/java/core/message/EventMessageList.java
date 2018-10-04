@@ -6,10 +6,7 @@ import core.game.Agent;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 // TODO: Handle thread-safety issues with add/removeEvents ??
 public class EventMessageList {
@@ -19,13 +16,16 @@ public class EventMessageList {
         events = HashMultimap.create();
     }
 
-    public List<MessageWrapper> fireEvent(Message msg, Message.MessageType msgType,
-                                          Set<Agent> agents, Agent sender) {
+    public Collection<MessageWrapper> fireEvent(Message msg, Message.MessageType msgType,
+                                          Agent sender) {
         Collection<MessageEvent> eventsToFire = events.get(msgType);
         List<MessageWrapper> msgs = new ArrayList<>(eventsToFire.size());
 
         for (MessageEvent e: eventsToFire) {
-            msgs.add(e.onMsgReceive(msg, agents, sender));
+            MessageWrapper[] msgWraps = e.onMsgReceive(msg, sender);
+
+            if (msgWraps != null)
+                msgs.addAll(Arrays.asList(msgWraps));
         }
 
         return msgs;

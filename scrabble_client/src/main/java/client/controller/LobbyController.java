@@ -57,7 +57,7 @@ public class LobbyController implements Initializable {
 
         MessageEvent<ChatMsg> chatEvent = new MessageEvent<ChatMsg>() {
             @Override
-            public MessageWrapper onMsgReceive(ChatMsg recMessage, Set<Agent> agents, Agent sender) {
+            public MessageWrapper[] onMsgReceive(ChatMsg recMessage, Agent sender) {
                 appendText(String.format("%s said:\t%s\n",
                         recMessage.getSender().getName(), recMessage.getChatMsg()), Color.BLACK);
                 return null;
@@ -66,7 +66,7 @@ public class LobbyController implements Initializable {
 
         MessageEvent<AgentChangedMsg> getPlayersEvent = new MessageEvent<AgentChangedMsg>() {
             @Override
-            public MessageWrapper onMsgReceive(AgentChangedMsg recMessage, Set<Agent> agents, Agent sender) {
+            public MessageWrapper[] onMsgReceive(AgentChangedMsg recMessage, Agent sender) {
                 switch (recMessage.getStatus()) {
                     case JOINED:
                         Platform.runLater(() -> lstPlayers.getItems().addAll(recMessage.getAgents()));
@@ -82,7 +82,7 @@ public class LobbyController implements Initializable {
 
         MessageEvent<AgentChangedMsg> getPlayerStatus = new MessageEvent<AgentChangedMsg>() {
             @Override
-            public MessageWrapper onMsgReceive(AgentChangedMsg recMessage, Set<Agent> agents, Agent sender) {
+            public MessageWrapper[] onMsgReceive(AgentChangedMsg recMessage, Agent sender) {
                 for (Agent agent : recMessage.getAgents()) {
                     switch (recMessage.getStatus()) {
                         case JOINED:
@@ -102,7 +102,7 @@ public class LobbyController implements Initializable {
 
         MessageEvent<GameStatusMsg> gameStartEvent = new MessageEvent<GameStatusMsg>() {
             @Override
-            public MessageWrapper onMsgReceive(GameStatusMsg recMessage, Set<Agent> agents, Agent sender) {
+            public MessageWrapper[] onMsgReceive(GameStatusMsg recMessage, Agent sender) {
                 // clear events
                 // TODO: There's got to be a better way to do this..
                 ClientMain.listener.eventList.removeEvents(chatEvent,

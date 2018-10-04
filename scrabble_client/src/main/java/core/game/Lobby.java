@@ -1,6 +1,7 @@
 package core.game;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 // TODO: Concurrency issues?
@@ -14,7 +15,6 @@ public class Lobby {
     public Lobby(Agent owner) {
         this.owner = owner;
         this.agents = new ArrayList<>();
-
         agents.add(owner);
     }
 
@@ -41,6 +41,10 @@ public class Lobby {
             agents.remove(agent);
             return agents.size() == 0;
         }
+    }
+
+    public Collection<Agent> getAgents() {
+        return agents;
     }
 
     public LiveGame getGameSession() {
