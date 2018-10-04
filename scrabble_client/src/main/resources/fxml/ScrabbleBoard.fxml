@@ -29,7 +29,7 @@
                   <Button fx:id="btnSubmit" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Submit" HBox.hgrow="ALWAYS" />
                   <Button fx:id="btnPass" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Pass Turn" HBox.hgrow="ALWAYS" />
                   <Button fx:id="btnClear" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Clear" HBox.hgrow="ALWAYS" />
-                  <Button fx:id="btnVote" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Vote" HBox.hgrow="ALWAYS" />
+                  <Button fx:id="btnVote" disable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="[Reserved]" HBox.hgrow="ALWAYS" />
                </children>
                <GridPane.margin>
                   <Insets />

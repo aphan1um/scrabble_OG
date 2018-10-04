@@ -131,10 +131,11 @@ public class ScrabbleBoardController implements Initializable {
         VoteScreenForm voteForm = new VoteScreenForm();
         loader.setController(voteForm);
 
-        popupStage = new Stage(StageStyle.TRANSPARENT);
+        popupStage = new Stage(StageStyle.UNDECORATED);
         popupStage.setOpacity(0.96);
         popupStage.initOwner(hbox.getScene().getWindow());
         popupStage.initModality(Modality.APPLICATION_MODAL);
+        popupStage.setTitle("Voting Time");
 
         try {
             Scene voteScene = new Scene(loader.load());
@@ -160,5 +161,6 @@ public class ScrabbleBoardController implements Initializable {
         boolean isMyTurn = curTurn.equals(ClientMain.agentID);
         hbox.disableProperty().set(!isMyTurn);
         scrabblePane.getCanvas().enabledProperty.set(isMyTurn);
+        scrabblePane.getCanvas().chosenCellProperty.set(null);
     }
 }

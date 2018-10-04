@@ -148,6 +148,7 @@ public class GameWindow extends Application {
                             GameVoteMsg.getValidOrientations(scrabbleBoard.scrabblePane.getCanvas().letters,
                                     p);
 
+                    scrabbleBoard.scrabblePane.getCanvas().chosenCellProperty.set(p);
                     scrabbleBoard.popupVoteScreen(strMap.get(GameVoteMsg.Orientation.HORIZONTAL),
                             strMap.get(GameVoteMsg.Orientation.VERTICAL));
                 });
