@@ -1,4 +1,4 @@
-package server;
+package listeners;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -8,6 +8,7 @@ import core.game.Agent;
 import core.game.Lobby;
 import core.message.*;
 import core.messageType.*;
+import javafx.scene.layout.Pane;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -98,6 +99,83 @@ public class ScrabbleServerListener extends ServerListener {
 
                 return null;
             }
+        },
+
+        // when player makes a move, broadcast it to all other users
+        new MessageEvent<GameActionMsg>() {
+            @Override
+            public MessageWrapper[] onMsgReceive(GameActionMsg msg, Agent sender) {
+                Lobby lobby = playerLobbyMap.get(sender);
+                // reset vote score
+                lobby.getGameSession().resetVotes();
+                lobby.getGameSession().incrementBoard(msg.getMoveLocation(), msg.getLetter());
+
+                if (msg.getMoveLocation() == null) { // player skipped turn
+                    Agent prevPlayer = lobby.getGameSession().getCurrentTurn();
+                    lobby.getGameSession().nextTurn(true);
+
+                    if (lobby.getGameSession().allPlayersSkipped()) { // when all players skipped their turn
+                        Message msgEndGame = new GameStatusMsg(
+                                GameStatusMsg.GameStatus.ENDED,
+                                null);
+
+                        return MessageWrapper.prepWraps(new MessageWrapper
+                                (msgEndGame, lobby.getAgents()));
+                    } else { // new turn
+                        Message msgSkip = new NewTurnMsg(
+                                prevPlayer,
+                                lobby.getGameSession().getCurrentTurn(),
+                                lobby.getGameSession().getScores().get(prevPlayer),
+                                true);
+
+                        return MessageWrapper.prepWraps(
+                                new MessageWrapper(msgSkip, playerLobbyMap.get(sender).getAgents())
+                        );
+                    }
+                }
+
+                // otherwise, send this action to all other players, so they can then vote
+                return MessageWrapper.prepWraps(new MessageWrapper(msg,
+                        playerLobbyMap.get(sender).getAgents()));
+            }
+        },
+
+        new MessageEvent<GameVoteMsg>() {
+            @Override
+            public MessageWrapper[] onMsgReceive(GameVoteMsg msg, Agent sender) {
+
+                // TODO: add logic here
+                Lobby lobby = playerLobbyMap.get(sender);
+                lobby.getGameSession().addVote(msg.isAccepted(), msg.getOrient());
+
+                if (lobby.getGameSession().allVoted()) {
+                    // all players voted, move onto next player
+                    Agent prevPlayer = lobby.getGameSession().getCurrentTurn();
+                    lobby.getGameSession().nextTurn(false);
+
+                    Message msgNextTurn = new NewTurnMsg(
+                            prevPlayer,
+                            lobby.getGameSession().getCurrentTurn(),
+                            lobby.getGameSession().getScores().get(prevPlayer),
+                            false);
+
+                    // if board is full, end the game
+                    if (lobby.getGameSession().isBoardFull()) {
+                        Message msgEndGame = new GameStatusMsg(GameStatusMsg.GameStatus.ENDED, null);
+
+                        // TODO: Better structure protocol
+                        // send additional message to end game
+                        return MessageWrapper.prepWraps(
+                                new MessageWrapper(msgNextTurn, lobby.getAgents()),
+                                new MessageWrapper(msgEndGame, lobby.getAgents()));
+                    } else {
+                        return MessageWrapper.prepWraps(
+                                new MessageWrapper(msgNextTurn, lobby.getAgents()));
+                    }
+                }
+
+                return null;
+            }
         });
     }
 
@@ -116,7 +194,8 @@ public class ScrabbleServerListener extends ServerListener {
                     }
                 }
 
-                sendMessage(new QueryMsg(QueryMsg.QueryType.IS_ID_UNIQUE, is_unique), s);
+                sendMessage(new QueryMsg(QueryMsg.QueryType.IS_ID_UNIQUE, is_unique), s,
+                        msgRec.getTimeStamps());
             }
 
             return false;
@@ -145,6 +224,6 @@ public class ScrabbleServerListener extends ServerListener {
 
         sendMessage(new MessageWrapper(
                 new AgentChangedMsg(AgentChangedMsg.NewStatus.DISCONNECTED, p),
-                connections.values()));
+                connections.values()), null);
     }
 }

@@ -25,6 +25,9 @@ import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 
+import static core.game.LiveGame.NUM_COLS;
+import static core.game.LiveGame.NUM_ROWS;
+
 // TODO: Credit to: https://stackoverflow.com/a/31761362 for the code
 public class ScrabblePane extends Pane {
     private final ScrabbleCanvas canvas;
@@ -207,8 +210,8 @@ public class ScrabblePane extends Pane {
     }
 
     public class ScrabbleCanvas extends Canvas {
-        private int num_rows = 20;
-        private int num_cols = 20;
+        private int num_rows = NUM_ROWS;
+        private int num_cols = NUM_COLS;
 
         private Map<Point, Character> letters = new HashMap<>();
 
@@ -394,8 +397,6 @@ public class ScrabblePane extends Pane {
             cell_size = new Dimension2D(getWidth() / num_cols, getHeight() / num_rows);
             c.setFont(getLetterFont());
             c.setFill(Color.BLACK);
-
-            System.out.println("DEEP PAINTING");
 
             c.setFill(current_color);
             c.fillRect(0, 0, getWidth(), getHeight());

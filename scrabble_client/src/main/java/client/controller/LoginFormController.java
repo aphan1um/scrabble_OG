@@ -15,7 +15,7 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import client.ClientMain;
 import client.util.StageUtils;
-import server.ScrabbleServerListener;
+import listeners.ScrabbleServerListener;
 
 import java.io.InputStream;
 import java.net.URL;
@@ -168,7 +168,7 @@ public class LoginFormController implements Initializable {
             ClientMain.listener.joinLobby(txtLobby.getText());
             lobbyStage.show();
         });
-        // happens if exception is thrown (e.g. server doesn't exist)
+        // happens if exception is thrown (e.g. listeners doesn't exist)
         task.setOnFailed((e) -> {
             dialog.close();
 

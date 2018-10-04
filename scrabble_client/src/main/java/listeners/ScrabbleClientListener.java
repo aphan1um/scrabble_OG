@@ -1,5 +1,6 @@
-package client;
+package listeners;
 
+import client.ClientMain;
 import core.ClientListener;
 import core.game.Agent;
 import core.message.Message;
@@ -8,21 +9,24 @@ import core.messageType.*;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 
-import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.Socket;
 
 public class ScrabbleClientListener extends ClientListener {
+    private long serverTime;
+    private TimeSync timeSync;
+
     public ScrabbleClientListener() {
         super("Agent");
+        timeSync = new TimeSync();
+        serverTime = -1;
     }
-
 
     // TODO: Experimental and needs to be enforced better
     public void joinLobby(String lobbyName) {
         try {
-            sendMessage(new JoinLobbyMsg(lobbyName), socket);
+            sendMessage(new JoinLobbyMsg(lobbyName), socket, null);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -30,7 +34,7 @@ public class ScrabbleClientListener extends ClientListener {
 
     public void sendChatMessage(String txt) {
         try {
-            sendMessage(new ChatMsg(txt, ClientMain.agentID), socket);
+            sendMessage(new ChatMsg(txt, ClientMain.agentID), socket, null);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -39,19 +43,17 @@ public class ScrabbleClientListener extends ClientListener {
     public void sendGameStart() {
         try {
             // TODO: Host starts the game lol..
-            sendMessage(new GameStatusMsg(GameStatusMsg.GameStatus.STARTED, null), socket);
+            sendMessage(new GameStatusMsg(GameStatusMsg.GameStatus.STARTED, null), socket, null);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     @Override
-    protected void onUserConnect(Socket s) throws IOException {
-    }
+    protected void onUserConnect(Socket s) throws IOException { }
 
     @Override
-    protected void prepareEvents() {
-    }
+    protected void prepareEvents() { }
 
     @Override
     protected boolean onMessageReceived(MessageWrapper msgRec, Socket s) {
@@ -71,6 +73,22 @@ public class ScrabbleClientListener extends ClientListener {
 
         return true;
         **/
+        /**
+        if (msgRec.timeStamps != null) {
+            if (serverTime < 0)
+                serverTime = msgRec.timeStamps[0];
+
+            if (msgRec.timeStamps.length == 2) {
+                // calculate latency
+                long latency = (System.nanoTime() - msgRec.timeStamps[0])/2;
+                // calculate difference in time from server & client
+                long client_server_delta = System.nanoTime() - msgRec.timeStamps[1];
+
+                timeSync.addLatencyValue(latency);
+            }
+        }
+        **/
+
         return true;
     }
 
@@ -79,7 +97,7 @@ public class ScrabbleClientListener extends ClientListener {
         // TODO: This is a simplification.
         Platform.runLater(() -> {
             new Alert(Alert.AlertType.ERROR,
-                    "The server you've been connected to has closed down. " +
+                    "The listeners you've been connected to has closed down. " +
                             "The app will now exit.").showAndWait();
             System.exit(-1);
 
@@ -90,12 +108,12 @@ public class ScrabbleClientListener extends ClientListener {
     public void onAuthenticate() throws Exception {
         // sender player details
         sendMessage(new AgentChangedMsg(AgentChangedMsg.NewStatus.REQUEST,
-                ClientMain.agentID), socket);
+                ClientMain.agentID), socket, null);
 
         // TODO: potential code dups, also dodgy code
         DataInputStream in = new DataInputStream(socket.getInputStream());
 
-        // wait response from server (ignore pings)
+        // wait response from listeners (ignore pings)
         while (true) {
             String read = in.readUTF();
             MessageWrapper msgRec = Message.fromJSON(read, gson);

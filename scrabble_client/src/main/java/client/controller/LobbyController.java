@@ -67,7 +67,7 @@ public class LobbyController implements Initializable {
             }
         };
 
-        // when server sends the initial list of players in lobby
+        // when listeners sends the initial list of players in lobby
         MessageEvent<AgentChangedMsg> getPlayersEvent = new MessageEvent<AgentChangedMsg>() {
             @Override
             public MessageWrapper[] onMsgReceive(AgentChangedMsg recMessage, Agent sender) {

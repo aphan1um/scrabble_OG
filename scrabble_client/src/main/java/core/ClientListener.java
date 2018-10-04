@@ -32,6 +32,8 @@ public abstract class ClientListener extends SocketListener {
         reset();
 
         socket = new Socket(ip, port);
+        // TODO: this is important but there has to be a better way to write this
+        connections.put(socket, null);
 
         // perform a simple authentication check
         // TODO: Maybe use executor on other threads here?

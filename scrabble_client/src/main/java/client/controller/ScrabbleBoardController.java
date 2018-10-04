@@ -15,7 +15,10 @@ import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import client.ScrabblePane;
+import javafx.scene.paint.Color;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 import java.io.IOException;
 import java.net.URL;
@@ -49,7 +52,7 @@ public class ScrabbleBoardController implements Initializable {
         lblTurn.setText(String.format("It is player %s's turn", state.getCurrentTurn().getName()));
         lblScore.setText("Your Score: " + state.getScores().get(ClientMain.agentID));
 
-        hbox.disableProperty().set(state.getCurrentTurn().equals(ClientMain.agentID));
+        hbox.disableProperty().set(!state.getCurrentTurn().equals(ClientMain.agentID));
     }
 
     @Override
@@ -75,7 +78,26 @@ public class ScrabbleBoardController implements Initializable {
         btnVote.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
+                /**
                 scrabblePane.getCanvas().chosenCellProperty.set(scrabblePane.getCanvas().getSelectedCell());
+                 **/
+                FXMLLoader loader = new FXMLLoader(StageUtils.getResource("fxml/VoteScreen.fxml"));
+                loader.setController(new VoteScreenForm());
+
+                Stage popupStage = new Stage(StageStyle.TRANSPARENT);
+                popupStage.setOpacity(0.95);
+                popupStage.initOwner((Stage)hbox.getScene().getWindow());
+                popupStage.initModality(Modality.APPLICATION_MODAL);
+
+                try {
+                    Scene voteScene = new Scene(loader.load());
+                    popupStage.setScene(voteScene);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                popupStage.show();
+
             }
         });
     }

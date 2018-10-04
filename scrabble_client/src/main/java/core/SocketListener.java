@@ -3,8 +3,7 @@ package core;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Maps;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.gson.*;
 import core.game.Agent;
 import core.message.EventMessageList;
 import core.message.Message;
@@ -15,7 +14,10 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 public abstract class SocketListener {
     private static final int HEARTBEAT_PERIOD = 10000; // in ms
@@ -70,6 +72,12 @@ public abstract class SocketListener {
                 MessageWrapper msgRec = Message.fromJSON(read, gson);
 
                 // TODO: debug
+                JsonParser parser = new JsonParser();
+                JsonElement element = parser.parse(read);
+                JsonArray obj = element.getAsJsonObject().getAsJsonArray("timeStamps");
+                msgRec.timeStamps = gson.fromJson(obj, long[].class);
+
+                // TODO: debug
                 if (msgRec.getMessageType() != Message.MessageType.PING)
                     System.out.println(String.format("[%s gets from %s]:\t" + read,
                             listenerName, connections.get(client)));
@@ -80,7 +88,7 @@ public abstract class SocketListener {
 
                 processMessages(eventList.fireEvent(
                         msgRec.getMessage(), msgRec.getMessageType(),
-                        connections.get(client)));
+                        connections.get(client)), msgRec.getTimeStamps());
             }
         } catch (IOException e) {
             // client disconnect (most likely)\
@@ -99,7 +107,7 @@ public abstract class SocketListener {
         // TODO: Document something about write error while using TCP.
         try {
             while (true) {
-                sendMessage(new PingMsg(), client);
+                sendMessage(new PingMsg(), client, null);
                 Thread.sleep(HEARTBEAT_PERIOD);
             }
         }  catch (IOException | InterruptedException e) {
@@ -109,12 +117,12 @@ public abstract class SocketListener {
 
     // TODO: A VERY BAD PROCESSOR
     // TODO: A VERY BAD BROADCASTER
-    private void processMessages(Collection<MessageWrapper> msgList) {
+    private void processMessages(Collection<MessageWrapper> msgList, long[] timeStamps) {
         if (msgList == null || msgList.contains(null))
             return;
 
         for (MessageWrapper smsg : msgList) {
-            sendMessage(smsg);
+            sendMessage(smsg, timeStamps);
         }
     }
 
@@ -135,24 +143,36 @@ public abstract class SocketListener {
         onUserDisconnect(disconnectedAgent);
     }
 
-    public void sendMessage(Message msg, Socket s) throws IOException {
+    public void sendMessage(Message msg, Socket s, long[] timeStamps) throws IOException {
+        MessageWrapper smsg = new MessageWrapper(msg);
+        addTimestamp(smsg, timeStamps);
+
+        String json = gson.toJson(smsg);
+        System.out.println("[" + listenerName + " sends:]\t" + json);
         DataOutputStream out = new DataOutputStream(s.getOutputStream());
-        String json = gson.toJson(new MessageWrapper(msg));
-
-        // todo: debug
-        if (!(msg instanceof PingMsg))
-            System.out.println("[" + listenerName + " sends]:\t" + json);
-
-        out.writeUTF(gson.toJson(new MessageWrapper(msg)));
+        out.writeUTF(json);
     }
 
-    protected void sendMessage(MessageWrapper smsg) {
+    private void addTimestamp(MessageWrapper smsg, long[] timeStamps) {
+        // append timestamp to message
+        if (timeStamps == null) {
+            smsg.addTimeStamps(System.nanoTime());
+        } else {
+            // TODO: debug
+            smsg.addTimeStamps(timeStamps[0], System.nanoTime());
+        }
+    }
+
+    protected void sendMessage(MessageWrapper smsg, long[] timeStamps) {
         if (smsg == null)
             return;
 
         for (Agent p : smsg.getSendTo()) {
             try {
                 Socket socket_send = connections.inverse().get(p);
+
+                // append timestamp to message
+                addTimestamp(smsg, timeStamps);
 
                 // send message to client's socket
                 String json = gson.toJson(smsg);

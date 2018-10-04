@@ -30,7 +30,7 @@
             </Pane>
             <VBox prefHeight="200.0" prefWidth="100.0" spacing="5.0" GridPane.rowIndex="1">
                <children>
-                  <Label alignment="CENTER" maxWidth="1.7976931348623157E308" text="Enter details to connect to a Scrabble server:" textAlignment="CENTER">
+                  <Label alignment="CENTER" maxWidth="1.7976931348623157E308" text="Enter details to connect to a Scrabble listeners:" textAlignment="CENTER">
                      <padding>
                         <Insets bottom="5.0" top="10.0" />
                      </padding>

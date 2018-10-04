@@ -1,5 +1,6 @@
 package client;
 
+import com.google.common.math.Quantiles;
 import core.game.Agent;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -7,7 +8,8 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import client.controller.LoginFormController;
 import client.util.StageUtils;
-import server.ScrabbleServerListener;
+import listeners.ScrabbleClientListener;
+import listeners.ScrabbleServerListener;
 
 public class ClientMain extends Application {
     public static ScrabbleClientListener listener;
