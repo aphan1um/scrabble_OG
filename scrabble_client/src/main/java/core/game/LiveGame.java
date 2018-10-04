@@ -8,7 +8,7 @@ public class LiveGame {
 
     public LiveGame(Collection<Agent> players) {
         // TODO: somewhat inefficient
-        scores = new HashMap<>();
+        scores = new LinkedHashMap<>();
         for (Agent a : players)
             scores.put(a, 0);
 
