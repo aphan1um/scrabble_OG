@@ -47,7 +47,7 @@ public class ScrabbleBoardController implements Initializable {
 
     public void updateUIState() {
         lblTurn.setText(String.format("It is player %s's turn", state.getCurrentTurn().getName()));
-        lblScore.setText("Your Score: " + state.getScore(ClientMain.agentID));
+        lblScore.setText("Your Score: " + state.getScores().get(ClientMain.agentID));
 
         hbox.disableProperty().set(state.getCurrentTurn().equals(ClientMain.agentID));
     }

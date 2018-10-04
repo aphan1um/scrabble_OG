@@ -15,8 +15,8 @@ public class LiveGame {
         // TODO: simple for now..
     }
 
-    public Integer getScore(Agent agent) {
-        return scores.get(agent);
+    public Map<Agent, Integer> getScores() {
+        return scores;
     }
 
     public Agent getCurrentTurn() {

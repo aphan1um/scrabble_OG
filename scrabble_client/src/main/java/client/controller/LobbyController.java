@@ -8,62 +8,66 @@ import core.messageType.AgentChangedMsg;
 import core.messageType.ChatMsg;
 import core.messageType.GameStatusMsg;
 import javafx.application.Platform;
-import javafx.beans.binding.Bindings;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
-import javafx.scene.control.TextArea;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import client.ClientMain;
 import client.util.StageUtils;
-import org.fxmisc.richtext.InlineCssTextArea;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
-import java.util.Set;
 
 public class LobbyController implements Initializable {
     @FXML
-    private Button btnSend;
-    @FXML
-    private InlineCssTextArea rtChat;
-    @FXML
     private ListView lstPlayers;
-    @FXML
-    private TextArea txtInput;
     @FXML
     private Button btnStartGame;
     @FXML
     private Button btnKick;
+    @FXML
+    private AnchorPane chatPane;
+
+    private ChatBoxController chatBox;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        btnSend.setOnAction(e -> {
-            ClientMain.listener.sendChatMessage(txtInput.getText());
-            txtInput.setText("");
-        });
+        // add chat box
+        FXMLLoader loader = new FXMLLoader(StageUtils.getResource("fxml/ChatBox.fxml"));
+        chatBox = new ChatBoxController();
+        loader.setController(chatBox);
 
-        btnSend.disableProperty().bind(Bindings.isEmpty(txtInput.textProperty()));
+        try {
+            Node node = loader.load();
 
+            chatPane.getChildren().add(node);
+            AnchorPane.setBottomAnchor(node, 0.0);
+            AnchorPane.setTopAnchor(node, 0.0);
+            AnchorPane.setLeftAnchor(node, 0.0);
+            AnchorPane.setRightAnchor(node, 0.0);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // message received
         MessageEvent<ChatMsg> chatEvent = new MessageEvent<ChatMsg>() {
             @Override
             public MessageWrapper[] onMsgReceive(ChatMsg recMessage, Agent sender) {
-                appendText(String.format("%s said:\t%s\n",
+                chatBox.appendText(String.format("%s said:\t%s\n",
                         recMessage.getSender().getName(), recMessage.getChatMsg()), Color.BLACK);
                 return null;
             }
         };
 
+        // when server sends the initial list of players in lobby
         MessageEvent<AgentChangedMsg> getPlayersEvent = new MessageEvent<AgentChangedMsg>() {
             @Override
             public MessageWrapper[] onMsgReceive(AgentChangedMsg recMessage, Agent sender) {
@@ -80,17 +84,18 @@ public class LobbyController implements Initializable {
             }
         };
 
+        // when player joins or leaves the lobby
         MessageEvent<AgentChangedMsg> getPlayerStatus = new MessageEvent<AgentChangedMsg>() {
             @Override
             public MessageWrapper[] onMsgReceive(AgentChangedMsg recMessage, Agent sender) {
                 for (Agent agent : recMessage.getAgents()) {
                     switch (recMessage.getStatus()) {
                         case JOINED:
-                            appendText(String.format("%s has joined the lobby.\n", agent),
+                            chatBox.appendText(String.format("%s has joined the lobby.\n", agent),
                                     Color.GREEN);
                             break;
                         case DISCONNECTED:
-                            appendText(String.format("%s has left the lobby.\n", agent),
+                            chatBox.appendText(String.format("%s has left the lobby.\n", agent),
                                     Color.RED);
                             break;
                     }
@@ -100,6 +105,7 @@ public class LobbyController implements Initializable {
             }
         };
 
+        // host has announced the game to start
         MessageEvent<GameStatusMsg> gameStartEvent = new MessageEvent<GameStatusMsg>() {
             @Override
             public MessageWrapper[] onMsgReceive(GameStatusMsg recMessage, Agent sender) {
@@ -110,7 +116,6 @@ public class LobbyController implements Initializable {
 
                 Platform.runLater(() -> {
                     ((Stage)btnKick.getScene().getWindow()).close();
-                    // TODO: Fix code structure of GameWindow
                     GameWindow.startApp(recMessage.getGameData());
                 });
 
@@ -122,60 +127,27 @@ public class LobbyController implements Initializable {
         ClientMain.listener.eventList.addEvents(chatEvent,
                 getPlayersEvent, getPlayerStatus, gameStartEvent);
 
-
-        // pressing ENTER key sends the chat msg, SHIFT+ENTER creates a new line
-        txtInput.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
-            @Override
-            public void handle(KeyEvent event) {
-                if (event.getCode() == KeyCode.ENTER) {
-                    if (event.isShiftDown())
-                        txtInput.appendText("\n");
-                    else {
-                        event.consume(); // prevents new line after pressing ENTER
-                        btnSend.fireEvent(new ActionEvent());
-                    }
-                }
-            }
-        });
-
-
         btnStartGame.setOnAction(e -> {
             ClientMain.listener.sendGameStart();
             btnStartGame.disableProperty().set(true); // TODO: debug
         });
     }
 
-    public void appendText(String txt, Color c) {
-        Platform.runLater(() -> {
-            int prevPos = rtChat.getLength();
-            rtChat.appendText(txt);
-
-            // TODO: Thanks to https://stackoverflow.com/a/3607942 for the hint
-            String hex =  String.format("#%02x%02x%02x",
-                    (int)(c.getRed() * 255),
-                    (int)(c.getGreen() * 255),
-                    (int)(c.getBlue() * 255));
-
-            rtChat.setStyle(prevPos, rtChat.getLength(),
-                    String.format("-fx-fill: %s;", hex));
-        });
-    }
 
     public static Stage createStage() {
+        Stage newStage = new Stage();
+
         FXMLLoader loader = new FXMLLoader(
                 StageUtils.getResource("fxml/LobbyForm.fxml"));
         loader.setController(new LobbyController());
 
         try {
-            Stage newStage = new Stage();
             newStage.setScene(new Scene((Parent)loader.load()));
-            newStage.setTitle("Lobby Room");
-
-            return newStage;
         } catch (IOException e) {
             e.printStackTrace();
         }
+        newStage.setTitle("Lobby Room");
 
-        return null;
+        return newStage;
     }
 }
