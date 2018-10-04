@@ -144,6 +144,8 @@ public class ScrabbleClientListener extends ClientListener {
                         throw new NonUniqueNameException();
                     else
                         return;
+                } else if (qmsg.getQueryType() == QueryMsg.QueryType.GAME_ALREADY_MADE) {
+                    throw new GameInProgressException();
                 }
             }
         }

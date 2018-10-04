@@ -13,6 +13,7 @@ import javafx.scene.layout.Pane;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -192,6 +193,19 @@ public class ScrabbleServerListener extends ServerListener {
                     }
                 }
 
+                // TODO: This is a temporary addition, but will remove for more lobbies
+                // check if game is in progress
+                if (lobbyMap.size() > 0) {
+                    Iterator<Lobby> it = lobbyMap.values().iterator();
+                    while (it.hasNext()) {
+                        Lobby l_it = it.next();
+                        if (l_it.getGameSession() != null) {
+                            sendMessage(new QueryMsg(QueryMsg.QueryType.GAME_ALREADY_MADE, true), s,
+                                    msgRec.getTimeStamps());
+                        }
+                    }
+                }
+
                 sendMessage(new QueryMsg(QueryMsg.QueryType.IS_ID_UNIQUE, is_unique), s,
                         msgRec.getTimeStamps());
             }
@@ -222,6 +236,6 @@ public class ScrabbleServerListener extends ServerListener {
 
         sendMessage(new MessageWrapper(
                 new AgentChangedMsg(AgentChangedMsg.NewStatus.DISCONNECTED, p),
-                connections.values()), null);
+                lobby.getAgents()), null);
     }
 }

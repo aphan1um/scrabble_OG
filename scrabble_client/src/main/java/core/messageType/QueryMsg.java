@@ -5,7 +5,8 @@ import core.message.Message;
 public class QueryMsg implements Message {
     public enum QueryType {
         IS_ID_UNIQUE,
-        JOIN_LOBBY
+        JOIN_LOBBY,
+        GAME_ALREADY_MADE
     }
 
     private QueryType queryType;
