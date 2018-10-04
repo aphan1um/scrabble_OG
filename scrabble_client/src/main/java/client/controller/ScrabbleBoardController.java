@@ -52,6 +52,10 @@ public class ScrabbleBoardController implements Initializable {
         hbox.disableProperty().set(state.getCurrentTurn().equals(ClientMain.agentID));
     }
 
+    private void updateScore() {
+        lblScore.setText("Your Score: " + scrabblePane.getMark());
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         updateUIState();
@@ -65,12 +69,33 @@ public class ScrabbleBoardController implements Initializable {
         btnSubmit.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-                scrabblePane.getCanvas().enabledProperty.set(!scrabblePane.getCanvas().enabledProperty.get());
+                if(scrabblePane.getCanvas().enabledProperty.get()) {
+                    return;
+                }
+                else {
+                    System.out.println(scrabblePane.getMark());
+                    updateScore();
+                    scrabblePane.getCanvas().enabledProperty.set(!scrabblePane.getCanvas().enabledProperty.get());
+                    scrabblePane.getCanvas().chosenCellProperty.set(null);
+                }
             }
         });
 
 
-        btnClear.setOnMouseClicked(e -> scrabblePane.getCanvas().chosenCellProperty.set(null));
+//        btnClear.setOnMouseClicked(e -> scrabblePane.getCanvas().chosenCellProperty.set(null));
+        btnClear.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                if(scrabblePane.getCanvas().enabledProperty.get()) {
+                    return;
+                }
+                else {
+                    scrabblePane.getCanvas().removeLetter(scrabblePane.getLetterType_cell().x, scrabblePane.getLetterType_cell().y);
+                    scrabblePane.getCanvas().chosenCellProperty.set(null);
+                    scrabblePane.getCanvas().enabledProperty.set(!scrabblePane.getCanvas().enabledProperty.get());
+                }
+            }
+        });
 
         btnVote.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override

@@ -29,6 +29,12 @@ import java.util.Map;
 public class ScrabblePane extends Pane {
     private final ScrabbleCanvas canvas;
     private final TextField letterType;
+    private int mark = 0;
+
+    public Point getLetterType_cell() {
+        return letterType_cell;
+    }
+
     private Point letterType_cell;
 
     public ScrabblePane() {
@@ -52,11 +58,13 @@ public class ScrabblePane extends Pane {
                     change.isAdded() && Character.isLetter(newText.charAt(0))) {
                 change.setText(newText.toUpperCase());
             }
-            System.out.println("WE END HERE");
+            else {
+                change.setText("");
+            }
             return change;
         }));
 
-        letterType.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
+        letterType.addEventHandler(KeyEvent.KEY_RELEASED, new EventHandler<KeyEvent>() {
             @Override
             public void handle(KeyEvent event) {
                 switch (event.getCode()) {
@@ -67,6 +75,7 @@ public class ScrabblePane extends Pane {
                                 letterType.getText().isEmpty() ? null : letterType.getText().charAt(0));
                         letterType.setVisible(false);
                         canvas.requestFocus();
+                        canvas.enabledProperty.set(!canvas.enabledProperty.get());
                         break;
                     case ESCAPE:
                         canvas.requestFocus();
@@ -74,25 +83,27 @@ public class ScrabblePane extends Pane {
                         break;
                     case UP:
                     case DOWN:
-                        canvas.setLetter(
-                                canvas.getSelectedCell().x,
-                                canvas.getSelectedCell().y,
-                                letterType.getText().isEmpty() ? null : letterType.getText().charAt(0));
-                        letterType.setVisible(false);
-                        canvas.fireEvent(event);
-                        break;
                     case LEFT:
                     case RIGHT:
-                        if (!letterType.getText().isEmpty()) break;
-
                         canvas.setLetter(
                                 canvas.getSelectedCell().x,
                                 canvas.getSelectedCell().y,
                                 letterType.getText().isEmpty() ? null : letterType.getText().charAt(0));
                         letterType.setVisible(false);
                         canvas.fireEvent(event);
+                        canvas.enabledProperty.set(!canvas.enabledProperty.get());
                         break;
                     default:
+                        if(!letterType.getText().isEmpty() && Character.isLetter(letterType.getText().charAt(0))) {
+                            canvas.setLetter(
+                                    canvas.getSelectedCell().x,
+                                    canvas.getSelectedCell().y,
+                                    letterType.getText().isEmpty() ? null : letterType.getText().charAt(0));
+                            letterType.setVisible(false);
+                            canvas.chosenCellProperty.set(canvas.getSelectedCell());
+                            canvas.fireEvent(event);
+                            canvas.enabledProperty.set(!canvas.enabledProperty.get());
+                        }
                         break;
                 }
             }
@@ -196,14 +207,44 @@ public class ScrabblePane extends Pane {
 
         letterType_cell = canvas.getSelectedCell();
         Character letter = canvas.getLetter(canvas.getSelectedCell().x, canvas.getSelectedCell().y);
-        if (letter != null)
+        if (letter != null) {
             letterType.setText(letter.toString());
-        else
+            letterType.setVisible(false);
+        }
+        else {
             letterType.setText("");
+            letterType.setVisible(true);
+            letterType.requestFocus();
+        }
+    }
 
-
-        letterType.setVisible(true);
-        letterType.requestFocus();
+    public int getMark() {
+        int row = letterType_cell.x;
+        int col = letterType_cell.y;
+        boolean h = false;
+        boolean v = false;
+        int count = 0;
+        for(int i = 1; getCanvas().letters.containsKey(new Point(row, col + i)) && col + i <= 19; i++) {
+            h = true;
+            count++;
+        }
+        for(int i = 1; getCanvas().letters.containsKey(new Point(row, col - i)) && col - i >= 0; i++) {
+            h = true;
+            count++;
+        }
+        for(int i = 1; getCanvas().letters.containsKey(new Point(row + i, col)) && row + i <= 19; i++) {
+            v = true;
+            count++;
+        }
+        for(int i = 1; getCanvas().letters.containsKey(new Point(row - i, col)) && row - i <= 0; i++) {
+            v = true;
+            count++;
+        }
+        if(h && v) {
+            count++;
+        }
+        mark = mark + count + 1;
+        return mark;
     }
 
     public class ScrabbleCanvas extends Canvas {
@@ -305,6 +346,13 @@ public class ScrabblePane extends Pane {
             } else {
                 letters.put(cell, c);
             }
+
+            refreshCell(getGraphicsContext2D(), cell);
+        }
+
+        public void removeLetter(int row, int col) {
+            Point cell = new Point(row, col);
+            letters.remove(cell);
 
             refreshCell(getGraphicsContext2D(), cell);
         }
