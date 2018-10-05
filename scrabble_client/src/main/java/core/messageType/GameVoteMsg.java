@@ -44,12 +44,12 @@ public class GameVoteMsg implements Message {
         int horLength = adjMap.get(Orientation.HORIZONTAL).length();
         int verLength = adjMap.get(Orientation.VERTICAL).length();
 
-        if (horLength == 1 && horLength == verLength) {
+        if (horLength == 1 && horLength == verLength) { // isolated letter
             ret.put(Orientation.HORIZONTAL, adjMap.get(Orientation.HORIZONTAL));
         } else {
-            if (horLength > 0)
+            if (horLength > 1)
                 ret.put(Orientation.HORIZONTAL, adjMap.get(Orientation.HORIZONTAL));
-            if (verLength > 0)
+            if (verLength > 1)
                 ret.put(Orientation.VERTICAL, adjMap.get(Orientation.VERTICAL));
         }
 
