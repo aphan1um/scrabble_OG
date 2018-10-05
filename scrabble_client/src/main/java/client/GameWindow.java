@@ -160,10 +160,8 @@ public class GameWindow extends Application {
             @Override
             public MessageWrapper[] onMsgReceive(NewTurnMsg recMessage, Agent sender) {
                 Platform.runLater(() -> {
-                    scrabbleBoard.closePopup();
-                    scoreBoard.updateScore(recMessage.getLastPlayer(), recMessage.getNewPoints());
-                    scrabbleBoard.updateTurn(recMessage.getNextPlayer(),
-                            scoreBoard.scores.get(ClientMain.agentID));
+                    scrabbleBoard.updateTurn(recMessage, scoreBoard, chatBox);
+
                 });
                 return null;
             }

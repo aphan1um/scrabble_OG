@@ -4,6 +4,7 @@ import client.ClientMain;
 import client.util.StageUtils;
 import core.game.Agent;
 import core.game.LiveGame;
+import core.messageType.NewTurnMsg;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -57,7 +58,8 @@ public class ScrabbleBoardController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // TODO: Debug (0 point constant)
-        updateTurn(initGame.getCurrentTurn(), 0);
+        lblTurn.setText(String.format("It is player %s's turn", initGame.getCurrentTurn().getName()));
+        lblScore.setText("Your Score: " + 0);
 
         btnSubmit.setFocusTraversable(false);
         btnPass.setFocusTraversable(false);
@@ -151,11 +153,30 @@ public class ScrabbleBoardController implements Initializable {
             popupStage.close();
     }
 
-    public void updateTurn(Agent curTurn, int myScore) {
-        lblTurn.setText(String.format("It is player %s's turn", curTurn.getName()));
-        lblScore.setText("Your Score: " + myScore);
+    public void updateTurn(NewTurnMsg msg, ScoreBoxController scoreControl, ChatBoxController chatControl) {
+        this.closePopup();
 
-        boolean isMyTurn = curTurn.equals(ClientMain.agentID);
+        lblTurn.setText(String.format("It is player %s's turn", msg.getNextPlayer().getName()));
+        lblScore.setText("Your Score: " + scoreControl.scores.get(ClientMain.agentID));
+
+        // inform last player's move
+        String txtAppend = "";
+        int scoreDiff = msg.getNewPoints() - scoreControl.scores.get(msg.getLastPlayer());
+        if (msg.hasSkippedTurn()) {
+            txtAppend = String.format("%s has skipped turn.", msg.getLastPlayer());
+        } else if (scoreDiff == 0) {
+            // TODO: EMPTY
+        } else {
+            txtAppend = String.format("%s has earned %d point"
+                    + (scoreDiff == 1 ? "." : "s."), msg.getLastPlayer(), scoreDiff);
+        }
+
+        if (!txtAppend.isEmpty())
+            chatControl.appendText(txtAppend + "\n", Color.DARKCYAN);
+
+        scoreControl.updateScore(msg.getLastPlayer(), msg.getNewPoints());
+
+        boolean isMyTurn = msg.getNextPlayer().equals(ClientMain.agentID);
         hbox.disableProperty().set(!isMyTurn);
         scrabblePane.getCanvas().enabledProperty.set(isMyTurn);
         scrabblePane.getCanvas().chosenCellProperty.set(null);
