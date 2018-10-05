@@ -113,6 +113,11 @@ public class ScrabbleClientListener extends ClientListener {
     protected void onUserDisconnect(Agent p) {
         // TODO: This is a simplification.
         Platform.runLater(() -> {
+            if (ClientMain.appEnded)
+                return;
+
+            ClientMain.appEnded = true;
+
             new Alert(Alert.AlertType.ERROR,
                     "The listeners you've been connected to has closed down. " +
                             "The app will now exit.").showAndWait();

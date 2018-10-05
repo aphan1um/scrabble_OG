@@ -173,6 +173,11 @@ public class GameWindow extends Application {
             @Override
             public MessageWrapper[] onMsgReceive(GameStatusMsg recMessage, Agent sender) {
                 Platform.runLater(() -> {
+                    if (ClientMain.appEnded)
+                        return;
+
+                    ClientMain.appEnded = true;
+
                     new Alert(Alert.AlertType.INFORMATION,
                             "Game has ended. App will now close.").showAndWait();
                     System.exit(0);
@@ -187,6 +192,11 @@ public class GameWindow extends Application {
             @Override
             public MessageWrapper[] onMsgReceive(AgentChangedMsg recMessage, Agent sender) {
                 Platform.runLater(() -> {
+                    if (ClientMain.appEnded)
+                        return;
+
+                    ClientMain.appEnded = true;
+
                     new Alert(Alert.AlertType.WARNING,
                             "A player has disconnected from the game. App will now close.")
                             .showAndWait();

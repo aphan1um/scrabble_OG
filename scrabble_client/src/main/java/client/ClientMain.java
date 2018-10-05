@@ -14,6 +14,8 @@ public class ClientMain extends Application {
     public static ScrabbleServerListener server;
     public static Agent agentID;
 
+    public static boolean appEnded = false;
+
     public static void main(String[] args) {
         listener = new ScrabbleClientListener();
         launch(args);
