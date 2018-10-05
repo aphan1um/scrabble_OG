@@ -41,7 +41,7 @@ public class LobbyController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // add chat box
-        FXMLLoader loader = new FXMLLoader(StageUtils.getResource("fxml/ChatBox.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ChatBox.fxml"));
         chatBox = new ChatBoxController();
         loader.setController(chatBox);
 
@@ -138,7 +138,7 @@ public class LobbyController implements Initializable {
         Stage newStage = new Stage();
 
         FXMLLoader loader = new FXMLLoader(
-                StageUtils.getResource("fxml/LobbyForm.fxml"));
+                LobbyController.class.getResource("/LobbyForm.fxml"));
         loader.setController(new LobbyController());
 
         try {

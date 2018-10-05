@@ -1,7 +1,5 @@
 package client.controller;
 
-import client.ClientMain;
-import com.sun.security.ntlm.Client;
 import core.game.Agent;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleIntegerProperty;

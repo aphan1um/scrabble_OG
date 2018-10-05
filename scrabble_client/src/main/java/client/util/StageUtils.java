@@ -18,8 +18,4 @@ public class StageUtils {
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.initOwner(parent);
     }
-
-    public static URL getResource(String name) {
-        return StageUtils.class.getResource("../../../resources/" + name);
-    }
 }

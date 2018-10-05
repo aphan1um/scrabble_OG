@@ -4,12 +4,10 @@ import client.ClientMain;
 import client.util.StageUtils;
 import core.game.Agent;
 import core.game.LiveGame;
-import core.messageType.GameVoteMsg;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -24,7 +22,6 @@ import javafx.stage.StageStyle;
 import java.awt.*;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Map;
 import java.util.ResourceBundle;
 
 public class ScrabbleBoardController implements Initializable {
@@ -127,7 +124,7 @@ public class ScrabbleBoardController implements Initializable {
     }
 
     public void popupVoteScreen(String hor_str, String ver_str) {
-        FXMLLoader loader = new FXMLLoader(StageUtils.getResource("fxml/VoteScreen.fxml"));
+        FXMLLoader loader = new FXMLLoader(this.getClass().getResource("/VoteScreen.fxml"));
         VoteScreenForm voteForm = new VoteScreenForm();
         loader.setController(voteForm);
 

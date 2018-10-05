@@ -1,13 +1,11 @@
 package client;
 
-import com.google.common.math.Quantiles;
 import core.game.Agent;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import client.controller.LoginFormController;
-import client.util.StageUtils;
 import listeners.ScrabbleClientListener;
 import listeners.ScrabbleServerListener;
 
@@ -23,7 +21,7 @@ public class ClientMain extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        FXMLLoader loader = new FXMLLoader(StageUtils.getResource("fxml/LoginForm.fxml"));
+        FXMLLoader loader = new FXMLLoader(this.getClass().getResource("/LoginForm.fxml"));
         loader.setController(new LoginFormController(primaryStage));
 
         Scene scene = new Scene(loader.load());

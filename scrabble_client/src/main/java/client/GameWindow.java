@@ -40,7 +40,7 @@ public class GameWindow extends Application {
         DockStation station = AnchorageSystem.createStation();
 
         // END PREPARE TABLE SECTION
-        FXMLLoader loader = new FXMLLoader(StageUtils.getResource("/fxml/ScrabbleBoard.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ScrabbleBoard.fxml"));
         loader.setController(new ScrabbleBoardController(null));
 
         DockNode node1 = AnchorageSystem.createDock("Game Board",
@@ -48,7 +48,7 @@ public class GameWindow extends Application {
         //node1.setMinSize(500, 500);
         node1.dock(station, DockNode.DockPosition.LEFT);
 
-        Parent chat_root = FXMLLoader.load(StageUtils.getResource("fxml/ChatBox.fxml"));
+        Parent chat_root = FXMLLoader.load(getClass().getResource("/ChatBox.fxml"));
         DockNode node2 = AnchorageSystem.createDock("Chat", chat_root);
         //node2.setMinSize(500, 200);
         node2.dock(station, DockNode.DockPosition.BOTTOM, 0.75);
@@ -68,7 +68,7 @@ public class GameWindow extends Application {
     public GameWindow(LiveGame initGame) {
         DockStation station = AnchorageSystem.createStation();
 
-        FXMLLoader loader = new FXMLLoader(StageUtils.getResource("fxml/ScrabbleBoard.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ScrabbleBoard.fxml"));
         scrabbleBoard = new ScrabbleBoardController(initGame);
         loader.setController(scrabbleBoard);
 
@@ -83,7 +83,7 @@ public class GameWindow extends Application {
         node1.dock(station, DockNode.DockPosition.LEFT);
 
         Parent chat_root = null;
-        loader = new FXMLLoader(StageUtils.getResource("fxml/ChatBox.fxml"));
+        loader = new FXMLLoader(getClass().getResource("/ChatBox.fxml"));
         try {
             chatBox = new ChatBoxController();
             loader.setController(chatBox);
@@ -96,7 +96,7 @@ public class GameWindow extends Application {
         node2.dock(station, DockNode.DockPosition.BOTTOM, 0.75);
 
         // add scoretable;
-        loader = new FXMLLoader(StageUtils.getResource("fxml/ScoreBox.fxml"));
+        loader = new FXMLLoader(this.getClass().getResource("/ScoreBox.fxml"));
         scoreBoard = new ScoreBoxController(initGame.getScores());
         loader.setController(scoreBoard);
         DockNode node3 = null;
@@ -107,7 +107,6 @@ public class GameWindow extends Application {
         }
 
         node3.dock(station, DockNode.DockPosition.RIGHT, 0.8);
-        System.out.println("Got created");
 
         AnchorageSystem.installDefaultStyle();
 

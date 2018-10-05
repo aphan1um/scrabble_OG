@@ -55,7 +55,7 @@ public class LoginFormController implements Initializable {
         imgScrabble.fitHeightProperty().bind(imgPane.heightProperty());
         imgScrabble.fitWidthProperty().bind(imgPane.widthProperty());
 
-        InputStream is = getClass().getResourceAsStream("../../../resources/scrabble.jpg");
+        InputStream is = getClass().getResourceAsStream("/scrabble.jpg");
         Image scrabble_img = new Image(is);
 
         // adjust image ratio
