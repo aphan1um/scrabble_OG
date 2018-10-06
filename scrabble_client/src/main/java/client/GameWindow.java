@@ -38,7 +38,7 @@ public class GameWindow {
     private final Board board;
     private Stage popupStage;
 
-    public GameWindow(LiveGame initGame) {
+    public GameWindow(LiveGame initGame) throws IOException {
         board = new Board(20, 20);
 
         station = AnchorageSystem.createStation();
@@ -48,24 +48,14 @@ public class GameWindow {
         loader.setController(scrabbleBoard);
 
         DockNode node1 = null;
-        try {
-            node1 = AnchorageSystem.createDock("Game Board",
-                    loader.load());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        node1 = AnchorageSystem.createDock("Game Board", loader.load());
         node1.dock(station, DockNode.DockPosition.LEFT);
 
         Parent chat_root = null;
+        chatBox = new ChatBoxController();
         loader = new FXMLLoader(getClass().getResource("/ChatBox.fxml"));
-        try {
-            chatBox = new ChatBoxController();
-            loader.setController(chatBox);
-            chat_root = loader.load();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        DockNode node2 = AnchorageSystem.createDock("Chat", chat_root);
+        loader.setController(chatBox);
+        DockNode node2 = AnchorageSystem.createDock("Chat", loader.load());
         node2.dock(station, DockNode.DockPosition.BOTTOM, 0.75);
 
         // add score table;
@@ -73,11 +63,7 @@ public class GameWindow {
         scoreBoard = new ScoreBoxController(initGame.getScores());
         loader.setController(scoreBoard);
         DockNode node3 = null;
-        try {
-            node3 = AnchorageSystem.createDock("Scores", loader.load());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        node3 = AnchorageSystem.createDock("Scores", loader.load());
 
         node3.dock(station, DockNode.DockPosition.RIGHT, 0.8);
 
@@ -155,6 +141,7 @@ public class GameWindow {
             }
         };
 
+        // add events to client listener
         Connections.getListener().getEventList()
                 .addEvents(chatEvent, actionEvent, newTurnEvent,
                         gameEndEvent, playerLeftEvent);
@@ -176,8 +163,9 @@ public class GameWindow {
         if (!txtAppend.isEmpty())
             chatBox.appendText(txtAppend + "\n", Color.DARKCYAN);
 
-        scrabbleBoard.updateUI(msg, scoreBoard.scores.get(ClientMain.agentID));
+        // update scores first, then display it on UI
         scoreBoard.updateScore(msg.getLastPlayer(), msg.getNewPoints());
+        scrabbleBoard.updateUI(msg, scoreBoard.scores.get(ClientMain.agentID));
     }
 
     public void popupVoteScreen(String hor_str, String ver_str) {

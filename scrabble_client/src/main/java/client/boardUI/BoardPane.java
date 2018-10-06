@@ -192,7 +192,8 @@ public class BoardPane extends AnchorPane {
     }
 
     private void openTextField() {
-        if (canvas.getSelectedCell() == null || !canvas.enabledProperty.get())
+        if (canvas.getSelectedCell() == null || !canvas.enabledProperty.get() ||
+            !board.isEmpty(canvas.getSelectedCell()))
             return;
 
         positionTextField();

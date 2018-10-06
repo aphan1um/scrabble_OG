@@ -116,7 +116,12 @@ public class LobbyController implements Initializable {
 
                 Platform.runLater(() -> {
                     ((Stage)btnKick.getScene().getWindow()).close();
-                    new GameWindow(recMessage.getGameData());
+
+                    try {
+                        new GameWindow(recMessage.getGameData());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 });
 
                 return null;
