@@ -70,8 +70,9 @@ public class GameWindow {
 
         Stage stage = new Stage();
         Scene scene = new Scene(station, 800, 700);
-        stage.setTitle(String.format("[%s] Scrabble Game",
-                Connections.playerProperty().get()));
+        stage.setTitle(String.format("[%s] Scrabble Game (Lobby - %s)",
+                Connections.playerProperty().get(),
+                Connections.getListener().getLobbyName()));
         stage.setScene(scene);
 
         // TODO: Temporary fix
