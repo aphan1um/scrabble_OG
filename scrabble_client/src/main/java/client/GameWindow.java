@@ -1,16 +1,17 @@
 package client;
 
+import core.game.Board;
 import client.controller.ChatBoxController;
 import client.controller.ScoreBoxController;
 import com.anchorage.docks.node.DockNode;
 import com.anchorage.docks.stations.DockStation;
 import com.anchorage.system.AnchorageSystem;
 import core.game.Agent;
+import core.game.GameRules;
 import core.game.LiveGame;
 import core.message.MessageEvent;
 import core.message.MessageWrapper;
 import core.messageType.*;
-import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -24,47 +25,16 @@ import java.awt.*;
 import java.io.IOException;
 import java.util.Map;
 
-public class GameWindow extends Application {
-
+public class GameWindow {
     private ChatBoxController chatBox;
     private ScrabbleBoardController scrabbleBoard;
     private ScoreBoxController scoreBoard;
 
-    public static void main(String[] args) {
-        launch(args);
-    }
-
-    @Override
-    public void start(Stage primaryStage) throws IOException {
-        DockStation station = AnchorageSystem.createStation();
-
-        // END PREPARE TABLE SECTION
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ScrabbleBoard.fxml"));
-        loader.setController(new ScrabbleBoardController(null));
-
-        DockNode node1 = AnchorageSystem.createDock("Game Board",
-                loader.load());
-        //node1.setMinSize(500, 500);
-        node1.dock(station, DockNode.DockPosition.LEFT);
-
-        Parent chat_root = FXMLLoader.load(getClass().getResource("/ChatBox.fxml"));
-        DockNode node2 = AnchorageSystem.createDock("Chat", chat_root);
-        //node2.setMinSize(500, 200);
-        node2.dock(station, DockNode.DockPosition.BOTTOM, 0.75);
-
-        AnchorageSystem.installDefaultStyle();
-
-        Scene scene = new Scene(station, 600, 700);
-        primaryStage.setTitle("Scrabble Game");
-        primaryStage.setScene(scene);
-
-        // TODO: This is silly with Swing and JavaFX
-        primaryStage.setOnCloseRequest(e -> System.exit(0));
-
-        primaryStage.show();
-    }
+    private final Board board;
 
     public GameWindow(LiveGame initGame) {
+        board = new Board(20, 20);
+
         DockStation station = AnchorageSystem.createStation();
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/ScrabbleBoard.fxml"));
@@ -78,7 +48,6 @@ public class GameWindow extends Application {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        //node1.setMinSize(500, 500);
         node1.dock(station, DockNode.DockPosition.LEFT);
 
         Parent chat_root = null;
@@ -119,6 +88,8 @@ public class GameWindow extends Application {
 
         addEvents();
 
+        updateTurn(new NewTurnMsg(initGame.getCurrentTurn(), initGame.getCurrentTurn(),
+                0, false));
         stage.show();
     }
 
@@ -140,15 +111,14 @@ public class GameWindow extends Application {
                 Platform.runLater(() -> {
                     Point p = recMessage.getMoveLocation();
 
-                    scrabbleBoard.scrabblePane.getCanvas().setLetter(p.x, p.y, recMessage.getLetter());
+                    board.set(p.x, p.y, recMessage.getLetter());
 
-                    Map<GameVoteMsg.Orientation, String> strMap =
-                            GameVoteMsg.getValidOrientations(scrabbleBoard.scrabblePane.getCanvas().letters,
-                                    p);
+                    Map<GameRules.Orientation, String> strMap =
+                            GameRules.getValidOrientations(board, p);
 
-                    scrabbleBoard.scrabblePane.getCanvas().chosenCellProperty.set(p);
-                    scrabbleBoard.popupVoteScreen(strMap.get(GameVoteMsg.Orientation.HORIZONTAL),
-                            strMap.get(GameVoteMsg.Orientation.VERTICAL));
+                    scrabbleBoard.boardPane.chosenCellProperty().set(p);
+                    scrabbleBoard.popupVoteScreen(strMap.get(GameRules.Orientation.HORIZONTAL),
+                            strMap.get(GameRules.Orientation.VERTICAL));
                 });
 
                 return null;
@@ -158,10 +128,7 @@ public class GameWindow extends Application {
         MessageEvent<NewTurnMsg> newTurnEvent = new MessageEvent<NewTurnMsg>() {
             @Override
             public MessageWrapper[] onMsgReceive(NewTurnMsg recMessage, Agent sender) {
-                Platform.runLater(() -> {
-                    scrabbleBoard.updateTurn(recMessage, scoreBoard, chatBox);
-
-                });
+                Platform.runLater(() -> updateTurn(recMessage));
                 return null;
             }
         };
@@ -207,5 +174,23 @@ public class GameWindow extends Application {
         Connections.getListener().getEventList()
                 .addEvents(chatEvent, actionEvent, newTurnEvent,
                         gameEndEvent, playerLeftEvent);
+    }
+
+    public void updateTurn(NewTurnMsg msg) {
+        // inform last player's move
+        String txtAppend = "";
+        int scoreDiff = msg.getNewPoints() - scoreBoard.scores.get(msg.getLastPlayer());
+        if (msg.hasSkippedTurn()) {
+            txtAppend = String.format("%s has skipped turn.", msg.getLastPlayer());
+        } else if (scoreDiff != 0) {
+            txtAppend = String.format("%s has earned %d point"
+                    + (scoreDiff == 1 ? "." : "s."), msg.getLastPlayer(), scoreDiff);
+        }
+
+        if (!txtAppend.isEmpty())
+            chatBox.appendText(txtAppend + "\n", Color.DARKCYAN);
+
+        scrabbleBoard.updateUI(msg, scoreBoard.scores.get(ClientMain.agentID));
+        scoreBoard.updateScore(msg.getLastPlayer(), msg.getNewPoints());
     }
 }

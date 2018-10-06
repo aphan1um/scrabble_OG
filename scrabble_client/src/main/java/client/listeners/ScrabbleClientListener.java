@@ -3,6 +3,7 @@ package client.listeners;
 import client.ClientMain;
 import core.ClientListener;
 import core.game.Agent;
+import core.game.GameRules;
 import core.message.Message;
 import core.message.MessageWrapper;
 import core.messageType.*;
@@ -24,7 +25,7 @@ public class ScrabbleClientListener extends ClientListener {
         serverTime = -1;
     }
 
-    public void sendGameVote(GameVoteMsg.Orientation orient, boolean accepted) {
+    public void sendGameVote(GameRules.Orientation orient, boolean accepted) {
         try {
             sendMessage(new GameVoteMsg(orient, accepted), socket, null);
         } catch (IOException e) {
@@ -38,6 +39,10 @@ public class ScrabbleClientListener extends ClientListener {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void sendGamePass() {
+        sendGameMove(null, null);
     }
 
     // TODO: Experimental and needs to be enforced better

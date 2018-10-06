@@ -16,9 +16,9 @@ public class LiveGame {
     private Agent currentTurn;
 
     private int numFilled;
-    private transient Map<GameVoteMsg.Orientation, Integer> voteScore;
-    private transient Map<GameVoteMsg.Orientation, Integer> numVoted;
-    private transient Map<Point, Character> board;
+    private transient Map<GameRules.Orientation, Integer> voteScore;
+    private transient Map<GameRules.Orientation, Integer> numVoted;
+    private Board board;
     private transient Point lastLetterPos;
     private transient int numSkipConsecutive;
 
@@ -30,7 +30,9 @@ public class LiveGame {
             scores.put(a, 0);
 
         this.players = players;
-        this.board = new HashMap<>();;
+
+        // TODO: fix this
+        this.board = new Board(20, 20);
 
         // TODO: simple for now..
     }
@@ -39,7 +41,7 @@ public class LiveGame {
         voteScore = new HashMap<>(2);
         numVoted = new HashMap<>(2);
 
-        for (GameVoteMsg.Orientation o : GameVoteMsg.getValidOrientations(board, lastLetterPos).keySet()) {
+        for (GameRules.Orientation o : GameRules.getValidOrientations(board, lastLetterPos).keySet()) {
             voteScore.put(o, 0);
             numVoted.put(o, 0);
         }
@@ -63,7 +65,7 @@ public class LiveGame {
         return numSkipConsecutive == players.size();
     }
 
-    public void addVote(boolean accepted, GameVoteMsg.Orientation orient) {
+    public void addVote(boolean accepted, GameRules.Orientation orient) {
         numVoted.put(orient, numVoted.get(orient) + 1);
 
         if (accepted)
@@ -72,7 +74,7 @@ public class LiveGame {
 
     public boolean allVoted() {
         // TODO: Debug
-        for (Map.Entry<GameVoteMsg.Orientation, Integer> entry : numVoted.entrySet()) {
+        for (Map.Entry<GameRules.Orientation, Integer> entry : numVoted.entrySet()) {
             if (entry.getValue() != players.size())
                 return false;
         }
@@ -82,9 +84,9 @@ public class LiveGame {
 
     private int calculateScore() {
         int totalAdd = 0;
-        Map<GameVoteMsg.Orientation, String> wordMap = GameVoteMsg.getValidOrientations(board, lastLetterPos);
+        Map<GameRules.Orientation, String> wordMap = GameRules.getValidOrientations(board, lastLetterPos);
 
-        for (GameVoteMsg.Orientation o : wordMap.keySet()) {
+        for (GameRules.Orientation o : wordMap.keySet()) {
             if (numVoted.get(o) == voteScore.get(o))
                 totalAdd += wordMap.get(o).length();
         }
@@ -96,7 +98,7 @@ public class LiveGame {
         if (pos == null || letter == null)
             return;
 
-        board.put(pos, letter);
+        board.set(pos, letter);
         lastLetterPos = pos;
         numFilled++;
 
@@ -105,6 +107,10 @@ public class LiveGame {
 
     public boolean isBoardFull() {
         return numFilled == NUM_COLS * NUM_ROWS;
+    }
+
+    public Board getBoard() {
+        return board;
     }
 
     public Map<Agent, Integer> getScores() {

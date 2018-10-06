@@ -5,13 +5,12 @@ import java.net.Socket;
 import java.util.concurrent.*;
 
 public abstract class ClientListener extends Listener {
-
+    protected Socket socket;
     public ClientListener(String name) {
         super(name);
     }
 
     public abstract void onAuthenticate() throws Exception;
-    public Socket socket;
 
     @Override
     public void reset() {

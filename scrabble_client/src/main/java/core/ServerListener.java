@@ -32,7 +32,5 @@ public abstract class ServerListener extends Listener {
                 }
             }
         }).start();
-
-        System.out.println("Created a client.listeners!");
     }
 }

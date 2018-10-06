@@ -14,10 +14,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 public abstract class Listener {
     private static final int HEARTBEAT_PERIOD = 10000; // in ms
@@ -37,7 +34,19 @@ public abstract class Listener {
     public Listener(String name) {
         this.listenerName = name;
         eventList = new EventMessageList();
-        gson = new GsonBuilder().enableComplexMapKeySerialization().create();
+        gson = new GsonBuilder()
+                .enableComplexMapKeySerialization()
+                .addSerializationExclusionStrategy(new ExclusionStrategy() { // refer to https://stackoverflow.com/a/13637572
+            @Override
+            public boolean shouldSkipField(FieldAttributes f) {
+                return f.getDeclaringClass().equals(Observable.class);
+            }
+
+            @Override
+            public boolean shouldSkipClass(Class<?> clazz) {
+                return false;
+            }
+        }).create();
         reset();
         prepareEvents();
     }
