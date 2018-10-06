@@ -6,6 +6,7 @@ import core.ClientListener;
 import core.game.Agent;
 import core.game.GameRules;
 import core.message.Message;
+import core.message.MessageEvent;
 import core.message.MessageWrapper;
 import core.messageType.*;
 import javafx.application.Platform;
@@ -19,6 +20,8 @@ public class ScrabbleClientListener extends ClientListener {
     private long serverTime;
     private TimeSync timeSync;
     private String lobbyName;
+
+    private double pingMS; // ping in milliseconds (ms)
 
     public ScrabbleClientListener(String name) {
         super(name);
@@ -80,11 +83,11 @@ public class ScrabbleClientListener extends ClientListener {
 
     @Override
     protected boolean onMessageReceived(MessageWrapper msgRec, Socket s) {
-        if (msgRec.getMessageType() == Message.MessageType.QUERY &&
-                ((MSGQuery)msgRec.getMessage()).getQueryType() == MSGQuery.QueryType.GAME_ALREADY_MADE) {
-
-            System.out.println("Game was already made.");
-            //throw new GameInProgressException();
+        if (msgRec.getMessageType() == Message.MessageType.PING &&
+                msgRec.getTimeStamps().size() > 1) {
+            pingMS = Math.abs(msgRec.getTimeStamps().get(0) - System.nanoTime());
+            pingMS /= Math.pow(10, 6);
+            System.out.println(pingMS);
         }
         /**
 

@@ -180,6 +180,14 @@ public class ScrabbleServerListener extends ServerListener {
 
                 return null;
             }
+        },
+
+        // ping back to the user
+        new MessageEvent<MSGPing>() {
+            @Override
+            public MessageWrapper[] onMsgReceive(MSGPing msg, Agent sender) {
+                return MessageWrapper.prepWraps(new MessageWrapper(msg, sender));
+            }
         });
     }
 
