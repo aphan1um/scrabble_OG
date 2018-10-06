@@ -10,10 +10,10 @@ import static core.game.LiveGame.NUM_COLS;
 import static core.game.LiveGame.NUM_ROWS;
 
 /**
- * From client: From a client, the listeners records their decision
+ * From client: From a client, the client.listeners records their decision
  * if they think the string is a word or not.
  *
- * From listeners: Broadcasts to all players the verdict via accepted.
+ * From client.listeners: Broadcasts to all players the verdict via accepted.
  */
 public class GameVoteMsg implements Message {
     public enum Orientation {

@@ -1,4 +1,4 @@
-package listeners;
+package client.listeners;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -8,7 +8,6 @@ import core.game.Agent;
 import core.game.Lobby;
 import core.message.*;
 import core.messageType.*;
-import javafx.scene.layout.Pane;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -22,8 +21,8 @@ public class ScrabbleServerListener extends ServerListener {
     private BiMap<String, Lobby> lobbyMap;
     private Map<Agent, Lobby> playerLobbyMap; // note this is not a bijection, so a BiMap can't be used
 
-    public ScrabbleServerListener() {
-        super("Server");
+    public ScrabbleServerListener(String name) {
+        super(name);
     }
 
     @Override

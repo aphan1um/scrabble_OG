@@ -1,13 +1,10 @@
 package core;
 
-import core.game.Agent;
-import javafx.concurrent.Task;
-
 import java.io.IOException;
 import java.net.Socket;
 import java.util.concurrent.*;
 
-public abstract class ClientListener extends SocketListener {
+public abstract class ClientListener extends Listener {
 
     public ClientListener(String name) {
         super(name);
@@ -28,7 +25,7 @@ public abstract class ClientListener extends SocketListener {
         }
     }
 
-    public void startListener(String ip, int port) throws Exception {
+    public void start(String ip, int port) throws Exception {
         reset();
 
         socket = new Socket(ip, port);

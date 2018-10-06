@@ -19,7 +19,6 @@ import javafx.scene.control.Alert;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import client.controller.ScrabbleBoardController;
-import client.util.StageUtils;
 
 import java.awt.*;
 import java.io.IOException;
@@ -205,7 +204,8 @@ public class GameWindow extends Application {
             }
         };
 
-        ClientMain.listener.eventList.addEvents(chatEvent,
-                actionEvent, newTurnEvent, gameEndEvent, playerLeftEvent);
+        Connections.getListener().getEventList()
+                .addEvents(chatEvent, actionEvent, newTurnEvent,
+                        gameEndEvent, playerLeftEvent);
     }
 }

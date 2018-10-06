@@ -1,6 +1,7 @@
 package client.controller;
 
 import client.ClientMain;
+import client.Connections;
 import core.messageType.GameVoteMsg;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
@@ -41,28 +42,28 @@ public class VoteScreenForm implements Initializable {
             horAccept.setDisable(true);
             horReject.setDisable(true);
 
-            ClientMain.listener.sendGameVote(GameVoteMsg.Orientation.HORIZONTAL, true);
+            Connections.getListener().sendGameVote(GameVoteMsg.Orientation.HORIZONTAL, true);
         });
 
         horReject.setOnAction(e -> {
             horAccept.setDisable(true);
             horReject.setDisable(true);
 
-            ClientMain.listener.sendGameVote(GameVoteMsg.Orientation.HORIZONTAL, false);
+            Connections.getListener().sendGameVote(GameVoteMsg.Orientation.HORIZONTAL, false);
         });
 
         verAccept.setOnAction(e -> {
             verAccept.setDisable(true);
             verReject.setDisable(true);
 
-            ClientMain.listener.sendGameVote(GameVoteMsg.Orientation.VERTICAL, true);
+            Connections.getListener().sendGameVote(GameVoteMsg.Orientation.VERTICAL, true);
         });
 
         verReject.setOnAction(e -> {
             verAccept.setDisable(true);
             verReject.setDisable(true);
 
-            ClientMain.listener.sendGameVote(GameVoteMsg.Orientation.VERTICAL, false);
+            Connections.getListener().sendGameVote(GameVoteMsg.Orientation.VERTICAL, false);
         });
     }
 

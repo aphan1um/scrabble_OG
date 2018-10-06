@@ -1,5 +1,6 @@
 package client.controller;
 
+import client.Connections;
 import client.GameWindow;
 import core.game.Agent;
 import core.message.MessageEvent;
@@ -20,7 +21,6 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import client.ClientMain;
-import client.util.StageUtils;
 
 import java.io.IOException;
 import java.net.URL;
@@ -67,7 +67,7 @@ public class LobbyController implements Initializable {
             }
         };
 
-        // when listeners sends the initial list of players in lobby
+        // when client.listeners sends the initial list of players in lobby
         MessageEvent<AgentChangedMsg> getPlayersEvent = new MessageEvent<AgentChangedMsg>() {
             @Override
             public MessageWrapper[] onMsgReceive(AgentChangedMsg recMessage, Agent sender) {
@@ -111,7 +111,7 @@ public class LobbyController implements Initializable {
             public MessageWrapper[] onMsgReceive(GameStatusMsg recMessage, Agent sender) {
                 // clear events
                 // TODO: There's got to be a better way to do this..
-                ClientMain.listener.eventList.removeEvents(chatEvent,
+                Connections.getListener().getEventList().removeEvents(chatEvent,
                         getPlayersEvent, getPlayerStatus, this);
 
                 Platform.runLater(() -> {
@@ -124,11 +124,11 @@ public class LobbyController implements Initializable {
         };
 
         // add events to clientlistener
-        ClientMain.listener.eventList.addEvents(chatEvent,
+        Connections.getListener().getEventList().addEvents(chatEvent,
                 getPlayersEvent, getPlayerStatus, gameStartEvent);
 
         btnStartGame.setOnAction(e -> {
-            ClientMain.listener.sendGameStart();
+            Connections.getListener().sendGameStart();
             btnStartGame.disableProperty().set(true); // TODO: debug
         });
     }

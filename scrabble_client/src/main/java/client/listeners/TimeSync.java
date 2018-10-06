@@ -1,11 +1,6 @@
-package listeners;
-
-import com.google.common.math.Quantiles;
-import com.google.common.math.Stats;
+package client.listeners;
 
 import java.util.*;
-import java.util.stream.DoubleStream;
-import java.util.stream.Stream;
 
 public class TimeSync {
     private Map<Long, Double> latencyMap;

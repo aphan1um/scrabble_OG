@@ -1,5 +1,6 @@
 package client.controller;
 
+import client.Connections;
 import core.game.Agent;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -15,7 +16,7 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import client.ClientMain;
 import client.util.StageUtils;
-import listeners.ScrabbleServerListener;
+import client.listeners.ScrabbleServerListener;
 
 import java.io.InputStream;
 import java.net.URL;
@@ -137,21 +138,20 @@ public class LoginFormController implements Initializable {
 
         // set player details
         ClientMain.agentID = new Agent(txtName.getText(), Agent.AgentType.PLAYER);
-        // TODO: debug
-        ClientMain.listener.listenerName = "Agent " + txtName.getText();
+
 
         Task task = new Task() {
             @Override
             protected Object call() throws Exception {
                 if (isHosting) {
-                    ClientMain.server = new ScrabbleServerListener();
-                    ClientMain.server.startListener(Integer.parseInt(txtPort.getText()));
+                    Connections.getServer().start(
+                            Integer.parseInt(txtPort.getText()));
 
-                    ClientMain.listener.startListener(
+                    Connections.getListener().start(
                             "localhost",
                             Integer.parseInt(txtPort.getText()));
                 } else {
-                    ClientMain.listener.startListener(
+                    Connections.getListener().start(
                             txtIP.getText(),
                             Integer.parseInt(txtPort.getText()));
                 }
@@ -165,10 +165,10 @@ public class LoginFormController implements Initializable {
             dialog.close();
             stage.close();
             // join lobby
-            ClientMain.listener.joinLobby(txtLobby.getText());
+            Connections.getListener().joinLobby(txtLobby.getText());
             lobbyStage.show();
         });
-        // happens if exception is thrown (e.g. listeners doesn't exist)
+        // happens if exception is thrown (e.g. client.listeners doesn't exist)
         task.setOnFailed((e) -> {
             dialog.close();
 

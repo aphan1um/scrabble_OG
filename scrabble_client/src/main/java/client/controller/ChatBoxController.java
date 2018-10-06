@@ -1,11 +1,7 @@
 package client.controller;
 
 import client.ClientMain;
-import core.game.Agent;
-import core.message.MessageEvent;
-import core.message.MessageWrapper;
-import core.messageType.AgentChangedMsg;
-import core.messageType.ChatMsg;
+import client.Connections;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.event.ActionEvent;
@@ -16,7 +12,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import org.fxmisc.richtext.InlineCssTextArea;
 
@@ -65,7 +60,7 @@ public class ChatBoxController implements Initializable {
         });
 
         btnSend.setOnAction(e -> {
-            ClientMain.listener.sendChatMessage(txtInput.getText());
+            Connections.getListener().sendChatMessage(txtInput.getText());
             txtInput.setText("");
         });
 

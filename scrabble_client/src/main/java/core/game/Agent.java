@@ -14,6 +14,10 @@ public class Agent {
         this.agentType = agentType;
     }
 
+    public Agent(AgentType agentType) {
+        this.agentType = agentType;
+    }
+
     public String getName() {
         return name;
     }

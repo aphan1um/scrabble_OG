@@ -1,8 +1,7 @@
 package client.controller;
 
 import client.ClientMain;
-import client.util.StageUtils;
-import core.game.Agent;
+import client.Connections;
 import core.game.LiveGame;
 import core.messageType.NewTurnMsg;
 import javafx.event.EventHandler;
@@ -73,7 +72,7 @@ public class ScrabbleBoardController implements Initializable {
         btnPass.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-                ClientMain.listener.sendGameMove(null, null);
+                Connections.getListener().sendGameMove(null, null);
             }
         });
 
@@ -86,7 +85,7 @@ public class ScrabbleBoardController implements Initializable {
                 } else {
                     Point p = scrabblePane.getCanvas().chosenCellProperty.get();
 
-                    ClientMain.listener.sendGameMove(p,
+                    Connections.getListener().sendGameMove(p,
                             scrabblePane.getCanvas().getLetter(p.x, p.y));
                     /**
                     System.out.println(scrabblePane.getMark());

@@ -19,14 +19,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-public abstract class SocketListener {
+public abstract class Listener {
     private static final int HEARTBEAT_PERIOD = 10000; // in ms
-
-    public String listenerName;
+    private String listenerName;
 
     // TODO: This solves the issue of iterating through the list, but we must make
     // sure only ONE thread can modify it.
-    public volatile EventMessageList eventList;
+    protected volatile EventMessageList eventList;
     protected final Gson gson;
     protected BiMap<Socket, Agent> connections;
 
@@ -35,7 +34,7 @@ public abstract class SocketListener {
     protected abstract boolean onMessageReceived(MessageWrapper msgRec, Socket s) throws IOException;
     protected abstract void onUserDisconnect(Agent p);
 
-    public SocketListener(String name) {
+    public Listener(String name) {
         this.listenerName = name;
         eventList = new EventMessageList();
         gson = new GsonBuilder().enableComplexMapKeySerialization().create();
@@ -43,6 +42,13 @@ public abstract class SocketListener {
         prepareEvents();
     }
 
+    public String getName() {
+        return listenerName;
+    }
+
+    public EventMessageList getEventList() {
+        return eventList;
+    }
     // reset variables
     protected void reset() {
         connections = Maps.synchronizedBiMap(HashBiMap.create());

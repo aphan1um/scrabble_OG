@@ -1,4 +1,4 @@
-package listeners;
+package client.listeners;
 
 import client.ClientMain;
 import core.ClientListener;
@@ -18,8 +18,8 @@ public class ScrabbleClientListener extends ClientListener {
     private long serverTime;
     private TimeSync timeSync;
 
-    public ScrabbleClientListener() {
-        super("Agent");
+    public ScrabbleClientListener(String name) {
+        super(name);
         timeSync = new TimeSync();
         serverTime = -1;
     }
@@ -119,7 +119,7 @@ public class ScrabbleClientListener extends ClientListener {
             ClientMain.appEnded = true;
 
             new Alert(Alert.AlertType.ERROR,
-                    "The listeners you've been connected to has closed down. " +
+                    "The client.listeners you've been connected to has closed down. " +
                             "The app will now exit.").showAndWait();
             System.exit(-1);
 
@@ -135,7 +135,7 @@ public class ScrabbleClientListener extends ClientListener {
         // TODO: potential code dups, also dodgy code
         DataInputStream in = new DataInputStream(socket.getInputStream());
 
-        // wait response from listeners (ignore pings)
+        // wait response from client.listeners (ignore pings)
         while (true) {
             String read = in.readUTF();
             MessageWrapper msgRec = Message.fromJSON(read, gson);
