@@ -139,7 +139,6 @@ public class LoginFormController implements Initializable {
         // set player details
         ClientMain.agentID = new Agent(txtName.getText(), Agent.AgentType.PLAYER);
 
-
         Task task = new Task() {
             @Override
             protected Object call() throws Exception {

@@ -87,12 +87,6 @@ public abstract class Listener {
                 MessageWrapper msgRec = Message.fromJSON(read, gson);
 
                 // TODO: debug
-                JsonParser parser = new JsonParser();
-                JsonElement element = parser.parse(read);
-                JsonArray obj = element.getAsJsonObject().getAsJsonArray("timeStamps");
-                msgRec.timeStamps = gson.fromJson(obj, long[].class);
-
-                // TODO: debug
                 if (msgRec.getMessageType() != Message.MessageType.PING)
                     System.out.println(String.format("[%s gets from %s]:\t" + read,
                             listenerName, connections.get(client)));

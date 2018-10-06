@@ -117,18 +117,10 @@ public class ScrabbleClientListener extends ClientListener {
     @Override
     protected void onUserDisconnect(Agent p) {
         // TODO: This is a simplification.
-        Platform.runLater(() -> {
-            if (ClientMain.appEnded)
-                return;
-
-            ClientMain.appEnded = true;
-
-            new Alert(Alert.AlertType.ERROR,
-                    "The client.listeners you've been connected to has closed down. " +
-                            "The app will now exit.").showAndWait();
-            System.exit(-1);
-
-        });
+        Platform.runLater(() ->
+                ClientMain.endApp(
+                "The client.listeners you've been connected to has closed down. " +
+                            "The app will now exit."));
     }
 
     @Override

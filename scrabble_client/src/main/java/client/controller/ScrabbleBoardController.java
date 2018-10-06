@@ -43,8 +43,6 @@ public class ScrabbleBoardController implements Initializable {
     @FXML
     private Label lblScore;
 
-    private Stage popupStage;
-
     private Board board;
 
     public ScrabbleBoardController(LiveGame initGame) {
@@ -80,49 +78,9 @@ public class ScrabbleBoardController implements Initializable {
             if (boardPane.chosenCellProperty().get() != null)
                 board.empty(boardPane.chosenCellProperty().get());
         });
-
-        btnVote.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                /**
-                boardPane.getCanvas().chosenCellProperty.set(boardPane.getCanvas().getSelectedCell());
-                 **/
-                popupVoteScreen(null, null);
-            }
-        });
-    }
-
-    public void popupVoteScreen(String hor_str, String ver_str) {
-        FXMLLoader loader = new FXMLLoader(this.getClass().getResource("/VoteScreen.fxml"));
-        VoteScreenForm voteForm = new VoteScreenForm();
-        loader.setController(voteForm);
-
-        popupStage = new Stage(StageStyle.UNDECORATED);
-        popupStage.setOpacity(0.96);
-        popupStage.initOwner(hbox.getScene().getWindow());
-        popupStage.initModality(Modality.APPLICATION_MODAL);
-        popupStage.setTitle("Voting Time");
-
-        try {
-            Scene voteScene = new Scene(loader.load());
-            voteScene.setFill(Color.TRANSPARENT);
-            popupStage.setScene(voteScene);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        voteForm.displayStrings(hor_str, ver_str);
-        popupStage.show();
-    }
-
-    public void closePopup() {
-        if (popupStage != null)
-            popupStage.close();
     }
 
     public void updateUI(NewTurnMsg msg, int myScore) {
-        closePopup();
-
         lblTurn.setText(String.format("It is player %s's turn", msg.getNextPlayer().getName()));
         lblScore.setText("Your Score: " + myScore);
 
