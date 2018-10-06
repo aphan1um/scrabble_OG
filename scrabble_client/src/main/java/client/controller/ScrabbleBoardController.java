@@ -5,6 +5,9 @@ import client.Connections;
 import core.game.Board;
 import core.game.LiveGame;
 import core.messageType.MSGNewTurn;
+import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -33,6 +36,8 @@ public class ScrabbleBoardController implements Initializable {
     private Label lblTurn;
     @FXML
     private Label lblScore;
+    @FXML
+    private Label lblPing;
 
     private Board board;
 
@@ -68,6 +73,15 @@ public class ScrabbleBoardController implements Initializable {
         btnClear.setOnMouseClicked(e -> {
             if (boardPane.chosenCellProperty().get() != null)
                 board.empty(boardPane.chosenCellProperty().get());
+        });
+
+        // display approx ping between client-server
+        Connections.getListener().pingMSProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue observable, Number oldValue, Number newValue) {
+                Platform.runLater(() ->
+                        lblPing.setText(String.format("Ping: %.1f ms", newValue)));
+            }
         });
     }
 
