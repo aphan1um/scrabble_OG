@@ -51,13 +51,8 @@ public class ScrabbleClientListener extends ClientListener {
     }
 
     // TODO: Experimental and needs to be enforced better
-    public void joinLobby(Agent player, String lobbyName) {
-        try {
-            this.lobbyName = lobbyName;
-            sendMessage(new MSGJoinLobby(player, lobbyName));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void setLobbyName(String lobbyName) {
+        this.lobbyName = lobbyName;
     }
 
     public void sendChatMessage(String txt) {
@@ -119,7 +114,7 @@ public class ScrabbleClientListener extends ClientListener {
         // TODO: This is a simplification.
         Platform.runLater(() ->
                 ClientMain.endApp(
-                "The client.listeners you've been connected to has closed down. " +
+                "The server (or host) you were connected to has closed down. " +
                             "The app will now exit."));
     }
 

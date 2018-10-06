@@ -132,6 +132,8 @@ public class LoginFormController implements Initializable {
         Task task = new Task() {
             @Override
             protected Object call() throws Exception {
+                Connections.getListener().setLobbyName(txtLobby.getText());
+
                 if (isHosting) {
                     Connections.getServer().start(
                             Integer.parseInt(txtPort.getText()));
