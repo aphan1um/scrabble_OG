@@ -16,7 +16,6 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import client.ClientMain;
 import client.util.StageUtils;
-import client.listeners.ScrabbleServerListener;
 
 import java.io.InputStream;
 import java.net.URL;

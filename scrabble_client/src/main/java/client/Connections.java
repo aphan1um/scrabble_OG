@@ -1,7 +1,7 @@
 package client;
 
 import client.listeners.ScrabbleClientListener;
-import client.listeners.ScrabbleServerListener;
+import server.ScrabbleServerListener;
 import core.game.Agent;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
