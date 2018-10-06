@@ -5,9 +5,9 @@ import client.GameWindow;
 import core.game.Agent;
 import core.message.MessageEvent;
 import core.message.MessageWrapper;
-import core.messageType.AgentChangedMsg;
-import core.messageType.ChatMsg;
-import core.messageType.GameStatusMsg;
+import core.messageType.MSGAgentChanged;
+import core.messageType.MSGChat;
+import core.messageType.MSGGameStatus;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -20,7 +20,6 @@ import javafx.scene.control.ListView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import client.ClientMain;
 
 import java.io.IOException;
 import java.net.URL;
@@ -58,9 +57,9 @@ public class LobbyController implements Initializable {
         }
 
         // message received
-        MessageEvent<ChatMsg> chatEvent = new MessageEvent<ChatMsg>() {
+        MessageEvent<MSGChat> chatEvent = new MessageEvent<MSGChat>() {
             @Override
-            public MessageWrapper[] onMsgReceive(ChatMsg recMessage, Agent sender) {
+            public MessageWrapper[] onMsgReceive(MSGChat recMessage, Agent sender) {
                 chatBox.appendText(String.format("%s said:\t%s\n",
                         recMessage.getSender().getName(), recMessage.getChatMsg()), Color.BLACK);
                 return null;
@@ -68,9 +67,9 @@ public class LobbyController implements Initializable {
         };
 
         // when client.listeners sends the initial list of players in lobby
-        MessageEvent<AgentChangedMsg> getPlayersEvent = new MessageEvent<AgentChangedMsg>() {
+        MessageEvent<MSGAgentChanged> getPlayersEvent = new MessageEvent<MSGAgentChanged>() {
             @Override
-            public MessageWrapper[] onMsgReceive(AgentChangedMsg recMessage, Agent sender) {
+            public MessageWrapper[] onMsgReceive(MSGAgentChanged recMessage, Agent sender) {
                 switch (recMessage.getStatus()) {
                     case JOINED:
                         Platform.runLater(() -> lstPlayers.getItems().addAll(recMessage.getAgents()));
@@ -85,9 +84,9 @@ public class LobbyController implements Initializable {
         };
 
         // when player joins or leaves the lobby
-        MessageEvent<AgentChangedMsg> getPlayerStatus = new MessageEvent<AgentChangedMsg>() {
+        MessageEvent<MSGAgentChanged> getPlayerStatus = new MessageEvent<MSGAgentChanged>() {
             @Override
-            public MessageWrapper[] onMsgReceive(AgentChangedMsg recMessage, Agent sender) {
+            public MessageWrapper[] onMsgReceive(MSGAgentChanged recMessage, Agent sender) {
                 for (Agent agent : recMessage.getAgents()) {
                     switch (recMessage.getStatus()) {
                         case JOINED:
@@ -106,9 +105,9 @@ public class LobbyController implements Initializable {
         };
 
         // host has announced the game to start
-        MessageEvent<GameStatusMsg> gameStartEvent = new MessageEvent<GameStatusMsg>() {
+        MessageEvent<MSGGameStatus> gameStartEvent = new MessageEvent<MSGGameStatus>() {
             @Override
-            public MessageWrapper[] onMsgReceive(GameStatusMsg recMessage, Agent sender) {
+            public MessageWrapper[] onMsgReceive(MSGGameStatus recMessage, Agent sender) {
                 // clear events
                 // TODO: There's got to be a better way to do this..
                 Connections.getListener().getEventList().removeEvents(chatEvent,

@@ -4,7 +4,7 @@ import core.game.Agent;
 import core.game.LiveGame;
 import core.message.Message;
 
-public class GameStatusMsg implements Message {
+public class MSGGameStatus implements Message {
     public enum GameStatus {
         STARTED,
         ENDED
@@ -13,7 +13,7 @@ public class GameStatusMsg implements Message {
     private GameStatus status;
     private LiveGame gameData;
 
-    public GameStatusMsg(GameStatus status, LiveGame gameData) {
+    public MSGGameStatus(GameStatus status, LiveGame gameData) {
         this.status = status;
         this.gameData = gameData;
     }

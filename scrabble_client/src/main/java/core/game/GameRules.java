@@ -1,7 +1,5 @@
 package core.game;
 
-import core.messageType.GameVoteMsg;
-
 import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;

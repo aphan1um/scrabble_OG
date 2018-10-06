@@ -63,7 +63,7 @@ public class ScoreBoxController implements Initializable {
                     else
                         lst.add(change.getKey());
                 } else {
-                    // update score
+                    // update scores
                     tblScores.refresh();
                 }
             }

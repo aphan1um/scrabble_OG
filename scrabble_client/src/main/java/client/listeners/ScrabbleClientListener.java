@@ -8,7 +8,6 @@ import core.message.Message;
 import core.message.MessageWrapper;
 import core.messageType.*;
 import javafx.application.Platform;
-import javafx.scene.control.Alert;
 
 import java.awt.*;
 import java.io.DataInputStream;
@@ -27,7 +26,7 @@ public class ScrabbleClientListener extends ClientListener {
 
     public void sendGameVote(GameRules.Orientation orient, boolean accepted) {
         try {
-            sendMessage(new GameVoteMsg(orient, accepted), socket, null);
+            sendMessage(new MSGGameVote(orient, accepted));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -35,7 +34,7 @@ public class ScrabbleClientListener extends ClientListener {
 
     public void sendGameMove(Point location, Character letter) {
         try {
-            sendMessage(new GameActionMsg(location, letter), socket, null);
+            sendMessage(new MSGGameAction(location, letter));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -48,7 +47,7 @@ public class ScrabbleClientListener extends ClientListener {
     // TODO: Experimental and needs to be enforced better
     public void joinLobby(String lobbyName) {
         try {
-            sendMessage(new JoinLobbyMsg(lobbyName), socket, null);
+            sendMessage(new MSGJoinLobby(lobbyName));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -56,7 +55,7 @@ public class ScrabbleClientListener extends ClientListener {
 
     public void sendChatMessage(String txt) {
         try {
-            sendMessage(new ChatMsg(txt, ClientMain.agentID), socket, null);
+            sendMessage(new MSGChat(txt, ClientMain.agentID));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -65,7 +64,7 @@ public class ScrabbleClientListener extends ClientListener {
     public void sendGameStart() {
         try {
             // TODO: Host starts the game lol..
-            sendMessage(new GameStatusMsg(GameStatusMsg.GameStatus.STARTED, null), socket, null);
+            sendMessage(new MSGGameStatus(MSGGameStatus.GameStatus.STARTED, null));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -82,7 +81,7 @@ public class ScrabbleClientListener extends ClientListener {
         /**
         // TODO: Debug
         if (msgRec.getMessageType() == Message.MessageType.ERROR &&
-                ((QueryMsg)msgRec.getMessage()).errorType == QueryMsg.ErrorType.DUPLICATE_ID) {
+                ((MSGQuery)msgRec.getMessage()).errorType == MSGQuery.ErrorType.DUPLICATE_ID) {
             try {
                 // close connection due to duplicate name
                 fail_res = true;
@@ -126,8 +125,8 @@ public class ScrabbleClientListener extends ClientListener {
     @Override
     public void onAuthenticate() throws Exception {
         // sender player details
-        sendMessage(new AgentChangedMsg(AgentChangedMsg.NewStatus.REQUEST,
-                ClientMain.agentID), socket, null);
+        sendMessage(new MSGAgentChanged(MSGAgentChanged.NewStatus.REQUEST,
+                ClientMain.agentID));
 
         // TODO: potential code dups, also dodgy code
         DataInputStream in = new DataInputStream(socket.getInputStream());
@@ -138,15 +137,15 @@ public class ScrabbleClientListener extends ClientListener {
             MessageWrapper msgRec = Message.fromJSON(read, gson);
 
             if (msgRec.getMessageType() == Message.MessageType.QUERY) {
-                QueryMsg qmsg = (QueryMsg)msgRec.getMessage();
+                MSGQuery qmsg = (MSGQuery)msgRec.getMessage();
 
-                if (qmsg.getQueryType() == QueryMsg.QueryType.IS_ID_UNIQUE) {
+                if (qmsg.getQueryType() == MSGQuery.QueryType.IS_ID_UNIQUE) {
 
                     if (qmsg.getValue() == false)
                         throw new NonUniqueNameException();
                     else
                         return;
-                } else if (qmsg.getQueryType() == QueryMsg.QueryType.GAME_ALREADY_MADE) {
+                } else if (qmsg.getQueryType() == MSGQuery.QueryType.GAME_ALREADY_MADE) {
                     throw new GameInProgressException();
                 }
             }

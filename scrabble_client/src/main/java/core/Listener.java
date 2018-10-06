@@ -8,7 +8,7 @@ import core.game.Agent;
 import core.message.EventMessageList;
 import core.message.Message;
 import core.message.MessageWrapper;
-import core.messageType.PingMsg;
+import core.messageType.MSGPing;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -95,9 +95,17 @@ public abstract class Listener {
                 if (!onMessageReceived(msgRec, client))
                     continue;
 
-                processMessages(eventList.fireEvent(
+                Collection<MessageWrapper> msgsToSend = eventList.fireEvent(
                         msgRec.getMessage(), msgRec.getMessageType(),
-                        connections.get(client)), msgRec.getTimeStamps());
+                        connections.get(client));
+
+                // add timestamp to each message to send
+                msgRec.appendRecentTime();
+                for (MessageWrapper wrap : msgsToSend) {
+                    wrap.setTimeStamps(msgRec.getTimeStamps());
+                }
+
+                processMessages(msgsToSend);
             }
         } catch (IOException e) {
             // client disconnect (most likely)\
@@ -116,7 +124,7 @@ public abstract class Listener {
         // TODO: Document something about write error while using TCP.
         try {
             while (true) {
-                sendMessage(new PingMsg(), client, null);
+                sendMessage(new MSGPing(), client);
                 Thread.sleep(HEARTBEAT_PERIOD);
             }
         }  catch (IOException | InterruptedException e) {
@@ -126,12 +134,12 @@ public abstract class Listener {
 
     // TODO: A VERY BAD PROCESSOR
     // TODO: A VERY BAD BROADCASTER
-    private void processMessages(Collection<MessageWrapper> msgList, long[] timeStamps) {
+    private void processMessages(Collection<MessageWrapper> msgList) {
         if (msgList == null || msgList.contains(null))
             return;
 
         for (MessageWrapper smsg : msgList) {
-            sendMessage(smsg, timeStamps);
+            sendMessage(smsg);
         }
     }
 
@@ -152,9 +160,12 @@ public abstract class Listener {
         onUserDisconnect(disconnectedAgent);
     }
 
-    public void sendMessage(Message msg, Socket s, long[] timeStamps) throws IOException {
+    /***
+     * Send a message via a socket.
+     */
+    void sendMessage(Message msg, Socket s) throws IOException {
         MessageWrapper smsg = new MessageWrapper(msg);
-        addTimestamp(smsg, timeStamps);
+        smsg.appendRecentTime();
 
         String json = gson.toJson(smsg);
 
@@ -165,26 +176,17 @@ public abstract class Listener {
         out.writeUTF(json);
     }
 
-    private void addTimestamp(MessageWrapper smsg, long[] timeStamps) {
-        // append timestamp to message
-        if (timeStamps == null) {
-            smsg.addTimeStamps(System.nanoTime());
-        } else {
-            // TODO: debug
-            smsg.addTimeStamps(timeStamps[0], System.nanoTime());
-        }
-    }
-
-    protected void sendMessage(MessageWrapper smsg, long[] timeStamps) {
+    /***
+     * Send a message by a MessageWrapper, which contains data on which
+     * recipients to send to.
+     */
+    protected void sendMessage(MessageWrapper smsg) {
         if (smsg == null)
             return;
 
         for (Agent p : smsg.getSendTo()) {
             try {
                 Socket socket_send = connections.inverse().get(p);
-
-                // append timestamp to message
-                addTimestamp(smsg, timeStamps);
 
                 // send message to client's socket
                 String json = gson.toJson(smsg);

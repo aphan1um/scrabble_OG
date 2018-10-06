@@ -2,5 +2,5 @@ package core.messageType;
 
 import core.message.Message;
 
-public class PingMsg implements Message {
+public class MSGPing implements Message {
 }

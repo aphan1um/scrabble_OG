@@ -21,15 +21,15 @@ public interface Message {
 
         static {
             classMaps = ImmutableBiMap.<MessageType, Class<? extends Message>>builder()
-                    .put(JOIN_LOBBY, JoinLobbyMsg.class)
-                    .put(CHAT, ChatMsg.class)
-                    .put(PING, PingMsg.class)
-                    .put(AGENT_CHANGED, AgentChangedMsg.class)
-                    .put(GAME_ACTION, GameActionMsg.class)
-                    .put(GAME_VOTE, GameVoteMsg.class)
-                    .put(GAME_STATUS_CHANGED, GameStatusMsg.class)
-                    .put(QUERY, QueryMsg.class)
-                    .put(NEW_TURN, NewTurnMsg.class).build();
+                    .put(JOIN_LOBBY, MSGJoinLobby.class)
+                    .put(CHAT, MSGChat.class)
+                    .put(PING, MSGPing.class)
+                    .put(AGENT_CHANGED, MSGAgentChanged.class)
+                    .put(GAME_ACTION, MSGGameAction.class)
+                    .put(GAME_VOTE, MSGGameVote.class)
+                    .put(GAME_STATUS_CHANGED, MSGGameStatus.class)
+                    .put(QUERY, MSGQuery.class)
+                    .put(NEW_TURN, MSGNewTurn.class).build();
         }
     }
 
@@ -66,7 +66,7 @@ public interface Message {
 
         // GSON has issues with deserialising arrays/collections; we must do this manually
         JsonArray timestamps = obj.getAsJsonArray("timeStamps");
-        recvMsg.timeStamps = gson.fromJson(timestamps, long[].class);
+        recvMsg.setTimeStamps(timestamps, gson);
 
         return recvMsg;
     }

@@ -2,7 +2,7 @@ package core.messageType;
 
 import core.message.Message;
 
-public class QueryMsg implements Message {
+public class MSGQuery implements Message {
     public enum QueryType {
         IS_ID_UNIQUE,
         JOIN_LOBBY,
@@ -12,7 +12,7 @@ public class QueryMsg implements Message {
     private QueryType queryType;
     private boolean value;
 
-    public QueryMsg(QueryType queryType, boolean value) {
+    public MSGQuery(QueryType queryType, boolean value) {
         this.queryType = queryType;
         this.value = value;
     }

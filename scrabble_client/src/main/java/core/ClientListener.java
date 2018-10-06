@@ -1,5 +1,7 @@
 package core;
 
+import core.message.Message;
+
 import java.io.IOException;
 import java.net.Socket;
 import java.util.concurrent.*;
@@ -53,5 +55,10 @@ public abstract class ClientListener extends Listener {
         new Thread(() -> run_client(socket, t)).start();
 
         onUserConnect(socket);
+    }
+
+    /** Send a message to the server. */
+    protected void sendMessage(Message msg) throws IOException {
+        super.sendMessage(msg, socket);
     }
 }

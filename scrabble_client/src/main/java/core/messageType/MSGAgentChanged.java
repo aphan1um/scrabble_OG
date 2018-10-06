@@ -6,7 +6,7 @@ import core.message.Message;
 import java.util.Arrays;
 import java.util.Collection;
 
-public class AgentChangedMsg implements Message {
+public class MSGAgentChanged implements Message {
     private Collection<Agent> agents;
     private NewStatus status;
 
@@ -16,13 +16,13 @@ public class AgentChangedMsg implements Message {
         REQUEST
     }
 
-    public AgentChangedMsg(NewStatus status, Agent... agents) {
+    public MSGAgentChanged(NewStatus status, Agent... agents) {
         super();
         this.status = status;
         this.agents = Arrays.asList(agents);
     }
 
-    public AgentChangedMsg(NewStatus status, Collection<Agent> agents) {
+    public MSGAgentChanged(NewStatus status, Collection<Agent> agents) {
         super();
         this.status = status;
         this.agents = agents;

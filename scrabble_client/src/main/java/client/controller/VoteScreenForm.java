@@ -1,9 +1,7 @@
 package client.controller;
 
-import client.ClientMain;
 import client.Connections;
 import core.game.GameRules;
-import core.messageType.GameVoteMsg;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;

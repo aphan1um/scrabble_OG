@@ -16,11 +16,11 @@ import static core.game.LiveGame.NUM_ROWS;
  *
  * From client.listeners: Broadcasts to all players the verdict via accepted.
  */
-public class GameVoteMsg implements Message {
+public class MSGGameVote implements Message {
     private GameRules.Orientation orient;
     private boolean accepted;
 
-    public GameVoteMsg(GameRules.Orientation orient, boolean accepted) {
+    public MSGGameVote(GameRules.Orientation orient, boolean accepted) {
         this.orient = orient;
         this.accepted = accepted;
     }

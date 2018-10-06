@@ -2,10 +2,10 @@ package core.messageType;
 
 import core.message.Message;
 
-public class JoinLobbyMsg implements Message {
+public class MSGJoinLobby implements Message {
     private String name;
 
-    public JoinLobbyMsg(String name) {
+    public MSGJoinLobby(String name) {
         this.name = name;
     }
 

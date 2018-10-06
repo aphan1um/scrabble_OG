@@ -18,7 +18,6 @@ import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -79,16 +78,16 @@ public class GameWindow {
 
         addEvents();
 
-        updateTurn(new NewTurnMsg(initGame.getCurrentTurn(), initGame.getCurrentTurn(),
+        updateTurn(new MSGNewTurn(initGame.getCurrentTurn(), initGame.getCurrentTurn(),
                 0, false));
         stage.show();
     }
 
     public void addEvents() {
         // message received
-        MessageEvent<ChatMsg> chatEvent = new MessageEvent<ChatMsg>() {
+        MessageEvent<MSGChat> chatEvent = new MessageEvent<MSGChat>() {
             @Override
-            public MessageWrapper[] onMsgReceive(ChatMsg recMessage, Agent sender) {
+            public MessageWrapper[] onMsgReceive(MSGChat recMessage, Agent sender) {
                 chatBox.appendText(String.format("%s said:\t%s\n",
                         recMessage.getSender().getName(), recMessage.getChatMsg()), Color.BLACK);
                 return null;
@@ -96,9 +95,9 @@ public class GameWindow {
         };
 
         // received move from player
-        MessageEvent<GameActionMsg> actionEvent = new MessageEvent<GameActionMsg>() {
+        MessageEvent<MSGGameAction> actionEvent = new MessageEvent<MSGGameAction>() {
             @Override
-            public MessageWrapper[] onMsgReceive(GameActionMsg recMessage, Agent sender) {
+            public MessageWrapper[] onMsgReceive(MSGGameAction recMessage, Agent sender) {
                 Platform.runLater(() -> {
                     Point p = recMessage.getMoveLocation();
 
@@ -116,25 +115,25 @@ public class GameWindow {
             }
         };
 
-        MessageEvent<NewTurnMsg> newTurnEvent = new MessageEvent<NewTurnMsg>() {
+        MessageEvent<MSGNewTurn> newTurnEvent = new MessageEvent<MSGNewTurn>() {
             @Override
-            public MessageWrapper[] onMsgReceive(NewTurnMsg recMessage, Agent sender) {
+            public MessageWrapper[] onMsgReceive(MSGNewTurn recMessage, Agent sender) {
                 Platform.runLater(() -> updateTurn(recMessage));
                 return null;
             }
         };
 
-        MessageEvent<GameStatusMsg> gameEndEvent = new MessageEvent<GameStatusMsg>() {
+        MessageEvent<MSGGameStatus> gameEndEvent = new MessageEvent<MSGGameStatus>() {
             @Override
-            public MessageWrapper[] onMsgReceive(GameStatusMsg recMessage, Agent sender) {
+            public MessageWrapper[] onMsgReceive(MSGGameStatus recMessage, Agent sender) {
                 Platform.runLater(() -> ClientMain.endApp("Game has ended. App will now close."));
                 return null;
             }
         };
 
-        MessageEvent<AgentChangedMsg> playerLeftEvent = new MessageEvent<AgentChangedMsg>() {
+        MessageEvent<MSGAgentChanged> playerLeftEvent = new MessageEvent<MSGAgentChanged>() {
             @Override
-            public MessageWrapper[] onMsgReceive(AgentChangedMsg recMessage, Agent sender) {
+            public MessageWrapper[] onMsgReceive(MSGAgentChanged recMessage, Agent sender) {
                 Platform.runLater(() ->
                         ClientMain.endApp("A player has disconnected from the game. App will now close."));
                 return null;
@@ -147,7 +146,7 @@ public class GameWindow {
                         gameEndEvent, playerLeftEvent);
     }
 
-    public void updateTurn(NewTurnMsg msg) {
+    public void updateTurn(MSGNewTurn msg) {
         closePopup();
 
         // inform last player's move

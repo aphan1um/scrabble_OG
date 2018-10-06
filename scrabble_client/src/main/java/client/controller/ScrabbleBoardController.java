@@ -4,24 +4,15 @@ import client.ClientMain;
 import client.Connections;
 import core.game.Board;
 import core.game.LiveGame;
-import core.messageType.NewTurnMsg;
-import javafx.event.EventHandler;
+import core.messageType.MSGNewTurn;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import client.boardUI.BoardPane;
-import javafx.scene.paint.Color;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 
 import java.awt.*;
-import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -80,7 +71,7 @@ public class ScrabbleBoardController implements Initializable {
         });
     }
 
-    public void updateUI(NewTurnMsg msg, int myScore) {
+    public void updateUI(MSGNewTurn msg, int myScore) {
         lblTurn.setText(String.format("It is player %s's turn", msg.getNextPlayer().getName()));
         lblScore.setText("Your Score: " + myScore);
 
