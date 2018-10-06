@@ -40,9 +40,9 @@ public class ScrabbleCanvas extends Pane {
     public ObjectProperty<Point> chosenCellProperty;
     public BooleanProperty enabledProperty;
 
-    public ScrabbleCanvas(Board board) {
+    public ScrabbleCanvas(Board b) {
         super();
-        this.board = board;
+        this.board = b;
 
         layer1_Lines = new Canvas();
         layer2_Colors = new Canvas();
