@@ -70,7 +70,8 @@ public class GameWindow {
 
         Stage stage = new Stage();
         Scene scene = new Scene(station, 800, 700);
-        stage.setTitle(String.format("[%s] Scrabble Game", ClientMain.agentID.getName()));
+        stage.setTitle(String.format("[%s] Scrabble Game",
+                Connections.playerProperty().get()));
         stage.setScene(scene);
 
         // TODO: Temporary fix
@@ -164,7 +165,8 @@ public class GameWindow {
 
         // update scores first, then display it on UI
         scoreBoard.updateScore(msg.getLastPlayer(), msg.getNewPoints());
-        scrabbleBoard.updateUI(msg, scoreBoard.scores.get(ClientMain.agentID));
+        scrabbleBoard.updateUI(msg,
+                scoreBoard.scores.get(Connections.playerProperty().get()));
     }
 
     public void popupVoteScreen(String hor_str, String ver_str) {

@@ -44,15 +44,21 @@ public abstract class ClientListener extends Listener {
             }
         });
 
-        executor.shutdown();
         future.get();
 
         // heartbeat
         Thread t = new Thread(() -> run_heartbeat(socket));
+        t.setName("heartbeat");
         t.start();
 
         // separate thread for connector
-        new Thread(() -> run_client(socket, t)).start();
+        future = executor.submit(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                run_socket(socket, t);
+                return null;
+            }
+        });
 
         onUserConnect(socket);
     }

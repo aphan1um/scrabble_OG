@@ -69,7 +69,7 @@ public abstract class Listener {
      * Should be handled by separate threads.
      * @param client
      */
-    void run_client(Socket client, Thread heartbeat_t) {
+    void run_socket(Socket client, Thread heartbeat_t) {
         try {
             /**
             // TODO: Adding this line causes issues with ScrabbleServerListener [FIX]
@@ -110,11 +110,6 @@ public abstract class Listener {
         } catch (IOException e) {
             // client disconnect (most likely)\
             System.out.println("Error coming from: " + listenerName);
-            e.printStackTrace();
-
-            // stop heartbeating the same connection
-            if (heartbeat_t != null)
-                heartbeat_t.interrupt();
 
             triggerDisconnect(client);
         }
@@ -134,7 +129,7 @@ public abstract class Listener {
 
     // TODO: A VERY BAD PROCESSOR
     // TODO: A VERY BAD BROADCASTER
-    private void processMessages(Collection<MessageWrapper> msgList) {
+    protected void processMessages(Collection<MessageWrapper> msgList) {
         if (msgList == null || msgList.contains(null))
             return;
 
@@ -149,8 +144,8 @@ public abstract class Listener {
      * @param s Socket of player.
      */
     protected void triggerDisconnect(Socket s) {
-        System.out.println("Disconnected called");
         Agent disconnectedAgent = connections.get(s);
+        System.out.println("Disconnected called: " + disconnectedAgent);
 
         synchronized (connections) {
             connections.remove(s);

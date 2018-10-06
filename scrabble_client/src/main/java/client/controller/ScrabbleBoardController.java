@@ -75,7 +75,7 @@ public class ScrabbleBoardController implements Initializable {
         lblTurn.setText(String.format("It is player %s's turn", msg.getNextPlayer().getName()));
         lblScore.setText("Your Score: " + myScore);
 
-        boolean isMyTurn = msg.getNextPlayer().equals(ClientMain.agentID);
+        boolean isMyTurn = msg.getNextPlayer().equals(Connections.playerProperty().get());
         hbox.disableProperty().set(!isMyTurn);
         boardPane.enabledProperty().set(isMyTurn);
         boardPane.chosenCellProperty().set(null);

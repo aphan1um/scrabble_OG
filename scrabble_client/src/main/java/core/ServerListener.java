@@ -1,12 +1,13 @@
 package core;
 
 import core.message.Message;
-import core.message.MessageWrapper;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public abstract class ServerListener extends Listener {
     public ServerListener(String name) {
@@ -16,6 +17,7 @@ public abstract class ServerListener extends Listener {
     public void start(int port) throws IOException {
         reset();
         ServerSocket server = new ServerSocket(port);
+        ExecutorService executor = Executors.newCachedThreadPool();
 
         // TODO: catch this exception via different Thread technique;
         // like an Executor
@@ -26,10 +28,11 @@ public abstract class ServerListener extends Listener {
 
                     // heartbeat
                     Thread t = new Thread(() -> run_heartbeat(client));
+                    t.setName("heartbeat");
                     t.start();
 
                     // separate thread for connector
-                    new Thread(() -> run_client(client, t)).start();
+                    new Thread(() -> run_socket(client, t)).start();
 
                 } catch (IOException e) {
                     e.printStackTrace();

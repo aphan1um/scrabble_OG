@@ -33,7 +33,7 @@ public class Connections {
         return server;
     }
 
-    public ObjectProperty<Agent> playerProperty() {
+    public static ObjectProperty<Agent> playerProperty() {
         return playerProperty;
     }
 }

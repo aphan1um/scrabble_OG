@@ -126,17 +126,8 @@ public class LoginFormController implements Initializable {
             System.exit(0);
         });
 
-        if (isHosting) {
-            lobbyStage.setTitle(String.format("[%s] Lobby Room @ 127.0.0.1:%s",
-                    txtName.getText(), txtPort.getText()));
-        } else {
-            lobbyStage.setTitle(String.format("[%s] Lobby Room @ %s:%s",
-                    txtName.getText(), txtIP.getText(), txtPort.getText()));
-        }
-
-
         // set player details
-        ClientMain.agentID = new Agent(txtName.getText(), Agent.AgentType.PLAYER);
+        Connections.playerProperty().set(new Agent(txtName.getText(), Agent.AgentType.PLAYER));
 
         Task task = new Task() {
             @Override
@@ -162,8 +153,17 @@ public class LoginFormController implements Initializable {
         task.setOnSucceeded((e) -> {
             dialog.close();
             stage.close();
-            // join lobby
-            Connections.getListener().joinLobby(txtLobby.getText());
+
+            if (isHosting) {
+                lobbyStage.setTitle(String.format("[User %s] @ 127.0.0.1:%s (Lobby - %s)",
+                        txtName.getText(), txtPort.getText(),
+                        Connections.getListener().getLobbyName()));
+            } else {
+                lobbyStage.setTitle(String.format("[User %s] @ %s:%s (Lobby - %s)",
+                        txtName.getText(), txtIP.getText(), txtPort.getText(),
+                        Connections.getListener().getLobbyName()));
+            }
+
             lobbyStage.show();
         });
         // happens if exception is thrown (e.g. client.listeners doesn't exist)

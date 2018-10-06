@@ -21,11 +21,13 @@ public class EventMessageList {
         Collection<MessageEvent> eventsToFire = events.get(msgType);
         List<MessageWrapper> msgs = new ArrayList<>(eventsToFire.size());
 
-        for (MessageEvent e: eventsToFire) {
-            MessageWrapper[] msgWraps = e.onMsgReceive(msg, sender);
+        synchronized (events) {
+            for (MessageEvent e : eventsToFire) {
+                MessageWrapper[] msgWraps = e.onMsgReceive(msg, sender);
 
-            if (msgWraps != null)
-                msgs.addAll(Arrays.asList(msgWraps));
+                if (msgWraps != null)
+                    msgs.addAll(Arrays.asList(msgWraps));
+            }
         }
 
         return msgs;
@@ -54,8 +56,6 @@ public class EventMessageList {
 
                 events.remove(Message.fromMessageClass(t), e);
             }
-
-
         }
     }
 }

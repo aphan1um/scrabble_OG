@@ -10,7 +10,6 @@ import client.controller.LoginFormController;
 import client.listeners.ScrabbleClientListener;
 
 public class ClientMain extends Application {
-    public static Agent agentID;
     private static boolean appEnded = false;
 
     public static void main(String[] args) {

@@ -1,6 +1,7 @@
 package client.listeners;
 
 import client.ClientMain;
+import client.Connections;
 import core.ClientListener;
 import core.game.Agent;
 import core.game.GameRules;
@@ -17,11 +18,16 @@ import java.net.Socket;
 public class ScrabbleClientListener extends ClientListener {
     private long serverTime;
     private TimeSync timeSync;
+    private String lobbyName;
 
     public ScrabbleClientListener(String name) {
         super(name);
         timeSync = new TimeSync();
         serverTime = -1;
+    }
+
+    public String getLobbyName() {
+        return lobbyName;
     }
 
     public void sendGameVote(GameRules.Orientation orient, boolean accepted) {
@@ -45,9 +51,10 @@ public class ScrabbleClientListener extends ClientListener {
     }
 
     // TODO: Experimental and needs to be enforced better
-    public void joinLobby(String lobbyName) {
+    public void joinLobby(Agent player, String lobbyName) {
         try {
-            sendMessage(new MSGJoinLobby(lobbyName));
+            this.lobbyName = lobbyName;
+            sendMessage(new MSGJoinLobby(player, lobbyName));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -55,7 +62,7 @@ public class ScrabbleClientListener extends ClientListener {
 
     public void sendChatMessage(String txt) {
         try {
-            sendMessage(new MSGChat(txt, ClientMain.agentID));
+            sendMessage(new MSGChat(txt, Connections.playerProperty().get()));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -78,19 +85,13 @@ public class ScrabbleClientListener extends ClientListener {
 
     @Override
     protected boolean onMessageReceived(MessageWrapper msgRec, Socket s) {
-        /**
-        // TODO: Debug
-        if (msgRec.getMessageType() == Message.MessageType.ERROR &&
-                ((MSGQuery)msgRec.getMessage()).errorType == MSGQuery.ErrorType.DUPLICATE_ID) {
-            try {
-                // close connection due to duplicate name
-                fail_res = true;
-                s.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return false;
+        if (msgRec.getMessageType() == Message.MessageType.QUERY &&
+                ((MSGQuery)msgRec.getMessage()).getQueryType() == MSGQuery.QueryType.GAME_ALREADY_MADE) {
+
+            System.out.println("Game was already made.");
+            //throw new GameInProgressException();
         }
+        /**
 
         return true;
         **/
@@ -125,8 +126,8 @@ public class ScrabbleClientListener extends ClientListener {
     @Override
     public void onAuthenticate() throws Exception {
         // sender player details
-        sendMessage(new MSGAgentChanged(MSGAgentChanged.NewStatus.REQUEST,
-                ClientMain.agentID));
+        sendMessage(new MSGJoinLobby(
+                Connections.playerProperty().get(), lobbyName));
 
         // TODO: potential code dups, also dodgy code
         DataInputStream in = new DataInputStream(socket.getInputStream());
@@ -139,14 +140,13 @@ public class ScrabbleClientListener extends ClientListener {
             if (msgRec.getMessageType() == Message.MessageType.QUERY) {
                 MSGQuery qmsg = (MSGQuery)msgRec.getMessage();
 
-                if (qmsg.getQueryType() == MSGQuery.QueryType.IS_ID_UNIQUE) {
-
-                    if (qmsg.getValue() == false)
+                switch (qmsg.getQueryType()) {
+                    case GAME_ALREADY_MADE:
+                        throw new GameInProgressException();
+                    case NON_UNIQUE_ID:
                         throw new NonUniqueNameException();
-                    else
+                    case ACCEPTED:
                         return;
-                } else if (qmsg.getQueryType() == MSGQuery.QueryType.GAME_ALREADY_MADE) {
-                    throw new GameInProgressException();
                 }
             }
         }
