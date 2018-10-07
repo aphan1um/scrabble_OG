@@ -30,7 +30,7 @@ public class LiveGame {
         this.players = players;
 
         // TODO: fix this
-        this.board = new Board(20, 20);
+        this.board = new Board(NUM_ROWS, NUM_COLS);
 
         // TODO: simple for now..
     }
