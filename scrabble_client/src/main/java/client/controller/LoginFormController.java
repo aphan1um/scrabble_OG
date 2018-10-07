@@ -81,8 +81,12 @@ public class LoginFormController implements Initializable {
         });
     }
 
+    /**
+     * Checks if entered details aren't empty and port number is integer
+     * @param isHosting If the player pressed the Create Host game button
+     * @return
+     */
     private boolean validateConnect(boolean isHosting) {
-        // ensure details aren't empty and port number is integer
         if (txtName.getText().isEmpty() ||
                 (!isHosting && txtIP.getText().isEmpty()) ||
         !txtPort.getText().matches("^[0-9]+$")) {
@@ -153,15 +157,11 @@ public class LoginFormController implements Initializable {
                 if (isHosting) {
                     Connections.getServer().start(
                             Integer.parseInt(txtPort.getText()));
-
-                    Connections.getListener().start(
-                            "localhost",
-                            Integer.parseInt(txtPort.getText()));
-                } else {
-                    Connections.getListener().start(
-                            txtIP.getText(),
-                            Integer.parseInt(txtPort.getText()));
                 }
+
+                Connections.getListener().start(
+                        isHosting ? "localhost" : txtIP.getText(),
+                        Integer.parseInt(txtPort.getText()));
 
                 return null;
             }
@@ -172,18 +172,15 @@ public class LoginFormController implements Initializable {
             dialog.close();
             stage.close();
 
-            if (isHosting) {
-                lobbyStage.setTitle(String.format("[User %s] @ 127.0.0.1:%s (Lobby - %s)",
-                        txtName.getText(), txtPort.getText(),
-                        Connections.getListener().getLobbyName()));
-            } else {
-                lobbyStage.setTitle(String.format("[User %s] @ %s:%s (Lobby - %s)",
-                        txtName.getText(), txtIP.getText(), txtPort.getText(),
-                        Connections.getListener().getLobbyName()));
-            }
+            lobbyStage.setTitle(String.format("[User %s] @ %s:%s (Lobby - %s)",
+                    txtName.getText(),
+                    isHosting ? "localhost" : txtIP.getText(),
+                    txtPort.getText(),
+                    Connections.getListener().getLobbyName()));
 
             lobbyStage.show();
         });
+
         // happens if exception is thrown (e.g. client.listeners doesn't exist)
         task.setOnFailed((e) -> {
             dialog.close();

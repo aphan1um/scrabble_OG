@@ -66,6 +66,7 @@ public class BoardPane extends AnchorPane {
         prepareTextField();
         prepareCanvas();
 
+        // ensure pane uses up all available space in parent container
         AnchorPane.setBottomAnchor(canvas, 0d);
         AnchorPane.setTopAnchor(canvas, 0d);
         AnchorPane.setLeftAnchor(canvas, 0d);

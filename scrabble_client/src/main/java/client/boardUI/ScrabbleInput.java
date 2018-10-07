@@ -6,6 +6,9 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.input.KeyEvent;
 
+/***
+ * A JavaFX component which only allows one letter text input.
+ */
 public class ScrabbleInput extends TextField {
     public ScrabbleInput() {
         super();
