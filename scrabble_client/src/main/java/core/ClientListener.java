@@ -52,13 +52,9 @@ public abstract class ClientListener extends Listener {
         t.start();
 
         // separate thread for connector
-        future = executor.submit(new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                run_socket(socket, t);
-                return null;
-            }
-        });
+        Thread main_t = new Thread(() -> run_socket(socket, t));
+        main_t.setName("client thread");
+        main_t.start();
 
         onUserConnect(socket);
     }

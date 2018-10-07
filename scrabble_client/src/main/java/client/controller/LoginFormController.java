@@ -5,7 +5,9 @@ import core.game.Agent;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
@@ -17,6 +19,7 @@ import javafx.stage.Stage;
 import client.ClientMain;
 import client.util.StageUtils;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -118,7 +121,20 @@ public class LoginFormController implements Initializable {
 
     private void connect(boolean isHosting) {
         Stage dialog = WaitDialogController.createDialog(stage);
-        Stage lobbyStage = LobbyController.createStage();
+
+        // TODO: messy code
+        // load the lobby form
+        FXMLLoader loader = new FXMLLoader(
+                LobbyController.class.getResource("/LobbyForm.fxml"));
+        LobbyController lobbyController = new LobbyController();
+        loader.setController(lobbyController);
+
+        Stage lobbyStage = new Stage();
+        try {
+            lobbyStage.setScene(new Scene(loader.load()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         // TODO: DEBUG
         lobbyStage.setOnCloseRequest(t -> {
@@ -171,6 +187,7 @@ public class LoginFormController implements Initializable {
         // happens if exception is thrown (e.g. client.listeners doesn't exist)
         task.setOnFailed((e) -> {
             dialog.close();
+            lobbyController.shutdown();
 
             handleConnectError(task.getException());
         });

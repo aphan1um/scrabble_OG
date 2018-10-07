@@ -83,7 +83,7 @@ public abstract class Listener {
             while (true) {
                 String read = in.readUTF();
 
-                //System.out.println("(Preparse from " + listenerName + ":)\t" + read);
+                System.out.println("(Preparse from " + listenerName + ":)\t" + read);
                 MessageWrapper msgRec = Message.fromJSON(read, gson);
 
                 // TODO: debug

@@ -37,25 +37,7 @@ public class LobbyController implements Initializable {
 
     private ChatBoxController chatBox;
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        // add chat box
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ChatBox.fxml"));
-        chatBox = new ChatBoxController();
-        loader.setController(chatBox);
-
-        try {
-            Node node = loader.load();
-
-            chatPane.getChildren().add(node);
-            AnchorPane.setBottomAnchor(node, 0.0);
-            AnchorPane.setTopAnchor(node, 0.0);
-            AnchorPane.setLeftAnchor(node, 0.0);
-            AnchorPane.setRightAnchor(node, 0.0);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+    private class GUIEvents {
         // message received
         MessageEvent<MSGChat> chatEvent = new MessageEvent<MSGChat>() {
             @Override
@@ -110,10 +92,10 @@ public class LobbyController implements Initializable {
             public MessageWrapper[] onMsgReceive(MSGGameStatus recMessage, Agent sender) {
                 // clear events
                 // TODO: There's got to be a better way to do this..
-                Connections.getListener().getEventList().removeEvents(chatEvent,
-                        getPlayersEvent, getPlayerStatus, this);
-
                 Platform.runLater(() -> {
+                    Connections.getListener().getEventList().removeEvents(chatEvent,
+                            getPlayersEvent, getPlayerStatus, this);
+
                     ((Stage)btnKick.getScene().getWindow()).close();
 
                     try {
@@ -126,10 +108,35 @@ public class LobbyController implements Initializable {
                 return null;
             }
         };
+    }
+    private GUIEvents events;
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        // add chat box
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ChatBox.fxml"));
+        chatBox = new ChatBoxController();
+        loader.setController(chatBox);
+
+        try {
+            Node node = loader.load();
+
+            chatPane.getChildren().add(node);
+            AnchorPane.setBottomAnchor(node, 0.0);
+            AnchorPane.setTopAnchor(node, 0.0);
+            AnchorPane.setLeftAnchor(node, 0.0);
+            AnchorPane.setRightAnchor(node, 0.0);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         // add events to clientlistener
-        Connections.getListener().getEventList().addEvents(chatEvent,
-                getPlayersEvent, getPlayerStatus, gameStartEvent);
+        events = new GUIEvents();
+        Connections.getListener().getEventList().addEvents(
+                events.chatEvent,
+                events.getPlayersEvent,
+                events.getPlayerStatus,
+                events.gameStartEvent);
 
         btnStartGame.setOnAction(e -> {
             Connections.getListener().sendGameStart();
@@ -137,21 +144,13 @@ public class LobbyController implements Initializable {
         });
     }
 
-
-    public static Stage createStage() {
-        Stage newStage = new Stage();
-
-        FXMLLoader loader = new FXMLLoader(
-                LobbyController.class.getResource("/LobbyForm.fxml"));
-        loader.setController(new LobbyController());
-
-        try {
-            newStage.setScene(new Scene((Parent)loader.load()));
-        } catch (IOException e) {
-            e.printStackTrace();
+    public void shutdown() {
+        if (events != null) {
+            Connections.getListener().getEventList().removeEvents(
+                    events.chatEvent,
+                    events.getPlayersEvent,
+                    events.getPlayerStatus,
+                    events.gameStartEvent);
         }
-        newStage.setTitle("Lobby Room");
-
-        return newStage;
     }
 }
