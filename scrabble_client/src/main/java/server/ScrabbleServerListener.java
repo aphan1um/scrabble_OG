@@ -1,4 +1,4 @@
-package listeners;
+package server;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -8,104 +8,94 @@ import core.game.Agent;
 import core.game.Lobby;
 import core.message.*;
 import core.messageType.*;
-import javafx.scene.layout.Pane;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
 
 public class ScrabbleServerListener extends ServerListener {
     private BiMap<String, Lobby> lobbyMap;
     private Map<Agent, Lobby> playerLobbyMap; // note this is not a bijection, so a BiMap can't be used
 
-    public ScrabbleServerListener() {
-        super("Server");
-    }
-
-    @Override
-    protected void reset() {
-        super.reset();
-        lobbyMap = Maps.synchronizedBiMap(HashBiMap.create());
-        playerLobbyMap = new ConcurrentHashMap<>(); // TODO: concurrent hash map
-    }
-
-    @Override
-    protected void onUserConnect(Socket s) {
-    }
-
-    @Override
-    protected void prepareEvents() {
+    private class ServerEvents {
         // return list of players back to player who sent details to join lobby
-        eventList.addEvents(new MessageEvent<JoinLobbyMsg>() {
+        MessageEvent<MSGJoinLobby> playerJoin = new MessageEvent<MSGJoinLobby>() {
             @Override
-            public MessageWrapper[] onMsgReceive(JoinLobbyMsg recv, Agent sender) {
-                Message msg1 = new AgentChangedMsg(AgentChangedMsg.NewStatus.JOINED, connections.values());
-                Lobby lobby = lobbyMap.get(recv.getName());
+            public MessageWrapper[] onMsgReceive(MSGJoinLobby recv, Agent sender) {
+                Lobby lobby = lobbyMap.get(recv.getLobbyName());
 
                 if (lobby == null) { // if lobby hasn't been made yet, make player owner
                     lobby = new Lobby(sender);
-                    lobbyMap.put(recv.getName(), lobby);
+
+                    synchronized (lobbyMap) {
+                        lobbyMap.put(recv.getLobbyName(), lobby);
+                    }
+                } else if (lobby.getGameSession() != null) {
+                    // if the lobby has already started game
+                    return MessageWrapper.prepWraps(new MessageWrapper(
+                            new MSGQuery(MSGQuery.QueryType.GAME_ALREADY_MADE),
+                            sender));
                 } else {
-                    lobby.addPlayer(sender);
+                    synchronized (lobby) {
+                        lobby.addPlayer(sender);
+                    }
                 }
-                playerLobbyMap.put(sender, lobby);
 
+                synchronized (playerLobbyMap) {
+                    playerLobbyMap.put(sender, lobby);
+                }
 
-                AgentChangedMsg msg2 = new AgentChangedMsg(AgentChangedMsg.NewStatus.JOINED, sender);
-
+                Message msg1 = new MSGAgentChanged(MSGAgentChanged.NewStatus.JOINED, lobby.getAgents());
+                MSGAgentChanged msg2 = new MSGAgentChanged(MSGAgentChanged.NewStatus.JOINED, sender);
                 // TODO: Is there a cleaner way to do this?
-                Set<Agent> retSend = new HashSet<Agent>(
-                        playerLobbyMap.get(sender).getAgents()
-                );
+                Set<Agent> retSend = new HashSet<>(lobby.getAgents());
                 retSend.remove(sender);
 
+                System.out.println("Agents size: " + lobby.getAgents().size());
 
                 return MessageWrapper.prepWraps(
                         new MessageWrapper(msg1, sender),
                         new MessageWrapper(msg2, retSend));
             }
-        },
+        };
 
         // when some player sends chat msg, broadcast it to all other players
-        new MessageEvent<ChatMsg>() {
+        MessageEvent<MSGChat> chatReceived = new MessageEvent<MSGChat>() {
             @Override
-            public MessageWrapper[] onMsgReceive(ChatMsg recMessage, Agent sender) {
+            public MessageWrapper[] onMsgReceive(MSGChat recMessage, Agent sender) {
                 return MessageWrapper.prepWraps(
                         new MessageWrapper(recMessage, playerLobbyMap.get(sender).getAgents()));
             }
-        },
+        };
 
-        // when Start Game is pressed
-        new MessageEvent<GameStatusMsg>() {
+        // when Start Game is pressed by the owner (and received by server)
+        MessageEvent<MSGGameStatus> startGame = new MessageEvent<MSGGameStatus>() {
             @Override
-            public MessageWrapper[] onMsgReceive(GameStatusMsg msg, Agent sender) {
+            public MessageWrapper[] onMsgReceive(MSGGameStatus msg, Agent sender) {
                 // TODO: This only works with one lobby..
                 Lobby lobby = playerLobbyMap.get(sender);
                 if (lobby != null && lobby.getOwner().equals(sender)) {
                     lobby.prepareGame();
 
-                    Message sendMsg = new GameStatusMsg(
-                            GameStatusMsg.GameStatus.STARTED,
+                    Message sendMsg = new MSGGameStatus(
+                            MSGGameStatus.GameStatus.STARTED,
                             lobby.getGameSession());
 
                     // send back the clients the initial game state
                     return MessageWrapper.prepWraps(
                             new MessageWrapper(sendMsg,
-                            playerLobbyMap.get(sender).getAgents()));
+                                    playerLobbyMap.get(sender).getAgents()));
                 }
 
                 return null;
             }
-        },
+        };
+
 
         // when player makes a move, broadcast it to all other users
-        new MessageEvent<GameActionMsg>() {
+        MessageEvent<MSGGameAction> playerMakesMove = new MessageEvent<MSGGameAction>() {
             @Override
-            public MessageWrapper[] onMsgReceive(GameActionMsg msg, Agent sender) {
+            public MessageWrapper[] onMsgReceive(MSGGameAction msg, Agent sender) {
                 Lobby lobby = playerLobbyMap.get(sender);
                 lobby.getGameSession().incrementBoard(msg.getMoveLocation(), msg.getLetter());
 
@@ -114,14 +104,14 @@ public class ScrabbleServerListener extends ServerListener {
                     lobby.getGameSession().nextTurn(true);
 
                     if (lobby.getGameSession().allPlayersSkipped()) { // when all players skipped their turn
-                        Message msgEndGame = new GameStatusMsg(
-                                GameStatusMsg.GameStatus.ENDED,
+                        Message msgEndGame = new MSGGameStatus(
+                                MSGGameStatus.GameStatus.ENDED,
                                 null);
 
                         return MessageWrapper.prepWraps(new MessageWrapper
                                 (msgEndGame, lobby.getAgents()));
                     } else { // new turn
-                        Message msgSkip = new NewTurnMsg(
+                        Message msgSkip = new MSGNewTurn(
                                 prevPlayer,
                                 lobby.getGameSession().getCurrentTurn(),
                                 lobby.getGameSession().getScores().get(prevPlayer),
@@ -137,11 +127,12 @@ public class ScrabbleServerListener extends ServerListener {
                 return MessageWrapper.prepWraps(new MessageWrapper(msg,
                         playerLobbyMap.get(sender).getAgents()));
             }
-        },
+        };
 
-        new MessageEvent<GameVoteMsg>() {
+
+        MessageEvent<MSGGameVote> voteReceived = new MessageEvent<MSGGameVote>() {
             @Override
-            public MessageWrapper[] onMsgReceive(GameVoteMsg msg, Agent sender) {
+            public MessageWrapper[] onMsgReceive(MSGGameVote msg, Agent sender) {
 
                 // TODO: add logic here
                 Lobby lobby = playerLobbyMap.get(sender);
@@ -152,7 +143,7 @@ public class ScrabbleServerListener extends ServerListener {
                     Agent prevPlayer = lobby.getGameSession().getCurrentTurn();
                     lobby.getGameSession().nextTurn(false);
 
-                    Message msgNextTurn = new NewTurnMsg(
+                    Message msgNextTurn = new MSGNewTurn(
                             prevPlayer,
                             lobby.getGameSession().getCurrentTurn(),
                             lobby.getGameSession().getScores().get(prevPlayer),
@@ -160,7 +151,7 @@ public class ScrabbleServerListener extends ServerListener {
 
                     // if board is full, end the game
                     if (lobby.getGameSession().isBoardFull()) {
-                        Message msgEndGame = new GameStatusMsg(GameStatusMsg.GameStatus.ENDED, null);
+                        Message msgEndGame = new MSGGameStatus(MSGGameStatus.GameStatus.ENDED, null);
 
                         // TODO: Better structure protocol
                         // send additional message to end game
@@ -175,14 +166,55 @@ public class ScrabbleServerListener extends ServerListener {
 
                 return null;
             }
-        });
+        };
+
+        // ping back to the user
+        MessageEvent<MSGPing> pingReceived =  new MessageEvent<MSGPing>() {
+            @Override
+            public MessageWrapper[] onMsgReceive(MSGPing msg, Agent sender) {
+                return MessageWrapper.prepWraps(new MessageWrapper(msg, sender));
+            }
+        };
+
+    }
+
+    public ScrabbleServerListener(String name) {
+        super(name);
+
+        // add events
+        ServerEvents events = new ServerEvents();
+        eventList.addEvents(
+                events.chatReceived,
+                events.pingReceived,
+                events.playerJoin,
+                events.startGame,
+                events.voteReceived,
+                events.playerMakesMove
+        );
+    }
+
+    @Override
+    protected void reset() {
+        super.reset();
+        lobbyMap = Maps.synchronizedBiMap(HashBiMap.create());
+        playerLobbyMap = new HashMap<>(); // TODO: concurrent hash map
+    }
+
+    @Override
+    protected void onUserConnect(Socket s) {
+    }
+
+    @Override
+    protected void prepareEvents() {
+
     }
 
     @Override
     protected boolean onMessageReceived(MessageWrapper msgRec, Socket s) throws IOException {
         if (connections.get(s) == null) {
-            if (msgRec.getMessageType() == Message.MessageType.AGENT_CHANGED) {
-                Agent player = (Agent)((AgentChangedMsg)msgRec.getMessage()).getAgents().toArray()[0];
+            if (msgRec.getMessageType() == Message.MessageType.JOIN_LOBBY) {
+                Agent player = (Agent)((MSGJoinLobby)msgRec.getMessage()).getPlayer();
+                Lobby lobby = lobbyMap.get(((MSGJoinLobby)msgRec.getMessage()).getLobbyName());
                 boolean is_unique = false;
 
                 synchronized (connections) {
@@ -193,21 +225,15 @@ public class ScrabbleServerListener extends ServerListener {
                     }
                 }
 
-                // TODO: This is a temporary addition, but will remove for more lobbies
-                // check if game is in progress
-                if (lobbyMap.size() > 0) {
-                    Iterator<Lobby> it = lobbyMap.values().iterator();
-                    while (it.hasNext()) {
-                        Lobby l_it = it.next();
-                        if (l_it.getGameSession() != null) {
-                            sendMessage(new QueryMsg(QueryMsg.QueryType.GAME_ALREADY_MADE, true), s,
-                                    msgRec.getTimeStamps());
-                        }
-                    }
+                // send back message if their name is unique to the server
+                if (!is_unique)
+                    sendMessage(new MSGQuery(MSGQuery.QueryType.NON_UNIQUE_ID), s);
+                else if (lobby != null && lobby.getGameSession() != null)
+                    sendMessage(new MSGQuery(MSGQuery.QueryType.GAME_ALREADY_MADE), s);
+                else {
+                    sendMessage(new MSGQuery(MSGQuery.QueryType.ACCEPTED), s);
+                    return true;
                 }
-
-                sendMessage(new QueryMsg(QueryMsg.QueryType.IS_ID_UNIQUE, is_unique), s,
-                        msgRec.getTimeStamps());
             }
 
             return false;
@@ -218,24 +244,32 @@ public class ScrabbleServerListener extends ServerListener {
 
     @Override
     protected void onUserDisconnect(Agent p) {
+        System.out.println("From server disconnect: " + p);
         if (p == null)
             return;
 
         // TODO [LOBBY FUNCTIONALITY]: Complete this (for multiple lobbies) in the future
-        boolean removeLobby = false;
         Lobby lobby = playerLobbyMap.get(p);
-        synchronized (playerLobbyMap) {
-            playerLobbyMap.remove(p);
+        System.out.println("Lobby: " + lobby);
+
+        synchronized (lobby.getAgents()) {
+            lobby.getAgents().remove(p);
         }
 
-        if (removeLobby) {
+        if (lobby.getOwner().equals(p)) {
+            synchronized (playerLobbyMap) {
+                playerLobbyMap.remove(p);
+            }
+        }
+
+        if (lobby.getAgents().isEmpty()) {
             synchronized (lobbyMap) {
-                lobbyMap.remove(lobby);
+                lobbyMap.inverse().remove(lobby);
             }
         }
 
         sendMessage(new MessageWrapper(
-                new AgentChangedMsg(AgentChangedMsg.NewStatus.DISCONNECTED, p),
-                lobby.getAgents()), null);
+                new MSGAgentChanged(MSGAgentChanged.NewStatus.DISCONNECTED, p),
+                lobby.getAgents()));
     }
 }

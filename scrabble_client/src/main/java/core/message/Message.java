@@ -2,10 +2,7 @@ package core.message;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import core.messageType.*;
 
 public interface Message {
@@ -24,15 +21,15 @@ public interface Message {
 
         static {
             classMaps = ImmutableBiMap.<MessageType, Class<? extends Message>>builder()
-                    .put(JOIN_LOBBY, JoinLobbyMsg.class)
-                    .put(CHAT, ChatMsg.class)
-                    .put(PING, PingMsg.class)
-                    .put(AGENT_CHANGED, AgentChangedMsg.class)
-                    .put(GAME_ACTION, GameActionMsg.class)
-                    .put(GAME_VOTE, GameVoteMsg.class)
-                    .put(GAME_STATUS_CHANGED, GameStatusMsg.class)
-                    .put(QUERY, QueryMsg.class)
-                    .put(NEW_TURN, NewTurnMsg.class).build();
+                    .put(JOIN_LOBBY, MSGJoinLobby.class)
+                    .put(CHAT, MSGChat.class)
+                    .put(PING, MSGPing.class)
+                    .put(AGENT_CHANGED, MSGAgentChanged.class)
+                    .put(GAME_ACTION, MSGGameAction.class)
+                    .put(GAME_VOTE, MSGGameVote.class)
+                    .put(GAME_STATUS_CHANGED, MSGGameStatus.class)
+                    .put(QUERY, MSGQuery.class)
+                    .put(NEW_TURN, MSGNewTurn.class).build();
         }
     }
 
@@ -58,7 +55,7 @@ public interface Message {
         JsonElement element = parser.parse(str);
         JsonObject obj = element.getAsJsonObject();
 
-        // TODO: Constants need to be better placed
+        // determine message type so we can deserialise it
         String json_msgType = obj.get("msgType").getAsString();
         JsonObject json_msg = obj.getAsJsonObject("msg");
 
@@ -66,6 +63,10 @@ public interface Message {
 
         MessageWrapper recvMsg = new MessageWrapper(
                 gson.fromJson(json_msg, enumClass));
+
+        // GSON has issues with deserialising arrays/collections; we must do this manually
+        JsonArray timestamps = obj.getAsJsonArray("timeStamps");
+        recvMsg.setTimeStamps(timestamps, gson);
 
         return recvMsg;
     }

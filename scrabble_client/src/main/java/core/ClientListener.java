@@ -1,20 +1,18 @@
 package core;
 
-import core.game.Agent;
-import javafx.concurrent.Task;
+import core.message.Message;
 
 import java.io.IOException;
 import java.net.Socket;
 import java.util.concurrent.*;
 
-public abstract class ClientListener extends SocketListener {
-
+public abstract class ClientListener extends Listener {
+    protected Socket socket;
     public ClientListener(String name) {
         super(name);
     }
 
     public abstract void onAuthenticate() throws Exception;
-    public Socket socket;
 
     @Override
     public void reset() {
@@ -28,7 +26,7 @@ public abstract class ClientListener extends SocketListener {
         }
     }
 
-    public void startListener(String ip, int port) throws Exception {
+    public void start(String ip, int port) throws Exception {
         reset();
 
         socket = new Socket(ip, port);
@@ -46,16 +44,23 @@ public abstract class ClientListener extends SocketListener {
             }
         });
 
-        executor.shutdown();
         future.get();
 
         // heartbeat
         Thread t = new Thread(() -> run_heartbeat(socket));
+        t.setName("heartbeat");
         t.start();
 
         // separate thread for connector
-        new Thread(() -> run_client(socket, t)).start();
+        Thread main_t = new Thread(() -> run_socket(socket, t));
+        main_t.setName("client thread");
+        main_t.start();
 
         onUserConnect(socket);
+    }
+
+    /** Send a message to the server. */
+    protected void sendMessage(Message msg) throws IOException {
+        super.sendMessage(msg, socket);
     }
 }

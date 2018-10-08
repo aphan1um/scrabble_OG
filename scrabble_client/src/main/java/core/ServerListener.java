@@ -1,26 +1,23 @@
 package core;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-import com.google.common.collect.Maps;
-import core.game.Agent;
-import core.game.Lobby;
+import core.message.Message;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-public abstract class ServerListener extends SocketListener {
+public abstract class ServerListener extends Listener {
     public ServerListener(String name) {
         super(name);
     }
 
-    public void startListener(int port) throws IOException {
+    public void start(int port) throws IOException {
         reset();
         ServerSocket server = new ServerSocket(port);
+        ExecutorService executor = Executors.newCachedThreadPool();
 
         // TODO: catch this exception via different Thread technique;
         // like an Executor
@@ -31,17 +28,23 @@ public abstract class ServerListener extends SocketListener {
 
                     // heartbeat
                     Thread t = new Thread(() -> run_heartbeat(client));
+                    t.setName("heartbeat");
                     t.start();
 
                     // separate thread for connector
-                    new Thread(() -> run_client(client, t)).start();
+                    new Thread(() -> run_socket(client, t)).start();
 
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         }).start();
+    }
 
-        System.out.println("Created a listeners!");
+    /***
+     * Send a message via a socket.
+     */
+    protected void sendMessage(Message msg, Socket s) throws IOException {
+        super.sendMessage(msg, s);
     }
 }

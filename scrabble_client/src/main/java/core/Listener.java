@@ -8,25 +8,21 @@ import core.game.Agent;
 import core.message.EventMessageList;
 import core.message.Message;
 import core.message.MessageWrapper;
-import core.messageType.PingMsg;
+import core.messageType.MSGPing;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
-public abstract class SocketListener {
+public abstract class Listener {
     private static final int HEARTBEAT_PERIOD = 10000; // in ms
-
-    public String listenerName;
+    private String listenerName;
 
     // TODO: This solves the issue of iterating through the list, but we must make
     // sure only ONE thread can modify it.
-    public volatile EventMessageList eventList;
+    protected volatile EventMessageList eventList;
     protected final Gson gson;
     protected BiMap<Socket, Agent> connections;
 
@@ -35,14 +31,34 @@ public abstract class SocketListener {
     protected abstract boolean onMessageReceived(MessageWrapper msgRec, Socket s) throws IOException;
     protected abstract void onUserDisconnect(Agent p);
 
-    public SocketListener(String name) {
+    public Listener(String name) {
         this.listenerName = name;
         eventList = new EventMessageList();
-        gson = new GsonBuilder().enableComplexMapKeySerialization().create();
+        gson = new GsonBuilder()
+                .enableComplexMapKeySerialization()
+                .addSerializationExclusionStrategy(new ExclusionStrategy() { // refer to https://stackoverflow.com/a/13637572
+            @Override
+            public boolean shouldSkipField(FieldAttributes f) {
+                return f.getDeclaringClass().equals(Observable.class);
+            }
+
+            @Override
+            public boolean shouldSkipClass(Class<?> clazz) {
+                return false;
+            }
+        }).create();
+
         reset();
         prepareEvents();
     }
 
+    public String getName() {
+        return listenerName;
+    }
+
+    public EventMessageList getEventList() {
+        return eventList;
+    }
     // reset variables
     protected void reset() {
         connections = Maps.synchronizedBiMap(HashBiMap.create());
@@ -54,7 +70,7 @@ public abstract class SocketListener {
      * Should be handled by separate threads.
      * @param client
      */
-    void run_client(Socket client, Thread heartbeat_t) {
+    void run_socket(Socket client, Thread heartbeat_t) {
         try {
             /**
             // TODO: Adding this line causes issues with ScrabbleServerListener [FIX]
@@ -68,14 +84,8 @@ public abstract class SocketListener {
             while (true) {
                 String read = in.readUTF();
 
-                //System.out.println("(Preparse from " + listenerName + ":)\t" + read);
+                System.out.println("(Preparse from " + listenerName + ":)\t" + read);
                 MessageWrapper msgRec = Message.fromJSON(read, gson);
-
-                // TODO: debug
-                JsonParser parser = new JsonParser();
-                JsonElement element = parser.parse(read);
-                JsonArray obj = element.getAsJsonObject().getAsJsonArray("timeStamps");
-                msgRec.timeStamps = gson.fromJson(obj, long[].class);
 
                 // TODO: debug
                 if (msgRec.getMessageType() != Message.MessageType.PING)
@@ -86,18 +96,21 @@ public abstract class SocketListener {
                 if (!onMessageReceived(msgRec, client))
                     continue;
 
-                processMessages(eventList.fireEvent(
+                Collection<MessageWrapper> msgsToSend = eventList.fireEvent(
                         msgRec.getMessage(), msgRec.getMessageType(),
-                        connections.get(client)), msgRec.getTimeStamps());
+                        connections.get(client));
+
+                // add timestamp to each message to send
+                msgRec.appendRecentTime();
+                for (MessageWrapper wrap : msgsToSend) {
+                    wrap.setTimeStamps(msgRec.getTimeStamps());
+                }
+
+                processMessages(msgsToSend);
             }
         } catch (IOException e) {
             // client disconnect (most likely)\
             System.out.println("Error coming from: " + listenerName);
-            e.printStackTrace();
-
-            // stop heartbeating the same connection
-            if (heartbeat_t != null)
-                heartbeat_t.interrupt();
 
             triggerDisconnect(client);
         }
@@ -107,7 +120,7 @@ public abstract class SocketListener {
         // TODO: Document something about write error while using TCP.
         try {
             while (true) {
-                sendMessage(new PingMsg(), client, null);
+                sendMessage(new MSGPing(), client);
                 Thread.sleep(HEARTBEAT_PERIOD);
             }
         }  catch (IOException | InterruptedException e) {
@@ -117,12 +130,12 @@ public abstract class SocketListener {
 
     // TODO: A VERY BAD PROCESSOR
     // TODO: A VERY BAD BROADCASTER
-    private void processMessages(Collection<MessageWrapper> msgList, long[] timeStamps) {
+    protected void processMessages(Collection<MessageWrapper> msgList) {
         if (msgList == null || msgList.contains(null))
             return;
 
         for (MessageWrapper smsg : msgList) {
-            sendMessage(smsg, timeStamps);
+            sendMessage(smsg);
         }
     }
 
@@ -132,8 +145,8 @@ public abstract class SocketListener {
      * @param s Socket of player.
      */
     protected void triggerDisconnect(Socket s) {
-        System.out.println("Disconnected called");
         Agent disconnectedAgent = connections.get(s);
+        System.out.println("Disconnected called: " + disconnectedAgent);
 
         synchronized (connections) {
             connections.remove(s);
@@ -143,9 +156,12 @@ public abstract class SocketListener {
         onUserDisconnect(disconnectedAgent);
     }
 
-    public void sendMessage(Message msg, Socket s, long[] timeStamps) throws IOException {
+    /***
+     * Send a message via a socket.
+     */
+    void sendMessage(Message msg, Socket s) throws IOException {
         MessageWrapper smsg = new MessageWrapper(msg);
-        addTimestamp(smsg, timeStamps);
+        smsg.appendRecentTime();
 
         String json = gson.toJson(smsg);
 
@@ -156,26 +172,17 @@ public abstract class SocketListener {
         out.writeUTF(json);
     }
 
-    private void addTimestamp(MessageWrapper smsg, long[] timeStamps) {
-        // append timestamp to message
-        if (timeStamps == null) {
-            smsg.addTimeStamps(System.nanoTime());
-        } else {
-            // TODO: debug
-            smsg.addTimeStamps(timeStamps[0], System.nanoTime());
-        }
-    }
-
-    protected void sendMessage(MessageWrapper smsg, long[] timeStamps) {
+    /***
+     * Send a message by a MessageWrapper, which contains data on which
+     * recipients to send to.
+     */
+    protected void sendMessage(MessageWrapper smsg) {
         if (smsg == null)
             return;
 
         for (Agent p : smsg.getSendTo()) {
             try {
                 Socket socket_send = connections.inverse().get(p);
-
-                // append timestamp to message
-                addTimestamp(smsg, timeStamps);
 
                 // send message to client's socket
                 String json = gson.toJson(smsg);

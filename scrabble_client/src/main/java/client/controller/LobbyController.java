@@ -1,12 +1,13 @@
 package client.controller;
 
+import client.Connections;
 import client.GameWindow;
 import core.game.Agent;
 import core.message.MessageEvent;
 import core.message.MessageWrapper;
-import core.messageType.AgentChangedMsg;
-import core.messageType.ChatMsg;
-import core.messageType.GameStatusMsg;
+import core.messageType.MSGAgentChanged;
+import core.messageType.MSGChat;
+import core.messageType.MSGGameStatus;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -19,8 +20,6 @@ import javafx.scene.control.ListView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import client.ClientMain;
-import client.util.StageUtils;
 
 import java.io.IOException;
 import java.net.URL;
@@ -37,6 +36,78 @@ public class LobbyController implements Initializable {
     private AnchorPane chatPane;
 
     private ChatBoxController chatBox;
+
+    private class GUIEvents {
+        // message received
+        MessageEvent<MSGChat> chatEvent = new MessageEvent<MSGChat>() {
+            @Override
+            public MessageWrapper[] onMsgReceive(MSGChat recMessage, Agent sender) {
+                chatBox.appendText(String.format("%s said:\t%s\n",
+                        recMessage.getSender().getName(), recMessage.getChatMsg()), Color.BLACK);
+                return null;
+            }
+        };
+
+        // when client.listeners sends the initial list of players in lobby
+        MessageEvent<MSGAgentChanged> getPlayersEvent = new MessageEvent<MSGAgentChanged>() {
+            @Override
+            public MessageWrapper[] onMsgReceive(MSGAgentChanged recMessage, Agent sender) {
+                switch (recMessage.getStatus()) {
+                    case JOINED:
+                        Platform.runLater(() -> lstPlayers.getItems().addAll(recMessage.getAgents()));
+                        break;
+                    case DISCONNECTED:
+                        Platform.runLater(() -> lstPlayers.getItems().removeAll(recMessage.getAgents()));
+                        break;
+                }
+
+                return null;
+            }
+        };
+
+        // when player joins or leaves the lobby
+        MessageEvent<MSGAgentChanged> getPlayerStatus = new MessageEvent<MSGAgentChanged>() {
+            @Override
+            public MessageWrapper[] onMsgReceive(MSGAgentChanged recMessage, Agent sender) {
+                for (Agent agent : recMessage.getAgents()) {
+                    switch (recMessage.getStatus()) {
+                        case JOINED:
+                            chatBox.appendText(String.format("%s has joined the lobby.\n", agent),
+                                    Color.GREEN);
+                            break;
+                        case DISCONNECTED:
+                            chatBox.appendText(String.format("%s has left the lobby.\n", agent),
+                                    Color.RED);
+                            break;
+                    }
+                }
+
+                return null;
+            }
+        };
+
+        // host has announced the game to start
+        MessageEvent<MSGGameStatus> gameStartEvent = new MessageEvent<MSGGameStatus>() {
+            @Override
+            public MessageWrapper[] onMsgReceive(MSGGameStatus recMessage, Agent sender) {
+                Platform.runLater(() -> {
+                    shutdown(); // clear events
+                    ((Stage)btnKick.getScene().getWindow()).close();
+
+                    try {
+                        GameWindow gameWindow = new GameWindow(recMessage.getGameData());
+                        gameWindow.show();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
+
+                return null;
+            }
+        };
+    }
+
+    private GUIEvents events;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -57,97 +128,27 @@ public class LobbyController implements Initializable {
             e.printStackTrace();
         }
 
-        // message received
-        MessageEvent<ChatMsg> chatEvent = new MessageEvent<ChatMsg>() {
-            @Override
-            public MessageWrapper[] onMsgReceive(ChatMsg recMessage, Agent sender) {
-                chatBox.appendText(String.format("%s said:\t%s\n",
-                        recMessage.getSender().getName(), recMessage.getChatMsg()), Color.BLACK);
-                return null;
-            }
-        };
-
-        // when listeners sends the initial list of players in lobby
-        MessageEvent<AgentChangedMsg> getPlayersEvent = new MessageEvent<AgentChangedMsg>() {
-            @Override
-            public MessageWrapper[] onMsgReceive(AgentChangedMsg recMessage, Agent sender) {
-                switch (recMessage.getStatus()) {
-                    case JOINED:
-                        Platform.runLater(() -> lstPlayers.getItems().addAll(recMessage.getAgents()));
-                        break;
-                    case DISCONNECTED:
-                        Platform.runLater(() -> lstPlayers.getItems().removeAll(recMessage.getAgents()));
-                        break;
-                }
-
-                return null;
-            }
-        };
-
-        // when player joins or leaves the lobby
-        MessageEvent<AgentChangedMsg> getPlayerStatus = new MessageEvent<AgentChangedMsg>() {
-            @Override
-            public MessageWrapper[] onMsgReceive(AgentChangedMsg recMessage, Agent sender) {
-                for (Agent agent : recMessage.getAgents()) {
-                    switch (recMessage.getStatus()) {
-                        case JOINED:
-                            chatBox.appendText(String.format("%s has joined the lobby.\n", agent),
-                                    Color.GREEN);
-                            break;
-                        case DISCONNECTED:
-                            chatBox.appendText(String.format("%s has left the lobby.\n", agent),
-                                    Color.RED);
-                            break;
-                    }
-                }
-
-                return null;
-            }
-        };
-
-        // host has announced the game to start
-        MessageEvent<GameStatusMsg> gameStartEvent = new MessageEvent<GameStatusMsg>() {
-            @Override
-            public MessageWrapper[] onMsgReceive(GameStatusMsg recMessage, Agent sender) {
-                // clear events
-                // TODO: There's got to be a better way to do this..
-                ClientMain.listener.eventList.removeEvents(chatEvent,
-                        getPlayersEvent, getPlayerStatus, this);
-
-                Platform.runLater(() -> {
-                    ((Stage)btnKick.getScene().getWindow()).close();
-                    new GameWindow(recMessage.getGameData());
-                });
-
-                return null;
-            }
-        };
-
         // add events to clientlistener
-        ClientMain.listener.eventList.addEvents(chatEvent,
-                getPlayersEvent, getPlayerStatus, gameStartEvent);
+        events = new GUIEvents();
+        Connections.getListener().getEventList().addEvents(
+                events.chatEvent,
+                events.getPlayersEvent,
+                events.getPlayerStatus,
+                events.gameStartEvent);
 
         btnStartGame.setOnAction(e -> {
-            ClientMain.listener.sendGameStart();
+            Connections.getListener().sendGameStart();
             btnStartGame.disableProperty().set(true); // TODO: debug
         });
     }
 
-
-    public static Stage createStage() {
-        Stage newStage = new Stage();
-
-        FXMLLoader loader = new FXMLLoader(
-                LobbyController.class.getResource("/LobbyForm.fxml"));
-        loader.setController(new LobbyController());
-
-        try {
-            newStage.setScene(new Scene((Parent)loader.load()));
-        } catch (IOException e) {
-            e.printStackTrace();
+    public void shutdown() {
+        if (events != null) {
+            Connections.getListener().getEventList().removeEvents(
+                    events.chatEvent,
+                    events.getPlayersEvent,
+                    events.getPlayerStatus,
+                    events.gameStartEvent);
         }
-        newStage.setTitle("Lobby Room");
-
-        return newStage;
     }
 }

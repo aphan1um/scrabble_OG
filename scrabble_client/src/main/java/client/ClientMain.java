@@ -4,21 +4,24 @@ import core.game.Agent;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 import client.controller.LoginFormController;
-import listeners.ScrabbleClientListener;
-import listeners.ScrabbleServerListener;
+import client.listeners.ScrabbleClientListener;
 
 public class ClientMain extends Application {
-    public static ScrabbleClientListener listener;
-    public static ScrabbleServerListener server;
-    public static Agent agentID;
-
-    public static boolean appEnded = false;
+    private static boolean appEnded = false;
 
     public static void main(String[] args) {
-        listener = new ScrabbleClientListener();
         launch(args);
+    }
+
+    public static void endApp(String msg) {
+        if (!appEnded) {
+            new Alert(Alert.AlertType.WARNING, msg).showAndWait();
+            System.exit(0);
+        }
+        appEnded = true;
     }
 
     @Override

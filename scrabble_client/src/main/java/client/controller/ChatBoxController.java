@@ -1,13 +1,11 @@
 package client.controller;
 
 import client.ClientMain;
-import core.game.Agent;
-import core.message.MessageEvent;
-import core.message.MessageWrapper;
-import core.messageType.AgentChangedMsg;
-import core.messageType.ChatMsg;
+import client.Connections;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -16,8 +14,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.InlineCssTextArea;
 
 import java.net.URL;
@@ -30,6 +28,8 @@ public class ChatBoxController implements Initializable {
     protected InlineCssTextArea rtChat;
     @FXML
     protected TextArea txtInput;
+    @FXML
+    private VirtualizedScrollPane rtScroll;
 
     public void appendText(String txt, Color c) {
         Platform.runLater(() -> {
@@ -65,10 +65,30 @@ public class ChatBoxController implements Initializable {
         });
 
         btnSend.setOnAction(e -> {
-            ClientMain.listener.sendChatMessage(txtInput.getText());
-            txtInput.setText("");
+            if (!btnSend.disabledProperty().get()) {
+                Connections.getListener().sendChatMessage(txtInput.getText());
+                txtInput.setText("");
+            }
         });
 
-        btnSend.disableProperty().bind(Bindings.isEmpty(txtInput.textProperty()));
+        // scroll to the bottom end of chatbox, if new text arrives
+        rtChat.textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                rtScroll.estimatedScrollYProperty().setValue(Double.MAX_VALUE);
+            }
+        });
+
+        txtInput.textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                btnSend.setDisable(txtInput.textProperty()
+                        .get()
+                        .replace("\n", "")
+                        .isEmpty());
+            }
+        });
+
+        btnSend.setDisable(true);
     }
 }
