@@ -18,7 +18,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-public class ScrabbleClientListener extends ClientListener {
+final public class ScrabbleClientListener extends ClientListener {
     private long serverTime;
     private TimeSync timeSync;
     private String lobbyName;

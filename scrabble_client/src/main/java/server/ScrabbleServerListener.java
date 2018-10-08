@@ -17,25 +17,9 @@ public class ScrabbleServerListener extends ServerListener {
     private BiMap<String, Lobby> lobbyMap;
     private Map<Agent, Lobby> playerLobbyMap; // note this is not a bijection, so a BiMap can't be used
 
-    public ScrabbleServerListener(String name) {
-        super(name);
-    }
-
-    @Override
-    protected void reset() {
-        super.reset();
-        lobbyMap = Maps.synchronizedBiMap(HashBiMap.create());
-        playerLobbyMap = new HashMap<>(); // TODO: concurrent hash map
-    }
-
-    @Override
-    protected void onUserConnect(Socket s) {
-    }
-
-    @Override
-    protected void prepareEvents() {
+    private class ServerEvents {
         // return list of players back to player who sent details to join lobby
-        eventList.addEvents(new MessageEvent<MSGJoinLobby>() {
+        MessageEvent<MSGJoinLobby> playerJoin = new MessageEvent<MSGJoinLobby>() {
             @Override
             public MessageWrapper[] onMsgReceive(MSGJoinLobby recv, Agent sender) {
                 Lobby lobby = lobbyMap.get(recv.getLobbyName());
@@ -73,19 +57,19 @@ public class ScrabbleServerListener extends ServerListener {
                         new MessageWrapper(msg1, sender),
                         new MessageWrapper(msg2, retSend));
             }
-        },
+        };
 
         // when some player sends chat msg, broadcast it to all other players
-        new MessageEvent<MSGChat>() {
+        MessageEvent<MSGChat> chatReceived = new MessageEvent<MSGChat>() {
             @Override
             public MessageWrapper[] onMsgReceive(MSGChat recMessage, Agent sender) {
                 return MessageWrapper.prepWraps(
                         new MessageWrapper(recMessage, playerLobbyMap.get(sender).getAgents()));
             }
-        },
+        };
 
-        // when Start Game is pressed
-        new MessageEvent<MSGGameStatus>() {
+        // when Start Game is pressed by the owner (and received by server)
+        MessageEvent<MSGGameStatus> startGame = new MessageEvent<MSGGameStatus>() {
             @Override
             public MessageWrapper[] onMsgReceive(MSGGameStatus msg, Agent sender) {
                 // TODO: This only works with one lobby..
@@ -100,15 +84,16 @@ public class ScrabbleServerListener extends ServerListener {
                     // send back the clients the initial game state
                     return MessageWrapper.prepWraps(
                             new MessageWrapper(sendMsg,
-                            playerLobbyMap.get(sender).getAgents()));
+                                    playerLobbyMap.get(sender).getAgents()));
                 }
 
                 return null;
             }
-        },
+        };
+
 
         // when player makes a move, broadcast it to all other users
-        new MessageEvent<MSGGameAction>() {
+        MessageEvent<MSGGameAction> playerMakesMove = new MessageEvent<MSGGameAction>() {
             @Override
             public MessageWrapper[] onMsgReceive(MSGGameAction msg, Agent sender) {
                 Lobby lobby = playerLobbyMap.get(sender);
@@ -142,9 +127,10 @@ public class ScrabbleServerListener extends ServerListener {
                 return MessageWrapper.prepWraps(new MessageWrapper(msg,
                         playerLobbyMap.get(sender).getAgents()));
             }
-        },
+        };
 
-        new MessageEvent<MSGGameVote>() {
+
+        MessageEvent<MSGGameVote> voteReceived = new MessageEvent<MSGGameVote>() {
             @Override
             public MessageWrapper[] onMsgReceive(MSGGameVote msg, Agent sender) {
 
@@ -180,15 +166,47 @@ public class ScrabbleServerListener extends ServerListener {
 
                 return null;
             }
-        },
+        };
 
         // ping back to the user
-        new MessageEvent<MSGPing>() {
+        MessageEvent<MSGPing> pingReceived =  new MessageEvent<MSGPing>() {
             @Override
             public MessageWrapper[] onMsgReceive(MSGPing msg, Agent sender) {
                 return MessageWrapper.prepWraps(new MessageWrapper(msg, sender));
             }
-        });
+        };
+
+    }
+
+    public ScrabbleServerListener(String name) {
+        super(name);
+
+        // add events
+        ServerEvents events = new ServerEvents();
+        eventList.addEvents(
+                events.chatReceived,
+                events.pingReceived,
+                events.playerJoin,
+                events.startGame,
+                events.voteReceived,
+                events.playerMakesMove
+        );
+    }
+
+    @Override
+    protected void reset() {
+        super.reset();
+        lobbyMap = Maps.synchronizedBiMap(HashBiMap.create());
+        playerLobbyMap = new HashMap<>(); // TODO: concurrent hash map
+    }
+
+    @Override
+    protected void onUserConnect(Socket s) {
+    }
+
+    @Override
+    protected void prepareEvents() {
+
     }
 
     @Override
