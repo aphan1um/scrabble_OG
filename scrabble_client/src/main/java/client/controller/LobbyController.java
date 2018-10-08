@@ -90,16 +90,13 @@ public class LobbyController implements Initializable {
         MessageEvent<MSGGameStatus> gameStartEvent = new MessageEvent<MSGGameStatus>() {
             @Override
             public MessageWrapper[] onMsgReceive(MSGGameStatus recMessage, Agent sender) {
-                // clear events
-                // TODO: There's got to be a better way to do this..
                 Platform.runLater(() -> {
-                    Connections.getListener().getEventList().removeEvents(chatEvent,
-                            getPlayersEvent, getPlayerStatus, this);
-
+                    shutdown(); // clear events
                     ((Stage)btnKick.getScene().getWindow()).close();
 
                     try {
-                        new GameWindow(recMessage.getGameData());
+                        GameWindow gameWindow = new GameWindow(recMessage.getGameData());
+                        gameWindow.show();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -109,6 +106,7 @@ public class LobbyController implements Initializable {
             }
         };
     }
+
     private GUIEvents events;
 
     @Override

@@ -47,6 +47,7 @@ public abstract class Listener {
                 return false;
             }
         }).create();
+
         reset();
         prepareEvents();
     }

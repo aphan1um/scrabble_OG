@@ -35,58 +35,10 @@ public class GameWindow {
     private DockStation station;
 
     private final Board board;
+    private final Stage mainStage;
     private Stage popupStage;
 
-    public GameWindow(LiveGame initGame) throws IOException {
-        board = new Board(20, 20);
-
-        station = AnchorageSystem.createStation();
-
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ScrabbleBoard.fxml"));
-        scrabbleBoard = new ScrabbleBoardController(initGame);
-        loader.setController(scrabbleBoard);
-
-        DockNode node1 = null;
-        node1 = AnchorageSystem.createDock("Game Board", loader.load());
-        node1.dock(station, DockNode.DockPosition.LEFT);
-
-        Parent chat_root = null;
-        chatBox = new ChatBoxController();
-        loader = new FXMLLoader(getClass().getResource("/ChatBox.fxml"));
-        loader.setController(chatBox);
-        DockNode node2 = AnchorageSystem.createDock("Chat", loader.load());
-        node2.dock(station, DockNode.DockPosition.BOTTOM, 0.75);
-
-        // add score table;
-        loader = new FXMLLoader(this.getClass().getResource("/ScoreBox.fxml"));
-        scoreBoard = new ScoreBoxController(initGame.getScores());
-        loader.setController(scoreBoard);
-        DockNode node3 = null;
-        node3 = AnchorageSystem.createDock("Scores", loader.load());
-
-        node3.dock(station, DockNode.DockPosition.RIGHT, 0.8);
-
-        AnchorageSystem.installDefaultStyle();
-
-        Stage stage = new Stage();
-        Scene scene = new Scene(station, 800, 700);
-        stage.setTitle(String.format("[%s] Scrabble Game (Lobby - %s)",
-                Connections.playerProperty().get(),
-                Connections.getListener().getLobbyName()));
-        stage.setScene(scene);
-
-        // TODO: Temporary fix
-        stage.setOnCloseRequest(e -> System.exit(0));
-
-        addEvents();
-
-        updateTurn(new MSGNewTurn(initGame.getCurrentTurn(), initGame.getCurrentTurn(),
-                0, false));
-        stage.show();
-    }
-
-    public void addEvents() {
-        // message received
+    private class GUIEvents {
         MessageEvent<MSGChat> chatEvent = new MessageEvent<MSGChat>() {
             @Override
             public MessageWrapper[] onMsgReceive(MSGChat recMessage, Agent sender) {
@@ -141,12 +93,76 @@ public class GameWindow {
                 return null;
             }
         };
+    }
+
+    private GUIEvents events;
+
+    public GameWindow(LiveGame initGame) throws IOException {
+        board = new Board(initGame.getBoard().getNumRows(),
+                initGame.getBoard().getNumColumns());
+
+        mainStage = prepareUI(initGame);
 
         // add events to client listener
-        Connections.getListener().getEventList()
-                .addEvents(chatEvent, actionEvent, newTurnEvent,
-                        gameEndEvent, playerLeftEvent);
+        events = new GUIEvents();
+        Connections.getListener().getEventList().addEvents(
+                events.chatEvent,
+                events.actionEvent,
+                events.newTurnEvent,
+                events.gameEndEvent,
+                events.playerLeftEvent);
     }
+
+    public void show() {
+        mainStage.show();
+    }
+
+    private Stage prepareUI(LiveGame initGame) throws IOException {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ScrabbleBoard.fxml"));
+        scrabbleBoard = new ScrabbleBoardController(initGame);
+        loader.setController(scrabbleBoard);
+
+        station = AnchorageSystem.createStation();
+
+        DockNode node1 = null;
+        node1 = AnchorageSystem.createDock("Game Board", loader.load());
+        node1.dock(station, DockNode.DockPosition.LEFT);
+
+        Parent chat_root = null;
+        chatBox = new ChatBoxController();
+        loader = new FXMLLoader(getClass().getResource("/ChatBox.fxml"));
+        loader.setController(chatBox);
+        DockNode node2 = AnchorageSystem.createDock("Chat", loader.load());
+        node2.dock(station, DockNode.DockPosition.BOTTOM, 0.75);
+
+        // add score table;
+        loader = new FXMLLoader(this.getClass().getResource("/ScoreBox.fxml"));
+        scoreBoard = new ScoreBoxController(initGame.getScores());
+        loader.setController(scoreBoard);
+        DockNode node3 = null;
+        node3 = AnchorageSystem.createDock("Scores", loader.load());
+
+        node3.dock(station, DockNode.DockPosition.RIGHT, 0.8);
+
+        AnchorageSystem.installDefaultStyle();
+
+        Stage ret = new Stage();
+        Scene scene = new Scene(station, 800, 700);
+        ret.setTitle(String.format("[%s] Scrabble Game (Lobby - %s)",
+                Connections.playerProperty().get(),
+                Connections.getListener().getLobbyName()));
+        ret.setScene(scene);
+
+        // TODO: Temporary fix
+        ret.setOnCloseRequest(e -> System.exit(0));
+
+        // update UI and show window
+        updateTurn(new MSGNewTurn(initGame.getCurrentTurn(), initGame.getCurrentTurn(),
+                0, false));
+
+        return ret;
+    }
+
 
     public void updateTurn(MSGNewTurn msg) {
         closePopup();
