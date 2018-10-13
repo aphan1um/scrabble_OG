@@ -41,10 +41,8 @@ public class ScrabbleBoardController implements Initializable {
 
     private Board board;
 
-    public ScrabbleBoardController(LiveGame initGame) {
-        this.board = new Board(
-                initGame.getBoard().getNumRows(),
-                initGame.getBoard().getNumColumns());
+    public ScrabbleBoardController(Board board) {
+        this.board = board;
     }
 
     @Override

@@ -39,6 +39,7 @@ public class GameWindow {
     private Stage popupStage;
 
     private class GUIEvents {
+        // chat message
         MessageEvent<MSGChat> chatEvent = new MessageEvent<MSGChat>() {
             @Override
             public MessageWrapper[] onMsgReceive(MSGChat recMessage, Agent sender) {
@@ -61,7 +62,8 @@ public class GameWindow {
                             GameRules.getValidOrientations(board, p);
 
                     scrabbleBoard.boardPane.chosenCellProperty().set(p);
-                    popupVoteScreen(strMap.get(GameRules.Orientation.HORIZONTAL),
+                    popupVoteScreen(
+                            strMap.get(GameRules.Orientation.HORIZONTAL),
                             strMap.get(GameRules.Orientation.VERTICAL));
                 });
 
@@ -119,7 +121,7 @@ public class GameWindow {
 
     private Stage prepareUI(LiveGame initGame) throws IOException {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/ScrabbleBoard.fxml"));
-        scrabbleBoard = new ScrabbleBoardController(initGame);
+        scrabbleBoard = new ScrabbleBoardController(board);
         loader.setController(scrabbleBoard);
 
         station = AnchorageSystem.createStation();

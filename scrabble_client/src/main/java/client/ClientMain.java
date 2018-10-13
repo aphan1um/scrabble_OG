@@ -17,11 +17,13 @@ public class ClientMain extends Application {
     }
 
     public static void endApp(String msg) {
-        if (!appEnded) {
+        boolean prevValue = appEnded;
+        appEnded = true;
+
+        if (!prevValue) {
             new Alert(Alert.AlertType.WARNING, msg).showAndWait();
             System.exit(0);
         }
-        appEnded = true;
     }
 
     @Override

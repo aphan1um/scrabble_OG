@@ -28,8 +28,8 @@ public class Board extends Observable {
     public void set(int r, int c, char letter) {
         if (config[r][c] != letter) {
             config[r][c] = letter;
-            setChanged();
-            notifyObservers(new Point(r, c));
+            this.setChanged();
+            this.notifyObservers(new Point(r, c));
         }
     }
 

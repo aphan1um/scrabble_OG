@@ -40,10 +40,13 @@ public class BoardPane extends AnchorPane {
                     canvas.chosenCellProperty.set(null);
                     canvas.enabledProperty.set(true);
                 }
+
+                System.out.println("LETTER:\t" + board.get((Point)arg));
             }
         });
 
         canvas.setBoard(board);
+        System.out.println("Board set: " + board.countObservers());
     }
 
     public BooleanProperty enabledProperty() {
