@@ -21,6 +21,8 @@ import client.util.StageUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.BindException;
+import java.net.ConnectException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ResourceBundle;
@@ -112,6 +114,10 @@ public class LoginFormController implements Initializable {
             descript = "Cause of error unknown.";
         } else if (th instanceof UnknownHostException) {
             descript = "Unable to connect at specified IP address:\n" + th.getMessage();
+        } else if (th instanceof ConnectException) {
+            descript = "Sorry, there is no host at " + this.txtIP.getText() + ":" + this.txtPort.getText() + ".";
+        } else if (th instanceof BindException) {
+            descript = "Can't create server at " + this.txtIP.getText() + ":" + this.txtPort.getText() +"; a server is likely being hosted there.";
         } else {
             descript = ex.toString();
         }
