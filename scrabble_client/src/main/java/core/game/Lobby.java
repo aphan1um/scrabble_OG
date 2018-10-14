@@ -6,7 +6,7 @@ import java.util.List;
 
 // TODO: Concurrency issues?
 public class Lobby {
-    private transient Player owner;
+    private Player owner;
     private transient LiveGame gameSession;
     private transient List<Player> players;
     private String descript;
@@ -58,7 +58,7 @@ public class Lobby {
     // this is of course under the assumption one player can host one game
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof  Lobby && ((Lobby)obj).owner.equals(this.owner);
+        return obj instanceof Lobby && ((Lobby)obj).owner.equals(this.owner);
     }
 
     @Override
