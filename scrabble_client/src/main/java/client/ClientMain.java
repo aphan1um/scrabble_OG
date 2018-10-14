@@ -21,7 +21,7 @@ public class ClientMain extends Application {
         appEnded = true;
 
         if (!prevValue) {
-            new Alert(Alert.AlertType.WARNING, msg).showAndWait();
+            new Alert(Alert.AlertType.INFORMATION, msg).showAndWait();
             System.exit(0);
         }
     }

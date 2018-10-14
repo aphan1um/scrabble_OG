@@ -26,6 +26,7 @@ import javafx.stage.StageStyle;
 
 import java.awt.*;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Map;
 
 public class GameWindow {
@@ -82,7 +83,8 @@ public class GameWindow {
         MessageEvent<MSGGameStatus> gameEndEvent = new MessageEvent<MSGGameStatus>() {
             @Override
             public MessageWrapper[] onMsgReceive(MSGGameStatus recMessage, Agent sender) {
-                Platform.runLater(() -> ClientMain.endApp("Game has ended. App will now close."));
+
+                Platform.runLater(() -> ClientMain.endApp("Game has ended. \nThe winnder is " + scoreBoard.getWinner() + ".\nApp will now close." + "\n"));
                 return null;
             }
         };

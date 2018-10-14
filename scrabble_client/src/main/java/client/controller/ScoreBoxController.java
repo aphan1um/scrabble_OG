@@ -12,9 +12,9 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 
+import java.lang.reflect.Array;
 import java.net.URL;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class ScoreBoxController implements Initializable {
     @FXML
@@ -75,5 +75,26 @@ public class ScoreBoxController implements Initializable {
 
     public void updateScore(Agent player, int newScore) {
         scores.put(player, newScore);
+    }
+
+    public String getWinner() {
+        List<Map.Entry<Agent, Integer>> list = new ArrayList(scores.entrySet());
+        Collections.sort(list, (o1, o2) -> (o1.getValue() - o2.getValue()));
+        String result = "";
+        for(int i = 1; i <= list.size(); i ++) {
+            if(i == 1) {
+                result += list.get(list.size() - i).getKey().getName();
+            }
+            else {
+                if (list.get(list.size() - i).getValue() == list.get(list.size() - i + 1).getValue()) {
+                    result += " & " + list.get(list.size() - i).getKey().getName();
+                }
+                else {
+                    break;
+                }
+            }
+        }
+
+        return result;
     }
 }
