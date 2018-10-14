@@ -18,7 +18,6 @@ public class ScrabbleServerListener extends ServerListener {
 
     private BiMap<String, Lobby> lobbyMap;
     private Map<Agent, Lobby> playerLobbyMap; // note this is not a bijection, so a BiMap can't be used
-    private ConnectType serverType;
 
     private class ServerEvents {
         // return list of players back to player who sent details to join lobby
@@ -36,7 +35,7 @@ public class ScrabbleServerListener extends ServerListener {
                 } else if (lobby.getGameSession() != null) {
                     // if the lobby has already started game
                     return MessageWrapper.prepWraps(new MessageWrapper(
-                            new MSGQuery(MSGQuery.QueryType.GAME_ALREADY_MADE),
+                            new MSGQuery(MSGQuery.QueryType.GAME_ALREADY_STARTED, true, getServerType()),
                             sender));
                 } else {
                     synchronized (lobby) {
@@ -48,7 +47,7 @@ public class ScrabbleServerListener extends ServerListener {
                     playerLobbyMap.put(sender, lobby);
                 }
 
-                Message msg1 = new MSGAgentChanged(MSGAgentChanged.NewStatus.JOINED, lobby.getAgents());
+                Message msg1 = new MSGQuery(MSGQuery.QueryType.GAME_ALREADY_STARTED, false, getServerType());
                 MSGAgentChanged msg2 = new MSGAgentChanged(MSGAgentChanged.NewStatus.JOINED, false, sender);
                 // TODO: Is there a cleaner way to do this?
                 Set<Agent> retSend = new HashSet<>(lobby.getAgents());
@@ -182,23 +181,28 @@ public class ScrabbleServerListener extends ServerListener {
             }
         };
 
+        MessageEvent<MSGQuery> requestPlayers = new MessageEvent<MSGQuery>() {
+            @Override
+            public MessageWrapper[] onMsgReceive(MSGQuery recMessage, Agent sender) {
+                if (recMessage.getQueryType() != MSGQuery.QueryType.GET_PLAYER_LIST)
+                    return null;
+
+                Lobby lobby = playerLobbyMap.get(sender);
+                Message msg = new MSGAgentChanged(
+                        MSGAgentChanged.NewStatus.JOINED,
+                        lobby.getAgents());
+
+                return MessageWrapper.prepWraps(new MessageWrapper(msg, sender));
+            }
+        };
     }
 
     public ScrabbleServerListener(String name, ConnectType connectType) {
         super(name, connectType);
 
-        // add events
-        ServerEvents events = new ServerEvents();
-        eventList.addEvents(
-                events.chatReceived,
-                events.pingReceived,
-                events.playerJoin,
-                events.startGame,
-                events.voteReceived,
-                events.playerMakesMove
-        );
+        if (connectType == ConnectType.INTERNET) {
 
-        this.serverType = serverType;
+        }
     }
 
     @Override
@@ -214,7 +218,17 @@ public class ScrabbleServerListener extends ServerListener {
 
     @Override
     protected void prepareEvents() {
-
+        // add events
+        ServerEvents events = new ServerEvents();
+        eventList.addEvents(
+                events.chatReceived,
+                events.pingReceived,
+                events.playerJoin,
+                events.startGame,
+                events.voteReceived,
+                events.playerMakesMove,
+                events.requestPlayers
+        );
     }
 
     @Override
@@ -234,13 +248,8 @@ public class ScrabbleServerListener extends ServerListener {
                 }
 
                 // send back message if their name is unique to the server
-                if (!is_unique) {
-                    sendMessage(new MSGQuery(MSGQuery.QueryType.NON_UNIQUE_ID), s);
-                    return false;
-                } else {
-                    sendMessage(new MSGQuery(MSGQuery.QueryType.ACCEPTED), s);
-                    return true;
-                }
+                sendMessage(new MSGQuery(MSGQuery.QueryType.AUTHENTICATED, is_unique, getServerType()), s);
+                return is_unique;
             }
         }
 

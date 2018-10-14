@@ -44,8 +44,6 @@ public class LoginFormController implements Initializable {
     private Button btnConnect;
     @FXML
     private Button btnCreateGame;
-    @FXML
-    private TextField txtLobby;
 
     private Stage stage;
 
@@ -158,8 +156,6 @@ public class LoginFormController implements Initializable {
         Task task = new Task() {
             @Override
             protected Object call() throws Exception {
-                Connections.getListener().setLobbyName(txtLobby.getText());
-
                 if (isHosting) {
                     Connections.getServer().start(
                             Integer.parseInt(txtPort.getText()));
@@ -185,6 +181,7 @@ public class LoginFormController implements Initializable {
                     Connections.getListener().getLobbyName()));
 
             lobbyStage.show();
+            Connections.getListener().requestLobbyDetails();
         });
 
         // happens if exception is thrown (e.g. client.listeners doesn't exist)

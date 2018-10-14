@@ -16,8 +16,8 @@
     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
   </rowConstraints>
    <children>
-      <Button maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Join Lobby" GridPane.rowIndex="1" />
-      <Button maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Creat a Game" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-      <AnchorPane prefHeight="360.0" prefWidth="398.0" GridPane.columnSpan="2147483647" />
+      <Button fx:id="btnJoin" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Join Lobby" GridPane.rowIndex="1" />
+      <Button fx:id="btnCreate" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Creat a Game" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+      <AnchorPane fx:id="paneChat" prefHeight="360.0" prefWidth="398.0" GridPane.columnSpan="2147483647" />
    </children>
 </GridPane>

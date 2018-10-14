@@ -9,8 +9,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public abstract class ServerListener extends Listener {
-    public ServerListener(String name, ConnectType connectType) {
-        super(name, connectType);
+    private ConnectType serverType;
+
+    public ServerListener(String name, ConnectType serverType) {
+        super(name);
+    }
+
+    public ConnectType getServerType() {
+        return serverType;
     }
 
     public void start(int port) throws IOException {

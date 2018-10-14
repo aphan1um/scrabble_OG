@@ -19,7 +19,7 @@ public class Connections {
     /** Returns a connection that is listening to the server. */
     public static ScrabbleClientListener getListener() {
         if (listener == null) {
-            listener = new ScrabbleClientListener(playerProperty.get().getName(), ConnectType.LOCAL);
+            listener = new ScrabbleClientListener(playerProperty.get().getName());
         }
 
         return listener;

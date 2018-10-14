@@ -22,9 +22,10 @@ final public class ScrabbleClientListener extends ClientListener {
     private String lobbyName;
 
     private DoubleProperty pingMS; // ping in milliseconds (ms)
+    private ConnectType serverType;
 
-    public ScrabbleClientListener(String name, ConnectType connectType) {
-        super(name, connectType);
+    public ScrabbleClientListener(String name) {
+        super(name);
         pingMS = new SimpleDoubleProperty();
     }
 
@@ -139,22 +140,32 @@ final public class ScrabbleClientListener extends ClientListener {
             if (msgRec.getMessageType() == Message.MessageType.QUERY) {
                 MSGQuery qmsg = (MSGQuery)msgRec.getMessage();
 
+                serverType = qmsg.getServerType();
+
                 switch (qmsg.getQueryType()) {
-                    case GAME_ALREADY_MADE:
-                        throw new GameInProgressException();
-                    case NON_UNIQUE_ID:
-                        throw new NonUniqueNameException();
-                    case ACCEPTED:
-                        if (getConnectType() == ConnectType.LOCAL) {
+                    case GAME_ALREADY_STARTED:
+                        if (qmsg.getValue() == true)
+                            throw new GameInProgressException();
+                        return;
+                    case AUTHENTICATED:
+                        if (!qmsg.getValue())
+                            throw new NonUniqueNameException();
+                    default:
+                        if (serverType == ConnectType.LOCAL) {
                             sendMessage(new MSGJoinLobby(lobbyName));
                         } else {
                             return;
                         }
                 }
-            } else if (getConnectType() == ConnectType.LOCAL &&
-                    msgRec.getMessageType() == Message.MessageType.AGENT_CHANGED) {
-                return;
             }
+        }
+    }
+
+    public void requestLobbyDetails() {
+        try {
+            sendMessage(new MSGQuery(MSGQuery.QueryType.GET_PLAYER_LIST, true, null));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

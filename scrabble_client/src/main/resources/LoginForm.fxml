@@ -38,7 +38,6 @@
                   <TextField fx:id="txtName" promptText="Name" />
                   <TextField fx:id="txtIP" promptText="IP address" text="127.0.0.1" />
                   <TextField fx:id="txtPort" promptText="Port number" text="1234" />
-                  <TextField fx:id="txtLobby" promptText="Lobby name (optional)" />
                   <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" spacing="10.0">
                      <children>
                         <Button fx:id="btnConnect" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Connect" />
