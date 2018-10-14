@@ -29,9 +29,13 @@ public class LobbyController implements Initializable {
     @FXML
     private ListView lstPlayers;
     @FXML
+    private  ListView lstReceivers;
+    @FXML
     private Button btnStartGame;
     @FXML
     private Button btnKick;
+    @FXML
+    private Button btnInvite;
     @FXML
     private AnchorPane chatPane;
 
