@@ -218,7 +218,7 @@ public class LoginFormController implements Initializable {
                     txtPort.setText("1337");
                 } else if (selected.equals(TXT_LOCAL)) {
                     txtIP.setText("127.0.0.1");
-                    txtPort.setText("");
+                    txtPort.setText("1234");
                 }
 
                 btnCreateGame.setDisable(!selected.equals(TXT_LOCAL));

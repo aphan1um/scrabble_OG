@@ -185,6 +185,9 @@ public abstract class Listener {
             try {
                 Socket socket_send = connections.inverse().get(p);
 
+                if (socket_send == null)
+                    continue;
+
                 // send message to client's socket
                 String json = gson.toJson(smsg);
 

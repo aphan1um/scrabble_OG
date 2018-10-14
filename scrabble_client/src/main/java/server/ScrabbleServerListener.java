@@ -320,7 +320,6 @@ public class ScrabbleServerListener extends ServerListener {
         if (p == null)
             return;
 
-        // TODO [LOBBY FUNCTIONALITY]: Complete this (for multiple lobbies) in the future
         Lobby lobby = playerLobbyMap.get(p);
         System.out.println("Lobby: " + lobby);
 
@@ -330,13 +329,15 @@ public class ScrabbleServerListener extends ServerListener {
 
         if (lobby.getOwner().equals(p)) {
             synchronized (playerLobbyMap) {
-                playerLobbyMap.remove(p);
+                if (lobby.getOwner().equals(p))
+                    playerLobbyMap.remove(p);
             }
         }
 
         if (lobby.getAgents().isEmpty()) {
             synchronized (lobbyMap) {
-                lobbyMap.inverse().remove(lobby);
+                if (lobby.getAgents().isEmpty())
+                    lobbyMap.inverse().remove(lobby);
             }
         }
 
