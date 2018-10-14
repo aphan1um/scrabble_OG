@@ -190,6 +190,7 @@ public class LoginFormController implements Initializable {
                     System.exit(0);
                 });
 
+                mainLobby.setTitle("Main Lobby @ " + txtIP.getText());
                 mainLobby.show();
             }
         });
