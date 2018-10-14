@@ -1,5 +1,6 @@
 package client.controller;
 
+import client.ClientMain;
 import client.Connections;
 import client.GameWindow;
 import core.game.Agent;
@@ -73,6 +74,12 @@ public class LobbyController implements Initializable {
         MessageEvent<MSGAgentChanged> getPlayerStatus = new MessageEvent<MSGAgentChanged>() {
             @Override
             public MessageWrapper[] onMsgReceive(MSGAgentChanged recMessage, Agent sender) {
+                // if host has left the lobby
+                if (recMessage.hasHostLeft()) {
+                    Platform.runLater(() ->
+                            ClientMain.endApp("The host has left the lobby. The app will now close."));
+                }
+
                 for (Agent agent : recMessage.getAgents()) {
                     switch (recMessage.getStatus()) {
                         case JOINED:

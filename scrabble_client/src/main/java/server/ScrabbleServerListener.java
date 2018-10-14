@@ -46,7 +46,7 @@ public class ScrabbleServerListener extends ServerListener {
                 }
 
                 Message msg1 = new MSGAgentChanged(MSGAgentChanged.NewStatus.JOINED, lobby.getAgents());
-                MSGAgentChanged msg2 = new MSGAgentChanged(MSGAgentChanged.NewStatus.JOINED, sender);
+                MSGAgentChanged msg2 = new MSGAgentChanged(MSGAgentChanged.NewStatus.JOINED, false, sender);
                 // TODO: Is there a cleaner way to do this?
                 Set<Agent> retSend = new HashSet<>(lobby.getAgents());
                 retSend.remove(sender);
@@ -269,7 +269,9 @@ public class ScrabbleServerListener extends ServerListener {
         }
 
         sendMessage(new MessageWrapper(
-                new MSGAgentChanged(MSGAgentChanged.NewStatus.DISCONNECTED, p),
+                new MSGAgentChanged(
+                        MSGAgentChanged.NewStatus.DISCONNECTED,
+                        lobby.getOwner().equals(p), p),
                 lobby.getAgents()));
     }
 }
