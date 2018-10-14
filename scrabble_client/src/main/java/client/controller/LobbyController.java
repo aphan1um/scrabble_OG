@@ -157,12 +157,12 @@ public class LobbyController implements Initializable {
 
         btnStartGame.setOnAction(e -> {
             Connections.getListener().sendGameStart();
-            btnStartGame.disableProperty().set(true); // TODO: debug
+            btnStartGame.disableProperty().set(true);
         });
 
         // invite not allowed in local
         if (Connections.getListener().getServerType() == ConnectType.LOCAL) {
-            btnInvite.setDisable(false);
+            btnInvite.setDisable(true);
         }
 
         btnInvite.setOnAction(new EventHandler<ActionEvent>() {

@@ -13,8 +13,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 
 import java.net.URL;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class ScoreBoxController implements Initializable {
     @FXML
@@ -70,6 +69,26 @@ public class ScoreBoxController implements Initializable {
         tblScores.getColumns().setAll(colNames, colPoints);
 
         System.out.println(lst.size());
+    }
+
+    public String getWinner() {
+        List<Map.Entry<Player, Integer>> list = new ArrayList(scores.entrySet());
+        Collections.sort(list, (o1, o2) -> (o1.getValue() - o2.getValue()));
+        String result = "";
+        for(int i = 1; i <= list.size(); i ++) {
+            if(i == 1) {
+                result += list.get(list.size() - i).getKey().getName();
+            }
+            else {
+                if (list.get(list.size() - i).getValue() == list.get(list.size() - i + 1).getValue()) {
+                    result += " & " + list.get(list.size() - i).getKey().getName();
+                }
+                else {
+                    break;
+                }
+            }
+        }
+        return result;
     }
 
     public void updateScore(Player player, int newScore) {

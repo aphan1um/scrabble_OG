@@ -82,7 +82,7 @@ public class GameWindow {
         MessageEvent<MSGGameStatus> gameEndEvent = new MessageEvent<MSGGameStatus>() {
             @Override
             public MessageWrapper[] onMsgReceive(MSGGameStatus recMessage, Player sender) {
-                Platform.runLater(() -> ClientMain.endApp("Game has ended. App will now close."));
+                Platform.runLater(() -> ClientMain.endApp("Game has ended. \nThe winner is " + scoreBoard.getWinner() + ".\nApp will now close." + "\n"));
                 return null;
             }
         };
@@ -130,6 +130,9 @@ public class GameWindow {
         node1 = AnchorageSystem.createDock("Game Board", loader.load());
         node1.dock(station, DockNode.DockPosition.LEFT);
 
+        node1.closeableProperty().set(false);
+        node1.floatableProperty().set(false);
+
         Parent chat_root = null;
         chatBox = new ChatBoxController();
         loader = new FXMLLoader(getClass().getResource("/ChatBox.fxml"));
@@ -137,12 +140,16 @@ public class GameWindow {
         DockNode node2 = AnchorageSystem.createDock("Chat", loader.load());
         node2.dock(station, DockNode.DockPosition.BOTTOM, 0.75);
 
+        node2.closeableProperty().set(false);
+
         // add score table;
         loader = new FXMLLoader(this.getClass().getResource("/ScoreBox.fxml"));
         scoreBoard = new ScoreBoxController(initGame.getScores());
         loader.setController(scoreBoard);
         DockNode node3 = null;
         node3 = AnchorageSystem.createDock("Scores", loader.load());
+
+        node3.closeableProperty().set(false);
 
         node3.dock(station, DockNode.DockPosition.RIGHT, 0.8);
 
