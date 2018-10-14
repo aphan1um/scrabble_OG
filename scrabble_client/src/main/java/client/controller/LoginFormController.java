@@ -1,6 +1,8 @@
 package client.controller;
 
 import client.Connections;
+import client.listeners.GameInProgressException;
+import client.listeners.NonUniqueNameException;
 import core.game.Agent;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -26,6 +28,7 @@ import java.net.ConnectException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ResourceBundle;
+import java.util.concurrent.ExecutionException;
 
 public class LoginFormController implements Initializable {
     @FXML
@@ -118,6 +121,10 @@ public class LoginFormController implements Initializable {
             descript = "Sorry, there is no host at " + this.txtIP.getText() + ":" + this.txtPort.getText() + ".";
         } else if (th instanceof BindException) {
             descript = "Can't create server at " + this.txtIP.getText() + ":" + this.txtPort.getText() +"; a server is likely being hosted there.";
+        } else if (th.getCause() instanceof GameInProgressException) {
+            descript = "Can't join the game hosted at " + this.txtIP.getText() + ":" + this.txtPort.getText() + " since the game has already started.";
+        } else if (th.getCause() instanceof NonUniqueNameException) {
+            descript = "can't join the game with a duplicated name.";
         } else {
             descript = ex.toString();
         }
