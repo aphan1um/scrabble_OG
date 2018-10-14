@@ -19,11 +19,11 @@
          </VBox.margin>
       </Label>
       <TextField fx:id="txtName" promptText="Lobby name" />
-      <TextField fx:id="txtDescript" promptText="Lobby description" />
+      <TextField fx:id="txtDescript" promptText="Lobby description (optional)" />
       <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" spacing="10.0">
          <children>
-            <Button fx:id="btnCreate" mnemonicParsing="false" text="Create Game" />
-            <Button fx:id="btnCancel" mnemonicParsing="false" text="Cancel" />
+            <Button fx:id="btnCreate" defaultButton="true" mnemonicParsing="false" text="Create Game" />
+            <Button fx:id="btnCancel" cancelButton="true" mnemonicParsing="false" text="Cancel" />
          </children>
          <VBox.margin>
             <Insets />

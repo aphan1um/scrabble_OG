@@ -158,8 +158,7 @@ public class LoginFormController implements Initializable {
             if (Connections.getListener().getServerType() == ConnectType.LOCAL) {
                 LobbyController.createStage(
                         isHosting ? "localhost" : txtIP.getText(),
-                        txtPort.getText()).show();
-
+                        txtPort.getText(), isHosting).show();
             } else {
                 FXMLLoader loader = new FXMLLoader(
                         LobbyController.class.getResource("/MainLobby.fxml"));

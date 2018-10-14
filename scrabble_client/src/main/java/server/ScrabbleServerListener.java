@@ -27,12 +27,18 @@ public class ScrabbleServerListener extends ServerListener {
                 Lobby lobby = lobbyMap.get(recv.getLobbyName());
 
                 if (lobby == null) { // if lobby hasn't been made yet, make player owner
+                    if (recv.getDescription() == null) {
+                        return MessageWrapper.prepWraps(new MessageWrapper(
+                                new MSGQuery(MSGQuery.QueryType.LOBBY_NOT_EXISTS, true),
+                                sender));
+                    }
+
                     lobby = new Lobby(sender, recv.getDescription());
 
                     synchronized (lobbyMap) {
                         lobbyMap.put(recv.getLobbyName(), lobby);
                     }
-                } else if (recv.getDescription() != null && !recv.getDescription().isEmpty()) {
+                } else if (recv.getDescription() != null && lobby != null) {
                     return MessageWrapper.prepWraps(new MessageWrapper(
                             new MSGQuery(MSGQuery.QueryType.LOBBY_ALREADY_MADE, true),
                             sender));

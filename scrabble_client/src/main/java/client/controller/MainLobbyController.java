@@ -1,6 +1,7 @@
 package client.controller;
 
 import client.Connections;
+import client.util.StageUtils;
 import core.game.Agent;
 import core.message.MessageEvent;
 import core.message.MessageWrapper;
@@ -14,6 +15,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -69,16 +71,21 @@ public class MainLobbyController implements Initializable {
             loader1.setController(joinLobbyController);
 
             Stage joinStage = new Stage();
+            joinStage.initModality(Modality.APPLICATION_MODAL);
+            joinStage.initOwner(btnJoin.getScene().getWindow());
+            joinStage.setTitle("Join Lobby");
+
             try {
                 joinStage.setScene(new Scene(loader1.load()));
                 joinStage.showAndWait();
+                joinLobbyController.shutdown();
             } catch (IOException e1) {
                 e1.printStackTrace();
             }
 
             if (joinLobbyController.hasJoinedLobby()) {
                 ((Stage)btnCreate.getScene().getWindow()).close();
-                LobbyController.createStage("", "").show();
+                LobbyController.createStage("", "", false).show();
             }
         });
 
@@ -89,16 +96,21 @@ public class MainLobbyController implements Initializable {
             loader2.setController(createLobbyController);
 
             Stage createStage = new Stage();
+            createStage.initModality(Modality.APPLICATION_MODAL);
+            createStage.initOwner(btnCreate.getScene().getWindow());
+            createStage.setTitle("Create a Lobby");
+
             try {
                 createStage.setScene(new Scene(loader2.load()));
                 createStage.showAndWait();
+                createLobbyController.shutdown();
             } catch (IOException e1) {
                 e1.printStackTrace();
             }
 
             if (createLobbyController.hasGameCreated()) {
                 ((Stage)btnCreate.getScene().getWindow()).close();
-                LobbyController.createStage("", "").show();
+                LobbyController.createStage("", "", true).show();
             }
         });
 

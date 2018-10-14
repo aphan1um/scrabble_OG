@@ -38,36 +38,14 @@ public class JoinLobbyController implements Initializable {
 
     private boolean hasJoined;
     private Stage waitDialog;
-
-    private MessageEvent<MSGQuery> joinResp = new MessageEvent<MSGQuery>() {
-        @Override
-        public MessageWrapper[] onMsgReceive(MSGQuery recMessage, Agent sender) {
-            switch (recMessage.getQueryType()) {
-                case GAME_ALREADY_STARTED:
-                    if (recMessage.getValue()) {
-                        Platform.runLater(() -> waitDialog.close());
-                        showDialogWarn("The lobby has already started a game.");
-                    } else {
-                        // close window after connecting to lobby
-                        Platform.runLater(() -> {
-                            hasJoined = true;
-                            waitDialog.close();
-                            Connections.getListener().getEventList().removeEvents(joinResp);
-                            ((Stage)btnJoin.getScene().getWindow()).close();
-                        });
-                    }
-                    break;
-                default:
-                    break;
-            }
-            return null;
-        }
-    };
+    private GUIEvents events;
 
     private void showDialogWarn(String msg) {
-        Alert alert = new Alert(Alert.AlertType.WARNING, msg);
-        StageUtils.dialogCenter((Stage)btnJoin.getScene().getWindow(), alert);
-        alert.showAndWait();
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.WARNING, msg);
+            StageUtils.dialogCenter((Stage) btnJoin.getScene().getWindow(), alert);
+            alert.showAndWait();
+        });
     }
 
     private class GUIEvents {
@@ -78,14 +56,40 @@ public class JoinLobbyController implements Initializable {
                 return null;
             }
         };
+
+        private MessageEvent<MSGQuery> joinResp = new MessageEvent<MSGQuery>() {
+            @Override
+            public MessageWrapper[] onMsgReceive(MSGQuery recMessage, Agent sender) {
+                switch (recMessage.getQueryType()) {
+                    case GAME_ALREADY_STARTED:
+                        if (recMessage.getValue()) {
+                            Platform.runLater(() -> waitDialog.close());
+                            showDialogWarn("The lobby has already started a game.");
+                        } else {
+                            // close window after connecting to lobby
+                            Platform.runLater(() -> {
+                                hasJoined = true;
+                                waitDialog.close();
+                                ((Stage)btnJoin.getScene().getWindow()).close();
+                            });
+                        }
+                        break;
+                    case LOBBY_NOT_EXISTS:
+                        Platform.runLater(() -> waitDialog.close());
+                        showDialogWarn("The lobby has already been closed down.");
+                        break;
+                    default:
+                        break;
+                }
+                return null;
+            }
+        };
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        Connections.getListener().getEventList().addEvents(joinResp);
-
-        GUIEvents events = new GUIEvents();
-        Connections.getListener().getEventList().addEvents(events.listReceived);
+        events = new GUIEvents();
+        Connections.getListener().getEventList().addEvents(events.joinResp, events.listReceived);
 
         lobbies = FXCollections.observableMap(new HashMap<String, Lobby>());
 
@@ -141,5 +145,10 @@ public class JoinLobbyController implements Initializable {
 
     public boolean hasJoinedLobby() {
         return hasJoined;
+    }
+
+    public void shutdown() {
+        Connections.getListener().getEventList().removeEvents(
+                events.joinResp, events.listReceived);
     }
 }

@@ -3,6 +3,7 @@ package client.controller;
 import client.ClientMain;
 import client.Connections;
 import client.GameWindow;
+import core.ConnectType;
 import core.game.Agent;
 import core.message.MessageEvent;
 import core.message.MessageWrapper;
@@ -34,13 +35,13 @@ public class LobbyController implements Initializable {
     @FXML
     private Button btnStartGame;
     @FXML
-    private Button btnKick;
-    @FXML
     private Button btnInvite;
     @FXML
     private AnchorPane chatPane;
 
     private ChatBoxController chatBox;
+
+    private boolean isHosting;
 
     private class GUIEvents {
         // message received
@@ -103,7 +104,7 @@ public class LobbyController implements Initializable {
             public MessageWrapper[] onMsgReceive(MSGGameStatus recMessage, Agent sender) {
                 Platform.runLater(() -> {
                     shutdown(); // clear events
-                    ((Stage)btnKick.getScene().getWindow()).close();
+                    ((Stage)btnStartGame.getScene().getWindow()).close();
 
                     try {
                         GameWindow gameWindow = new GameWindow(recMessage.getGameData());
@@ -119,6 +120,10 @@ public class LobbyController implements Initializable {
     }
 
     private GUIEvents events;
+
+    public LobbyController(boolean isHosting) {
+        this.isHosting = isHosting;
+    }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -151,6 +156,13 @@ public class LobbyController implements Initializable {
             Connections.getListener().sendGameStart();
             btnStartGame.disableProperty().set(true); // TODO: debug
         });
+
+        // invite not allowed in local
+        if (Connections.getListener().getServerType() == ConnectType.LOCAL) {
+            btnInvite.setDisable(false);
+        }
+
+        btnStartGame.setDisable(!isHosting);
     }
 
     public void shutdown() {
@@ -163,10 +175,10 @@ public class LobbyController implements Initializable {
         }
     }
 
-    public static Stage createStage(String ip, String port) {
+    public static Stage createStage(String ip, String port, boolean isHosting) {
         FXMLLoader loader = new FXMLLoader(
                 LobbyController.class.getResource("/LobbyForm.fxml"));
-        LobbyController lobbyController = new LobbyController();
+        LobbyController lobbyController = new LobbyController(isHosting);
         loader.setController(lobbyController);
 
         Stage lobbyStage = new Stage();

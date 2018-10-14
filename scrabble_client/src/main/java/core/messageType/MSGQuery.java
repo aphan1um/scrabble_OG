@@ -10,7 +10,8 @@ public class MSGQuery implements Message {
         GET_PLAYER_LIST,
         GET_LOBBY_LIST,
         LOBBY_ALREADY_MADE,
-        GET_ALL_ONLINE_PLAYERS
+        GET_ALL_ONLINE_PLAYERS,
+        LOBBY_NOT_EXISTS
     }
 
     private QueryType queryType;

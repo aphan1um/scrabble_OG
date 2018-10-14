@@ -148,7 +148,10 @@ final public class ScrabbleClientListener extends ClientListener {
                             throw new NonUniqueNameException();
                     default:
                         if (serverType == ConnectType.LOCAL) {
-                            sendMessage(new MSGJoinLobby(lobbyName));
+                            if (Connections.getServer().hasStarted())
+                                this.createLobby(lobbyName, null);
+                            else
+                                this.joinLobby(lobbyName);
                         } else {
                             return;
                         }
@@ -176,13 +179,26 @@ final public class ScrabbleClientListener extends ClientListener {
     public void createLobby(String lobbyName, String descript) {
         try {
             this.lobbyName = lobbyName;
-            sendMessage(new MSGJoinLobby(lobbyName, descript));
+            sendMessage(new MSGJoinLobby(lobbyName, descript == null ? "" : descript));
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     public void joinLobby(String lobbyName) {
-        createLobby(lobbyName, null);
+        try {
+            this.lobbyName = lobbyName;
+            sendMessage(new MSGJoinLobby(lobbyName));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void requestOnlinePlayers() {
+        try {
+            sendMessage(new MSGQuery(MSGQuery.QueryType.GET_ALL_ONLINE_PLAYERS, true));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

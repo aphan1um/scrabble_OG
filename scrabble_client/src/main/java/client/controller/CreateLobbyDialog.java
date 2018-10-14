@@ -43,14 +43,13 @@ public class CreateLobbyDialog implements Initializable {
                         Platform.runLater(() -> {
                             gameCreated = true;
                             waitDialog.close();
-                            Connections.getListener().getEventList().removeEvents(createResp);
                             ((Stage)btnCreate.getScene().getWindow()).close();
                         });
                     }
                     break;
                 case LOBBY_ALREADY_MADE:
                     Platform.runLater(() -> waitDialog.close());
-                    showDialogWarn("The lobby has already been made.");
+                    showDialogWarn("The lobby has already been created by another player.");
                     break;
                 default:
                     break;
@@ -60,9 +59,11 @@ public class CreateLobbyDialog implements Initializable {
     };
 
     private void showDialogWarn(String msg) {
-        Alert alert = new Alert(Alert.AlertType.WARNING, msg);
-        StageUtils.dialogCenter((Stage)btnCancel.getScene().getWindow(), alert);
-        alert.showAndWait();
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.WARNING, msg);
+            StageUtils.dialogCenter((Stage) btnCancel.getScene().getWindow(), alert);
+            alert.showAndWait();
+        });
     }
 
     @Override
@@ -72,6 +73,11 @@ public class CreateLobbyDialog implements Initializable {
         btnCancel.setOnAction(e -> btnCancel.getScene().getWindow().hide());
 
         btnCreate.setOnAction(e -> {
+            if (txtName.getText().isEmpty()) {
+                showDialogWarn("Cannot create game: The lobby name is empty.");
+                return;
+            }
+
             waitDialog = WaitDialogController.createDialog(
                     (Stage)btnCancel.getScene().getWindow(),
                     "Attempting to create game...");
@@ -83,5 +89,9 @@ public class CreateLobbyDialog implements Initializable {
 
     public boolean hasGameCreated() {
         return gameCreated;
+    }
+
+    public void shutdown() {
+        Connections.getListener().getEventList().removeEvents(createResp);
     }
 }

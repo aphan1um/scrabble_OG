@@ -10,17 +10,23 @@ import java.util.concurrent.Executors;
 
 public abstract class ServerListener extends Listener {
     private ConnectType serverType;
+    private boolean started;
 
     public ServerListener(String name, ConnectType serverType) {
         super(name);
         this.serverType = serverType;
+        this.started = false;
     }
+
+    public boolean hasStarted() { return started; }
 
     public ConnectType getServerType() {
         return serverType;
     }
 
     public void start(int port) throws IOException {
+        started = true;
+
         reset();
         ServerSocket server = new ServerSocket(port);
         ExecutorService executor = Executors.newCachedThreadPool();

@@ -9,6 +9,7 @@ public class MSGJoinLobby implements Message {
 
     public MSGJoinLobby(String lobbyName) {
         this.lobbyName = lobbyName;
+        this.description = null;
     }
 
     public MSGJoinLobby(String lobbyName, String description) {
