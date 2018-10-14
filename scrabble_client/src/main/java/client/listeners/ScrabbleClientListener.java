@@ -2,6 +2,7 @@ package client.listeners;
 
 import client.ClientMain;
 import client.Connections;
+import client.util.StageUtils;
 import core.ClientListener;
 import core.ConnectType;
 import core.game.Player;
@@ -11,22 +12,26 @@ import core.message.MessageEvent;
 import core.message.MessageWrapper;
 import core.messageType.*;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
+import javafx.stage.Stage;
 
 import java.awt.*;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Collection;
+import java.util.Observable;
 import java.util.Optional;
 
 final public class ScrabbleClientListener extends ClientListener {
     private String lobbyName;
-    private boolean inLobby;
+    private BooleanProperty inLobby;
 
     private DoubleProperty pingMS; // ping in milliseconds (ms)
     private ConnectType serverType;
@@ -34,6 +39,7 @@ final public class ScrabbleClientListener extends ClientListener {
     public ScrabbleClientListener(String name) {
         super(name);
         pingMS = new SimpleDoubleProperty();
+        inLobby = new SimpleBooleanProperty(false);
     }
 
     public ConnectType getServerType() { return serverType; }
@@ -93,9 +99,22 @@ final public class ScrabbleClientListener extends ClientListener {
                 new MessageEvent<MSGQuery>() {
                     @Override
                     public MessageWrapper[] onMsgReceive(MSGQuery recMessage, Player sender) {
-                        if (recMessage.getQueryType() == MSGQuery.QueryType.GAME_ALREADY_STARTED &&
-                                recMessage.getValue() == false) {
-                            inLobby = true;
+                        switch (recMessage.getQueryType()) {
+                            case GAME_ALREADY_STARTED:
+                                if (recMessage.getValue()) {
+                                    showDialogWarn("The lobby has already started a game.");
+                                } else {
+                                    inLobby.set(true);
+                                }
+                                break;
+                            case LOBBY_NOT_EXISTS:
+                                showDialogWarn("The lobby has already been closed down.");
+                                break;
+                            case LOBBY_ALREADY_MADE:
+                                showDialogWarn("The lobby has already been created by another player.");
+                                break;
+                            default:
+                                break;
                         }
 
                         return null;
@@ -107,7 +126,7 @@ final public class ScrabbleClientListener extends ClientListener {
                     @Override
                     public MessageWrapper[] onMsgReceive(MSGInviteNotify recMessage, Player sender) {
                         // make sure player isn't in lobby
-                        if (inLobby) return null;
+                        if (inLobby.get()) return null;
 
                         Platform.runLater(() -> {
                             ButtonType yesBtn = new ButtonType("Accept", ButtonBar.ButtonData.OK_DONE);
@@ -122,7 +141,7 @@ final public class ScrabbleClientListener extends ClientListener {
 
                             // if person accepts the invitation
                             if (result.orElse(noBtn) == yesBtn) {
-
+                                joinLobby(recMessage.getLobbyName());
                             }
                         });
 
@@ -131,6 +150,13 @@ final public class ScrabbleClientListener extends ClientListener {
                 }
         );
 
+    }
+
+    private void showDialogWarn(String msg) {
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.WARNING, msg);
+            alert.showAndWait();
+        });
     }
 
     @Override
@@ -227,6 +253,8 @@ final public class ScrabbleClientListener extends ClientListener {
             e.printStackTrace();
         }
     }
+
+    public BooleanProperty inLobbyProperty() { return inLobby; }
 
     public void requestOnlinePlayers() {
         try {

@@ -7,6 +7,8 @@ import core.message.MessageEvent;
 import core.message.MessageWrapper;
 import core.messageType.MSGQuery;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
@@ -27,54 +29,40 @@ public class CreateLobbyDialog implements Initializable {
     @FXML
     private TextField txtName;
 
-    private boolean gameCreated;
     private Stage waitDialog;
 
-    private MessageEvent<MSGQuery> createResp = new MessageEvent<MSGQuery>() {
-        @Override
-        public MessageWrapper[] onMsgReceive(MSGQuery recMessage, Player sender) {
-            switch (recMessage.getQueryType()) {
-                case GAME_ALREADY_STARTED:
-                    if (recMessage.getValue()) {
-                        Platform.runLater(() -> waitDialog.close());
-                        showDialogWarn("The lobby has already been made (game ongoing).");
-                    } else {
-                        // close window after connecting to lobby
-                        Platform.runLater(() -> {
-                            gameCreated = true;
-                            waitDialog.close();
-                            ((Stage)btnCreate.getScene().getWindow()).close();
-                        });
-                    }
-                    break;
-                case LOBBY_ALREADY_MADE:
-                    Platform.runLater(() -> waitDialog.close());
-                    showDialogWarn("The lobby has already been created by another player.");
-                    break;
-                default:
-                    break;
+    private class GUIEvents {
+        MessageEvent<MSGQuery> createResp = new MessageEvent<MSGQuery>() {
+            @Override
+            public MessageWrapper[] onMsgReceive(MSGQuery recMessage, Player sender) {
+                Platform.runLater(() -> waitDialog.close());
+                return null;
             }
-            return null;
-        }
-    };
+        };
 
-    private void showDialogWarn(String msg) {
-        Platform.runLater(() -> {
-            Alert alert = new Alert(Alert.AlertType.WARNING, msg);
-            StageUtils.dialogCenter((Stage) btnCancel.getScene().getWindow(), alert);
-            alert.showAndWait();
-        });
+        ChangeListener<Boolean> joinedLobby = new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                if (newValue) {
+                    Platform.runLater(() -> shutdown());
+                }
+            }
+        };
     }
+
+    private GUIEvents events;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        Connections.getListener().getEventList().addEvents(createResp);
+        events = new GUIEvents();
+        Connections.getListener().getEventList().addEvents(events.createResp);
+        Connections.getListener().inLobbyProperty().addListener(events.joinedLobby);
 
         btnCancel.setOnAction(e -> btnCancel.getScene().getWindow().hide());
 
         btnCreate.setOnAction(e -> {
             if (txtName.getText().isEmpty()) {
-                showDialogWarn("Cannot create game: The lobby name is empty.");
+                new Alert(Alert.AlertType.WARNING,"Cannot create game: The lobby name is empty.").showAndWait();
                 return;
             }
 
@@ -87,11 +75,10 @@ public class CreateLobbyDialog implements Initializable {
         });
     }
 
-    public boolean hasGameCreated() {
-        return gameCreated;
-    }
+    private void shutdown() {
+        ((Stage)txtName.getScene().getWindow()).close();
 
-    public void shutdown() {
-        Connections.getListener().getEventList().removeEvents(createResp);
+        Connections.getListener().getEventList().removeEvents(events.createResp);
+        Connections.getListener().inLobbyProperty().removeListener(events.joinedLobby);
     }
 }

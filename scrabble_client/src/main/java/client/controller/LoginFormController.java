@@ -1,6 +1,7 @@
 package client.controller;
 
 import client.Connections;
+import client.listeners.NonUniqueNameException;
 import core.ConnectType;
 import core.game.Player;
 import javafx.application.Platform;
@@ -127,7 +128,9 @@ public class LoginFormController implements Initializable {
         } else if (th instanceof ConnectException) {
             descript = "Sorry, there is no host at " + this.txtIP.getText() + ":" + this.txtPort.getText() + ".";
         } else if (th instanceof BindException) {
-            descript = "Can't create server at " + this.txtIP.getText() + ":" + this.txtPort.getText() +"; a server is likely being hosted there.";
+            descript = "Can't create server at " + this.txtIP.getText() + ":" + this.txtPort.getText() +". A server is likely being hosted there.";
+        } else if (th.getCause() instanceof NonUniqueNameException) {
+            descript = "Specified name already exists in server. Try a different name instead.";
         } else {
             descript = ex.toString();
         }

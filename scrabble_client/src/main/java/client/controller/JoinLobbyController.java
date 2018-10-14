@@ -36,7 +36,6 @@ public class JoinLobbyController implements Initializable {
 
     private ObservableMap<String, Lobby> lobbies;
 
-    private boolean hasJoined;
     private Stage waitDialog;
     private GUIEvents events;
 
@@ -48,7 +47,7 @@ public class JoinLobbyController implements Initializable {
         });
     }
 
-    private class GUIEvents {
+    public class GUIEvents {
         MessageEvent<MSGLobbyList> listReceived = new MessageEvent<MSGLobbyList>() {
             @Override
             public MessageWrapper[] onMsgReceive(MSGLobbyList recMessage, Player sender) {
@@ -57,31 +56,20 @@ public class JoinLobbyController implements Initializable {
             }
         };
 
-        private MessageEvent<MSGQuery> joinResp = new MessageEvent<MSGQuery>() {
+        MessageEvent<MSGQuery> joinResp = new MessageEvent<MSGQuery>() {
             @Override
             public MessageWrapper[] onMsgReceive(MSGQuery recMessage, Player sender) {
-                switch (recMessage.getQueryType()) {
-                    case GAME_ALREADY_STARTED:
-                        if (recMessage.getValue()) {
-                            Platform.runLater(() -> waitDialog.close());
-                            showDialogWarn("The lobby has already started a game.");
-                        } else {
-                            // close window after connecting to lobby
-                            Platform.runLater(() -> {
-                                hasJoined = true;
-                                waitDialog.close();
-                                ((Stage)btnJoin.getScene().getWindow()).close();
-                            });
-                        }
-                        break;
-                    case LOBBY_NOT_EXISTS:
-                        Platform.runLater(() -> waitDialog.close());
-                        showDialogWarn("The lobby has already been closed down.");
-                        break;
-                    default:
-                        break;
-                }
+                Platform.runLater(() -> waitDialog.close());
                 return null;
+            }
+        };
+
+        ChangeListener<Boolean> joinedLobby = new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                if (newValue) {
+                    Platform.runLater(() -> shutdown());
+                }
             }
         };
     }
@@ -90,6 +78,7 @@ public class JoinLobbyController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         events = new GUIEvents();
         Connections.getListener().getEventList().addEvents(events.joinResp, events.listReceived);
+        Connections.getListener().inLobbyProperty().addListener(events.joinedLobby);
 
         lobbies = FXCollections.observableMap(new HashMap<String, Lobby>());
 
@@ -143,12 +132,11 @@ public class JoinLobbyController implements Initializable {
         Connections.getListener().requestAllLobbies();
     }
 
-    public boolean hasJoinedLobby() {
-        return hasJoined;
-    }
+    private void shutdown() {
+        ((Stage)tblLobby.getScene().getWindow()).close();
 
-    public void shutdown() {
         Connections.getListener().getEventList().removeEvents(
                 events.joinResp, events.listReceived);
+        Connections.getListener().inLobbyProperty().removeListener(events.joinedLobby);
     }
 }

@@ -6,6 +6,9 @@ import core.game.Player;
 import core.message.MessageEvent;
 import core.message.MessageWrapper;
 import core.messageType.MSGChat;
+import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -30,6 +33,7 @@ public class MainLobbyController implements Initializable {
     private Button btnCreate;
 
     private ChatBoxController chatBox;
+    private GUIEvents events;
 
     private class GUIEvents {
         // message received
@@ -39,6 +43,15 @@ public class MainLobbyController implements Initializable {
                 chatBox.appendText(String.format("%s said:\t%s\n",
                         recMessage.getSender().getName(), recMessage.getChatMsg()), Color.BLACK);
                 return null;
+            }
+        };
+
+        ChangeListener<Boolean> joinedLobby = new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                if (newValue) {
+                    Platform.runLater(() -> loadLobbyWindow());
+                }
             }
         };
     }
@@ -78,15 +91,9 @@ public class MainLobbyController implements Initializable {
                 joinStage.setScene(new Scene(loader1.load()));
                 joinStage.setOnShown(e2 ->
                         StageUtils.centreStage((Stage)btnJoin.getScene().getWindow(), joinStage));
-                joinStage.showAndWait();
-                joinLobbyController.shutdown();
+                joinStage.show();
             } catch (IOException e1) {
                 e1.printStackTrace();
-            }
-
-            if (joinLobbyController.hasJoinedLobby()) {
-                ((Stage)btnCreate.getScene().getWindow()).close();
-                LobbyController.createStage("", "", false).show();
             }
         });
 
@@ -105,21 +112,28 @@ public class MainLobbyController implements Initializable {
                 createStage.setScene(new Scene(loader2.load()));
                 createStage.setOnShown(e2 ->
                         StageUtils.centreStage((Stage)btnCreate.getScene().getWindow(), createStage));
-                createStage.showAndWait();
-                createLobbyController.shutdown();
+                createStage.show();
             } catch (IOException e1) {
                 e1.printStackTrace();
-            }
-
-            if (createLobbyController.hasGameCreated()) {
-                ((Stage)btnCreate.getScene().getWindow()).close();
-                LobbyController.createStage("", "", true).show();
             }
         });
 
 
         // now add events
-        GUIEvents events = new GUIEvents();
+        events = new GUIEvents();
         Connections.getListener().getEventList().addEvents(events.chatEvent);
+
+        Connections.getListener().inLobbyProperty().addListener(events.joinedLobby);
+    }
+
+    private void loadLobbyWindow() {
+        shutdown();
+        ((Stage)btnCreate.getScene().getWindow()).close();
+        LobbyController.createStage("", "", true).show();
+    }
+
+    public void shutdown() {
+        Connections.getListener().inLobbyProperty().removeListener(events.joinedLobby);
+        Connections.getListener().getEventList().removeEvents(events.chatEvent);
     }
 }
