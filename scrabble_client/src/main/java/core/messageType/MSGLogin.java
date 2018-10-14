@@ -1,14 +1,14 @@
 package core.messageType;
 
-import core.game.Agent;
+import core.game.Player;
 import core.message.Message;
 
 public class MSGLogin implements Message {
-    private Agent player;
+    private Player player;
 
-    public MSGLogin(Agent player) {
+    public MSGLogin(Player player) {
         this.player = player;
     }
 
-    public Agent getPlayer() { return player; }
+    public Player getPlayer() { return player; }
 }

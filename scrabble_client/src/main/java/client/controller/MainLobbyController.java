@@ -2,7 +2,7 @@ package client.controller;
 
 import client.Connections;
 import client.util.StageUtils;
-import core.game.Agent;
+import core.game.Player;
 import core.message.MessageEvent;
 import core.message.MessageWrapper;
 import core.messageType.MSGChat;
@@ -12,7 +12,6 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Modality;
@@ -36,7 +35,7 @@ public class MainLobbyController implements Initializable {
         // message received
         MessageEvent<MSGChat> chatEvent = new MessageEvent<MSGChat>() {
             @Override
-            public MessageWrapper[] onMsgReceive(MSGChat recMessage, Agent sender) {
+            public MessageWrapper[] onMsgReceive(MSGChat recMessage, Player sender) {
                 chatBox.appendText(String.format("%s said:\t%s\n",
                         recMessage.getSender().getName(), recMessage.getChatMsg()), Color.BLACK);
                 return null;
@@ -77,6 +76,8 @@ public class MainLobbyController implements Initializable {
 
             try {
                 joinStage.setScene(new Scene(loader1.load()));
+                joinStage.setOnShown(e2 ->
+                        StageUtils.centreStage((Stage)btnJoin.getScene().getWindow(), joinStage));
                 joinStage.showAndWait();
                 joinLobbyController.shutdown();
             } catch (IOException e1) {
@@ -102,6 +103,8 @@ public class MainLobbyController implements Initializable {
 
             try {
                 createStage.setScene(new Scene(loader2.load()));
+                createStage.setOnShown(e2 ->
+                        StageUtils.centreStage((Stage)btnCreate.getScene().getWindow(), createStage));
                 createStage.showAndWait();
                 createLobbyController.shutdown();
             } catch (IOException e1) {

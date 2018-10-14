@@ -5,10 +5,11 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Maps;
 import core.ConnectType;
 import core.ServerListener;
-import core.game.Agent;
+import core.game.Player;
 import core.game.Lobby;
 import core.message.*;
 import core.messageType.*;
+import sun.management.Agent;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -17,13 +18,13 @@ import java.util.*;
 public class ScrabbleServerListener extends ServerListener {
 
     private BiMap<String, Lobby> lobbyMap;
-    private Map<Agent, Lobby> playerLobbyMap; // note this is not a bijection, so a BiMap can't be used
+    private Map<Player, Lobby> playerLobbyMap; // note this is not a bijection, so a BiMap can't be used
 
     private class ServerEvents {
         // return list of players back to player who sent details to join lobby
         MessageEvent<MSGJoinLobby> playerJoin = new MessageEvent<MSGJoinLobby>() {
             @Override
-            public MessageWrapper[] onMsgReceive(MSGJoinLobby recv, Agent sender) {
+            public MessageWrapper[] onMsgReceive(MSGJoinLobby recv, Player sender) {
                 Lobby lobby = lobbyMap.get(recv.getLobbyName());
 
                 if (lobby == null) { // if lobby hasn't been made yet, make player owner
@@ -61,10 +62,10 @@ public class ScrabbleServerListener extends ServerListener {
                 Message msg1 = new MSGQuery(MSGQuery.QueryType.GAME_ALREADY_STARTED, false);
                 MSGAgentChanged msg2 = new MSGAgentChanged(MSGAgentChanged.NewStatus.JOINED, false, sender);
                 // TODO: Is there a cleaner way to do this?
-                Set<Agent> retSend = new HashSet<>(lobby.getAgents());
+                Set<Player> retSend = new HashSet<>(lobby.getPlayers());
                 retSend.remove(sender);
 
-                System.out.println("Agents size: " + lobby.getAgents().size());
+                System.out.println("Agents size: " + lobby.getPlayers().size());
 
                 return MessageWrapper.prepWraps(
                         new MessageWrapper(msg1, sender),
@@ -75,20 +76,20 @@ public class ScrabbleServerListener extends ServerListener {
         // when some player sends chat msg, broadcast it to all other players
         MessageEvent<MSGChat> chatReceived = new MessageEvent<MSGChat>() {
             @Override
-            public MessageWrapper[] onMsgReceive(MSGChat recMessage, Agent sender) {
+            public MessageWrapper[] onMsgReceive(MSGChat recMessage, Player sender) {
                 Lobby lobbyChat = playerLobbyMap.get(sender);
 
-                Collection<Agent> receivers = null;
+                Collection<Player> receivers = null;
 
                 if (lobbyChat == null) { // if in main lobby room
-                    List<Agent> allOnline = new ArrayList<>();
+                    List<Player> allOnline = new ArrayList<>();
                     playerLobbyMap.forEach((k, v) -> {
                         if (v == null) allOnline.add(k);
                     });
 
                     receivers = allOnline;
                 } else {
-                    receivers = playerLobbyMap.get(sender).getAgents();
+                    receivers = playerLobbyMap.get(sender).getPlayers();
                 }
 
                 return MessageWrapper.prepWraps(
@@ -99,7 +100,7 @@ public class ScrabbleServerListener extends ServerListener {
         // when Start Game is pressed by the owner (and received by server)
         MessageEvent<MSGGameStatus> startGame = new MessageEvent<MSGGameStatus>() {
             @Override
-            public MessageWrapper[] onMsgReceive(MSGGameStatus msg, Agent sender) {
+            public MessageWrapper[] onMsgReceive(MSGGameStatus msg, Player sender) {
                 // TODO: This only works with one lobby..
                 Lobby lobby = playerLobbyMap.get(sender);
                 if (lobby != null && lobby.getOwner().equals(sender)) {
@@ -112,7 +113,7 @@ public class ScrabbleServerListener extends ServerListener {
                     // send back the clients the initial game state
                     return MessageWrapper.prepWraps(
                             new MessageWrapper(sendMsg,
-                                    playerLobbyMap.get(sender).getAgents()));
+                                    playerLobbyMap.get(sender).getPlayers()));
                 }
 
                 return null;
@@ -123,12 +124,12 @@ public class ScrabbleServerListener extends ServerListener {
         // when player makes a move, broadcast it to all other users
         MessageEvent<MSGGameAction> playerMakesMove = new MessageEvent<MSGGameAction>() {
             @Override
-            public MessageWrapper[] onMsgReceive(MSGGameAction msg, Agent sender) {
+            public MessageWrapper[] onMsgReceive(MSGGameAction msg, Player sender) {
                 Lobby lobby = playerLobbyMap.get(sender);
                 lobby.getGameSession().incrementBoard(msg.getMoveLocation(), msg.getLetter());
 
                 if (msg.getMoveLocation() == null || msg.getLetter() == null) { // player skipped turn
-                    Agent prevPlayer = lobby.getGameSession().getCurrentTurn();
+                    Player prevPlayer = lobby.getGameSession().getCurrentTurn();
                     lobby.getGameSession().nextTurn(true);
 
                     if (lobby.getGameSession().allPlayersSkipped()) { // when all players skipped their turn
@@ -137,7 +138,7 @@ public class ScrabbleServerListener extends ServerListener {
                                 null);
 
                         return MessageWrapper.prepWraps(new MessageWrapper
-                                (msgEndGame, lobby.getAgents()));
+                                (msgEndGame, lobby.getPlayers()));
                     } else { // new turn
                         Message msgSkip = new MSGNewTurn(
                                 prevPlayer,
@@ -146,21 +147,21 @@ public class ScrabbleServerListener extends ServerListener {
                                 true);
 
                         return MessageWrapper.prepWraps(
-                                new MessageWrapper(msgSkip, playerLobbyMap.get(sender).getAgents())
+                                new MessageWrapper(msgSkip, playerLobbyMap.get(sender).getPlayers())
                         );
                     }
                 }
 
                 // otherwise, send this action to all other players, so they can then vote
                 return MessageWrapper.prepWraps(new MessageWrapper(msg,
-                        playerLobbyMap.get(sender).getAgents()));
+                        playerLobbyMap.get(sender).getPlayers()));
             }
         };
 
 
         MessageEvent<MSGGameVote> voteReceived = new MessageEvent<MSGGameVote>() {
             @Override
-            public MessageWrapper[] onMsgReceive(MSGGameVote msg, Agent sender) {
+            public MessageWrapper[] onMsgReceive(MSGGameVote msg, Player sender) {
 
                 // TODO: add logic here
                 Lobby lobby = playerLobbyMap.get(sender);
@@ -168,7 +169,7 @@ public class ScrabbleServerListener extends ServerListener {
 
                 if (lobby.getGameSession().allVoted()) {
                     // all players voted, move onto next player
-                    Agent prevPlayer = lobby.getGameSession().getCurrentTurn();
+                    Player prevPlayer = lobby.getGameSession().getCurrentTurn();
                     lobby.getGameSession().nextTurn(false);
 
                     Message msgNextTurn = new MSGNewTurn(
@@ -184,11 +185,11 @@ public class ScrabbleServerListener extends ServerListener {
                         // TODO: Better structure protocol
                         // send additional message to end game
                         return MessageWrapper.prepWraps(
-                                new MessageWrapper(msgNextTurn, lobby.getAgents()),
-                                new MessageWrapper(msgEndGame, lobby.getAgents()));
+                                new MessageWrapper(msgNextTurn, lobby.getPlayers()),
+                                new MessageWrapper(msgEndGame, lobby.getPlayers()));
                     } else {
                         return MessageWrapper.prepWraps(
-                                new MessageWrapper(msgNextTurn, lobby.getAgents()));
+                                new MessageWrapper(msgNextTurn, lobby.getPlayers()));
                     }
                 }
 
@@ -199,21 +200,21 @@ public class ScrabbleServerListener extends ServerListener {
         // ping back to the user
         MessageEvent<MSGPing> pingReceived =  new MessageEvent<MSGPing>() {
             @Override
-            public MessageWrapper[] onMsgReceive(MSGPing msg, Agent sender) {
+            public MessageWrapper[] onMsgReceive(MSGPing msg, Player sender) {
                 return MessageWrapper.prepWraps(new MessageWrapper(msg, sender));
             }
         };
 
         MessageEvent<MSGQuery> requestPlayers = new MessageEvent<MSGQuery>() {
             @Override
-            public MessageWrapper[] onMsgReceive(MSGQuery recMessage, Agent sender) {
+            public MessageWrapper[] onMsgReceive(MSGQuery recMessage, Player sender) {
                 if (recMessage.getQueryType() != MSGQuery.QueryType.GET_PLAYER_LIST)
                     return null;
 
                 Lobby lobby = playerLobbyMap.get(sender);
                 Message msg = new MSGAgentChanged(
                         MSGAgentChanged.NewStatus.JOINED,
-                        lobby.getAgents());
+                        lobby.getPlayers());
 
                 return MessageWrapper.prepWraps(new MessageWrapper(msg, sender));
             }
@@ -221,7 +222,7 @@ public class ScrabbleServerListener extends ServerListener {
 
         MessageEvent<MSGQuery> requestLobbyList = new MessageEvent<MSGQuery>() {
             @Override
-            public MessageWrapper[] onMsgReceive(MSGQuery recMessage, Agent sender) {
+            public MessageWrapper[] onMsgReceive(MSGQuery recMessage, Player sender) {
                 if (recMessage.getQueryType() != MSGQuery.QueryType.GET_LOBBY_LIST)
                     return null;
 
@@ -232,7 +233,7 @@ public class ScrabbleServerListener extends ServerListener {
 
         MessageEvent<MSGQuery> requestOnlinePlayers = new MessageEvent<MSGQuery>() {
             @Override
-            public MessageWrapper[] onMsgReceive(MSGQuery recMessage, Agent sender) {
+            public MessageWrapper[] onMsgReceive(MSGQuery recMessage, Player sender) {
                 if (recMessage.getQueryType() != MSGQuery.QueryType.GET_ALL_ONLINE_PLAYERS)
                     return null;
 
@@ -244,6 +245,32 @@ public class ScrabbleServerListener extends ServerListener {
 
                 Message msg = new MSGPlayerList(allOnline);
                 return MessageWrapper.prepWraps(new MessageWrapper(msg, sender));
+            }
+        };
+
+        MessageEvent<MSGInviteRequest> requestInvite = new MessageEvent<MSGInviteRequest>() {
+            @Override
+            public MessageWrapper[] onMsgReceive(MSGInviteRequest recMessage, Player sender) {
+                // ensure player is still in lobby
+                if (playerLobbyMap.get(sender) == null)
+                    return null;
+
+                Set<Player> playersToSend = new HashSet<>();
+
+                for (String s : recMessage.getPlayers()) {
+                    Player playerToSend = new Player(s);
+
+                    // ensure player isn't in a lobby
+                    if (playerLobbyMap.get(playerToSend) == null) {
+                        playersToSend.add(playerToSend);
+                    }
+                }
+
+                Message msg = new MSGInviteNotify(
+                        lobbyMap.inverse().get(playerLobbyMap.get(sender)));
+
+                return MessageWrapper.prepWraps(new MessageWrapper(
+                        msg, playersToSend));
             }
         };
     }
@@ -280,7 +307,8 @@ public class ScrabbleServerListener extends ServerListener {
                 events.playerMakesMove,
                 events.requestPlayers,
                 events.requestLobbyList,
-                events.requestLobbyList
+                events.requestOnlinePlayers,
+                events.requestInvite
         );
     }
 
@@ -289,7 +317,7 @@ public class ScrabbleServerListener extends ServerListener {
         if (connections.get(s) == null) { // if player hasn't been authenticated yet
 
             if (msgRec.getMessageType() == Message.MessageType.LOGIN) {
-                Agent player = (Agent)((MSGLogin)msgRec.getMessage()).getPlayer();
+                Player player = (Player)((MSGLogin)msgRec.getMessage()).getPlayer();
                 boolean is_unique = false;
 
                 synchronized (connections) {
@@ -315,7 +343,7 @@ public class ScrabbleServerListener extends ServerListener {
     }
 
     @Override
-    protected void onUserDisconnect(Agent p) {
+    protected void onUserDisconnect(Player p) {
         System.out.println("From server disconnect: " + p);
         if (p == null)
             return;
@@ -323,8 +351,8 @@ public class ScrabbleServerListener extends ServerListener {
         Lobby lobby = playerLobbyMap.get(p);
         System.out.println("Lobby: " + lobby);
 
-        synchronized (lobby.getAgents()) {
-            lobby.getAgents().remove(p);
+        synchronized (lobby.getPlayers()) {
+            lobby.getPlayers().remove(p);
         }
 
         if (lobby.getOwner().equals(p)) {
@@ -334,9 +362,9 @@ public class ScrabbleServerListener extends ServerListener {
             }
         }
 
-        if (lobby.getAgents().isEmpty()) {
+        if (lobby.getPlayers().isEmpty()) {
             synchronized (lobbyMap) {
-                if (lobby.getAgents().isEmpty())
+                if (lobby.getPlayers().isEmpty())
                     lobbyMap.inverse().remove(lobby);
             }
         }
@@ -345,6 +373,6 @@ public class ScrabbleServerListener extends ServerListener {
                 new MSGAgentChanged(
                         MSGAgentChanged.NewStatus.DISCONNECTED,
                         lobby.getOwner().equals(p), p),
-                lobby.getAgents()));
+                lobby.getPlayers()));
     }
 }

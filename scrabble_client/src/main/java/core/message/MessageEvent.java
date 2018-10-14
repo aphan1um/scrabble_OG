@@ -1,9 +1,7 @@
 package core.message;
 
-import core.game.Agent;
-
-import java.util.Set;
+import core.game.Player;
 
 public interface MessageEvent<T extends Message> {
-    public MessageWrapper[] onMsgReceive(T recMessage, Agent sender);
+    public MessageWrapper[] onMsgReceive(T recMessage, Player sender);
 }

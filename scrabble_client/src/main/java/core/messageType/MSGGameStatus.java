@@ -1,6 +1,5 @@
 package core.messageType;
 
-import core.game.Agent;
 import core.game.LiveGame;
 import core.message.Message;
 

@@ -1,10 +1,9 @@
 package core.message;
 
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
-import core.game.Agent;
+import core.game.Player;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -19,7 +18,7 @@ public class EventMessageList {
     }
 
     public Collection<MessageWrapper> fireEvent(Message msg, Message.MessageType msgType,
-                                          Agent sender) {
+                                          Player sender) {
         final Collection<MessageEvent> eventsToFire = events.get(msgType);
         final List<MessageWrapper> msgs = new ArrayList<>(eventsToFire.size());
 

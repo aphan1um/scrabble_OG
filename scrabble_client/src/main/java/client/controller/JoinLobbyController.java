@@ -2,7 +2,7 @@ package client.controller;
 
 import client.Connections;
 import client.util.StageUtils;
-import core.game.Agent;
+import core.game.Player;
 import core.game.Lobby;
 import core.message.MessageEvent;
 import core.message.MessageWrapper;
@@ -51,7 +51,7 @@ public class JoinLobbyController implements Initializable {
     private class GUIEvents {
         MessageEvent<MSGLobbyList> listReceived = new MessageEvent<MSGLobbyList>() {
             @Override
-            public MessageWrapper[] onMsgReceive(MSGLobbyList recMessage, Agent sender) {
+            public MessageWrapper[] onMsgReceive(MSGLobbyList recMessage, Player sender) {
                 lobbies.putAll(recMessage.getLobbies());
                 return null;
             }
@@ -59,7 +59,7 @@ public class JoinLobbyController implements Initializable {
 
         private MessageEvent<MSGQuery> joinResp = new MessageEvent<MSGQuery>() {
             @Override
-            public MessageWrapper[] onMsgReceive(MSGQuery recMessage, Agent sender) {
+            public MessageWrapper[] onMsgReceive(MSGQuery recMessage, Player sender) {
                 switch (recMessage.getQueryType()) {
                     case GAME_ALREADY_STARTED:
                         if (recMessage.getValue()) {

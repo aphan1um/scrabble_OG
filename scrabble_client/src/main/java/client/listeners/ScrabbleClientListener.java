@@ -4,7 +4,7 @@ import client.ClientMain;
 import client.Connections;
 import core.ClientListener;
 import core.ConnectType;
-import core.game.Agent;
+import core.game.Player;
 import core.game.GameRules;
 import core.message.Message;
 import core.message.MessageEvent;
@@ -13,11 +13,16 @@ import core.messageType.*;
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
 
 import java.awt.*;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Collection;
+import java.util.Optional;
 
 final public class ScrabbleClientListener extends ClientListener {
     private String lobbyName;
@@ -84,13 +89,42 @@ final public class ScrabbleClientListener extends ClientListener {
     @Override
     protected void prepareEvents() {
         eventList.addEvents(
+                // when user gets accepted into a lobby
                 new MessageEvent<MSGQuery>() {
                     @Override
-                    public MessageWrapper[] onMsgReceive(MSGQuery recMessage, Agent sender) {
+                    public MessageWrapper[] onMsgReceive(MSGQuery recMessage, Player sender) {
                         if (recMessage.getQueryType() == MSGQuery.QueryType.GAME_ALREADY_STARTED &&
-                        recMessage.getValue() == false) {
+                                recMessage.getValue() == false) {
                             inLobby = true;
                         }
+
+                        return null;
+                    }
+                },
+
+                // invitation received from server
+                new MessageEvent<MSGInviteNotify>() {
+                    @Override
+                    public MessageWrapper[] onMsgReceive(MSGInviteNotify recMessage, Player sender) {
+                        // make sure player isn't in lobby
+                        if (inLobby) return null;
+
+                        Platform.runLater(() -> {
+                            ButtonType yesBtn = new ButtonType("Accept", ButtonBar.ButtonData.OK_DONE);
+                            ButtonType noBtn = new ButtonType("Decline", ButtonBar.ButtonData.CANCEL_CLOSE);
+                            Alert alert = new Alert(Alert.AlertType.INFORMATION,
+                                    "You have received an invitation to enter into the lobby: " +
+                                    recMessage.getLobbyName() + ".",
+                                    yesBtn, noBtn);
+
+                            alert.setTitle("Invite");
+                            Optional<ButtonType> result = alert.showAndWait();
+
+                            // if person accepts the invitation
+                            if (result.orElse(noBtn) == yesBtn) {
+
+                            }
+                        });
 
                         return null;
                     }
@@ -111,7 +145,7 @@ final public class ScrabbleClientListener extends ClientListener {
     }
 
     @Override
-    protected void onUserDisconnect(Agent p) {
+    protected void onUserDisconnect(Player p) {
         // TODO: This is a simplification.
         Platform.runLater(() ->
                 ClientMain.endApp(
@@ -197,6 +231,14 @@ final public class ScrabbleClientListener extends ClientListener {
     public void requestOnlinePlayers() {
         try {
             sendMessage(new MSGQuery(MSGQuery.QueryType.GET_ALL_ONLINE_PLAYERS, true));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendInvites(Collection<String> players) {
+        try {
+            sendMessage(new MSGInviteRequest(players));
         } catch (IOException e) {
             e.printStackTrace();
         }

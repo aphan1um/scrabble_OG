@@ -8,7 +8,7 @@ import client.controller.ScoreBoxController;
 import com.anchorage.docks.node.DockNode;
 import com.anchorage.docks.stations.DockStation;
 import com.anchorage.system.AnchorageSystem;
-import core.game.Agent;
+import core.game.Player;
 import core.game.GameRules;
 import core.game.LiveGame;
 import core.message.MessageEvent;
@@ -42,7 +42,7 @@ public class GameWindow {
         // chat message
         MessageEvent<MSGChat> chatEvent = new MessageEvent<MSGChat>() {
             @Override
-            public MessageWrapper[] onMsgReceive(MSGChat recMessage, Agent sender) {
+            public MessageWrapper[] onMsgReceive(MSGChat recMessage, Player sender) {
                 chatBox.appendText(String.format("%s said:\t%s\n",
                         recMessage.getSender().getName(), recMessage.getChatMsg()), Color.BLACK);
                 return null;
@@ -52,7 +52,7 @@ public class GameWindow {
         // received move from player
         MessageEvent<MSGGameAction> actionEvent = new MessageEvent<MSGGameAction>() {
             @Override
-            public MessageWrapper[] onMsgReceive(MSGGameAction recMessage, Agent sender) {
+            public MessageWrapper[] onMsgReceive(MSGGameAction recMessage, Player sender) {
                 Platform.runLater(() -> {
                     Point p = recMessage.getMoveLocation();
 
@@ -73,7 +73,7 @@ public class GameWindow {
 
         MessageEvent<MSGNewTurn> newTurnEvent = new MessageEvent<MSGNewTurn>() {
             @Override
-            public MessageWrapper[] onMsgReceive(MSGNewTurn recMessage, Agent sender) {
+            public MessageWrapper[] onMsgReceive(MSGNewTurn recMessage, Player sender) {
                 Platform.runLater(() -> updateTurn(recMessage));
                 return null;
             }
@@ -81,7 +81,7 @@ public class GameWindow {
 
         MessageEvent<MSGGameStatus> gameEndEvent = new MessageEvent<MSGGameStatus>() {
             @Override
-            public MessageWrapper[] onMsgReceive(MSGGameStatus recMessage, Agent sender) {
+            public MessageWrapper[] onMsgReceive(MSGGameStatus recMessage, Player sender) {
                 Platform.runLater(() -> ClientMain.endApp("Game has ended. App will now close."));
                 return null;
             }
@@ -89,7 +89,7 @@ public class GameWindow {
 
         MessageEvent<MSGAgentChanged> playerLeftEvent = new MessageEvent<MSGAgentChanged>() {
             @Override
-            public MessageWrapper[] onMsgReceive(MSGAgentChanged recMessage, Agent sender) {
+            public MessageWrapper[] onMsgReceive(MSGAgentChanged recMessage, Player sender) {
                 Platform.runLater(() ->
                         ClientMain.endApp("A player has disconnected from the game. App will now close."));
                 return null;

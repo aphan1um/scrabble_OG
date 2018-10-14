@@ -2,7 +2,7 @@ package client.controller;
 
 import client.Connections;
 import client.util.StageUtils;
-import core.game.Agent;
+import core.game.Player;
 import core.message.MessageEvent;
 import core.message.MessageWrapper;
 import core.messageType.MSGQuery;
@@ -32,7 +32,7 @@ public class CreateLobbyDialog implements Initializable {
 
     private MessageEvent<MSGQuery> createResp = new MessageEvent<MSGQuery>() {
         @Override
-        public MessageWrapper[] onMsgReceive(MSGQuery recMessage, Agent sender) {
+        public MessageWrapper[] onMsgReceive(MSGQuery recMessage, Player sender) {
             switch (recMessage.getQueryType()) {
                 case GAME_ALREADY_STARTED:
                     if (recMessage.getValue()) {

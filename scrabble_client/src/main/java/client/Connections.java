@@ -3,17 +3,17 @@ package client;
 import client.listeners.ScrabbleClientListener;
 import core.ConnectType;
 import server.ScrabbleServerListener;
-import core.game.Agent;
+import core.game.Player;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
 public class Connections {
     private static ScrabbleClientListener listener;
     private static ScrabbleServerListener server;
-    private static ObjectProperty<Agent> playerProperty;
+    private static ObjectProperty<Player> playerProperty;
 
     static {
-        playerProperty = new SimpleObjectProperty<>(new Agent(Agent.AgentType.PLAYER));
+        playerProperty = new SimpleObjectProperty<>(new Player(null));
     }
 
     /** Returns a connection that is listening to the server. */
@@ -34,7 +34,7 @@ public class Connections {
         return server;
     }
 
-    public static ObjectProperty<Agent> playerProperty() {
+    public static ObjectProperty<Player> playerProperty() {
         return playerProperty;
     }
 }

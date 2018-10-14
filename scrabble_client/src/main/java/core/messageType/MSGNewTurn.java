@@ -1,16 +1,16 @@
 package core.messageType;
 
-import core.game.Agent;
+import core.game.Player;
 import core.message.Message;
 
 // represents results from last turn, as well as indicator to new turn
 public class MSGNewTurn implements Message {
-    private Agent last_player;
-    private Agent next_player;
+    private Player last_player;
+    private Player next_player;
     private int new_points;
     private boolean skippedTurn;
 
-    public MSGNewTurn(Agent last_player, Agent next_player,
+    public MSGNewTurn(Player last_player, Player next_player,
                       int new_points, boolean skippedTurn) {
 
         this.last_player = last_player;
@@ -27,11 +27,11 @@ public class MSGNewTurn implements Message {
         return skippedTurn;
     }
 
-    public Agent getLastPlayer() {
+    public Player getLastPlayer() {
         return last_player;
     }
 
-    public Agent getNextPlayer() {
+    public Player getNextPlayer() {
         return next_player;
     }
 }

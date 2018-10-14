@@ -1,6 +1,6 @@
 package client.controller;
 
-import core.game.Agent;
+import core.game.Player;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -20,9 +20,9 @@ public class ScoreBoxController implements Initializable {
     @FXML
     private TableView tblScores;
 
-    public ObservableMap<Agent, Integer> scores;
+    public ObservableMap<Player, Integer> scores;
 
-    public ScoreBoxController(Map<Agent, Integer> scores) {
+    public ScoreBoxController(Map<Player, Integer> scores) {
         super();
         this.scores = FXCollections.observableMap(scores);
     }
@@ -31,9 +31,9 @@ public class ScoreBoxController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         // TODO: Thanks to https://stackoverflow.com/a/18620705 for the help
         // load and bind the scores to the table
-        TableColumn<Agent, String> colNames =
+        TableColumn<Player, String> colNames =
                 new TableColumn<>("Player");
-        TableColumn<Agent, Integer> colPoints =
+        TableColumn<Player, Integer> colPoints =
                 new TableColumn<>("Points");
 
         colNames.setCellValueFactory((param) -> {
@@ -48,10 +48,10 @@ public class ScoreBoxController implements Initializable {
         colPoints.prefWidthProperty().bind(tblScores.widthProperty().multiply(0.4));
 
         // Thanks to https://stackoverflow.com/a/37172900 for the idea
-        ObservableList<Agent> lst = FXCollections.observableArrayList(scores.keySet());
-        scores.addListener(new MapChangeListener<Agent, Integer>() {
+        ObservableList<Player> lst = FXCollections.observableArrayList(scores.keySet());
+        scores.addListener(new MapChangeListener<Player, Integer>() {
             @Override
-            public void onChanged(Change<? extends Agent, ? extends Integer> change) {
+            public void onChanged(Change<? extends Player, ? extends Integer> change) {
                 // this is to account adding a key/value pair in a HashMap can trigger
                 // both a deletion and insertion (in that case, a replacement)
                 if (change.wasRemoved() != change.wasAdded()) {
@@ -72,7 +72,7 @@ public class ScoreBoxController implements Initializable {
         System.out.println(lst.size());
     }
 
-    public void updateScore(Agent player, int newScore) {
+    public void updateScore(Player player, int newScore) {
         scores.put(player, newScore);
     }
 }

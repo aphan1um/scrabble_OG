@@ -9,9 +9,9 @@ public class LiveGame {
     public static final int NUM_ROWS = 20;
     public static final int NUM_COLS = 20;
 
-    private List<Agent> players;
-    private Map<Agent, Integer> scores;
-    private Agent currentTurn;
+    private List<Player> players;
+    private Map<Player, Integer> scores;
+    private Player currentTurn;
 
     private int numFilled;
     private transient Map<GameRules.Orientation, Integer> voteScore;
@@ -20,11 +20,11 @@ public class LiveGame {
     private transient Point lastLetterPos;
     private transient int numSkipConsecutive;
 
-    public LiveGame(List<Agent> players) {
+    public LiveGame(List<Player> players) {
         // TODO: somewhat inefficient. For now, ONLY the server needs
         // to call this constructor
         scores = new LinkedHashMap<>();
-        for (Agent a : players)
+        for (Player a : players)
             scores.put(a, 0);
 
         this.players = players;
@@ -111,15 +111,15 @@ public class LiveGame {
         return board;
     }
 
-    public Map<Agent, Integer> getScores() {
+    public Map<Player, Integer> getScores() {
         return scores;
     }
 
-    public Agent getCurrentTurn() {
+    public Player getCurrentTurn() {
         return currentTurn;
     }
 
-    public void setCurrentTurn(Agent currentTurn) {
+    public void setCurrentTurn(Player currentTurn) {
         this.currentTurn = currentTurn;
     }
 }

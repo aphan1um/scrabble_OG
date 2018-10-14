@@ -3,8 +3,7 @@ package core.message;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.reflect.TypeToken;
-import core.game.Agent;
-import javafx.scene.layout.Pane;
+import core.game.Player;
 
 import java.util.*;
 
@@ -12,19 +11,19 @@ public class MessageWrapper {
     private Message msg;
     private Message.MessageType msgType;
     private List<Long> timeStamps;
-    private transient Collection<Agent> sendTo;
+    private transient Collection<Player> sendTo;
 
     public static MessageWrapper[] prepWraps(MessageWrapper... msgs) {
         return msgs;
     }
 
-    public MessageWrapper(Message msg, Collection<Agent> sendTo) {
+    public MessageWrapper(Message msg, Collection<Player> sendTo) {
         this.msg = msg;
         this.sendTo = sendTo;
         this.msgType = Message.fromMessageClass(msg.getClass());
     }
 
-    public MessageWrapper(Message msg, Agent... sendTo) {
+    public MessageWrapper(Message msg, Player... sendTo) {
         this.msg = msg;
         this.msgType = Message.fromMessageClass(msg.getClass());
 
@@ -38,7 +37,7 @@ public class MessageWrapper {
 
     public Message.MessageType getMessageType() { return msgType; }
 
-    public Collection<Agent> getSendTo() {
+    public Collection<Player> getSendTo() {
         return sendTo;
     }
 

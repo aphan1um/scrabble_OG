@@ -15,7 +15,7 @@
     <RowConstraints minHeight="10.0" percentHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
   </rowConstraints>
    <children>
-      <Button fx:id="btnInvite" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Invite Players" GridPane.rowIndex="1" />
+      <Button fx:id="btnInvite" defaultButton="true" disable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Invite Players" GridPane.rowIndex="1" />
       <TableView fx:id="tblPlayers" prefHeight="200.0" prefWidth="200.0" />
    </children>
 </GridPane>

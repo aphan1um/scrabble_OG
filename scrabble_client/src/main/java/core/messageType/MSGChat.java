@@ -1,14 +1,14 @@
 package core.messageType;
 
-import core.game.Agent;
+import core.game.Player;
 import core.message.Message;
 
 public class MSGChat implements Message {
     private String text;
-    private Agent sender;
+    private Player sender;
     private String lobbyName;
 
-    public MSGChat(String text, Agent sender, String lobbyName) {
+    public MSGChat(String text, Player sender, String lobbyName) {
         this.text = text;
         this.sender = sender;
         this.lobbyName = lobbyName;
@@ -17,7 +17,7 @@ public class MSGChat implements Message {
     public String getChatMsg() {
         return text;
     }
-    public Agent getSender() { return sender; }
+    public Player getSender() { return sender; }
 
     public String getLobbyName() { return lobbyName; }
 }

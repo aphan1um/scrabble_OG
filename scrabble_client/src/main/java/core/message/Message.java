@@ -19,7 +19,8 @@ public interface Message {
         NEW_TURN,
         LOBBY_LIST,
         PLAYER_LIST,
-        PLAYER_INVITE;
+        PLAYER_REQUEST_INVITE,
+        SERVER_SEND_INVITES;
 
         private static final BiMap<MessageType,Class<? extends Message>> classMaps;
 
@@ -37,7 +38,8 @@ public interface Message {
                     .put(NEW_TURN, MSGNewTurn.class)
                     .put(LOBBY_LIST, MSGLobbyList.class)
                     .put(PLAYER_LIST, MSGPlayerList.class)
-                    .put(PLAYER_INVITE, MSGInvite.class).build();
+                    .put(PLAYER_REQUEST_INVITE, MSGInviteRequest.class)
+                    .put(SERVER_SEND_INVITES, MSGInviteNotify.class).build();
         }
     }
 

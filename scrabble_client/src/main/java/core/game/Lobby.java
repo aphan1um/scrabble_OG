@@ -6,47 +6,47 @@ import java.util.List;
 
 // TODO: Concurrency issues?
 public class Lobby {
-    private transient Agent owner;
+    private transient Player owner;
     private transient LiveGame gameSession;
-    private transient List<Agent> agents;
+    private transient List<Player> players;
     private String descript;
 
     private transient int turnNumber = 0;
 
-    public Lobby(Agent owner, String descript) {
+    public Lobby(Player owner, String descript) {
         this.owner = owner;
-        this.agents = new ArrayList<>();
+        this.players = new ArrayList<>();
         this.descript = descript;
-        agents.add(owner);
+        players.add(owner);
     }
 
     public void prepareGame() {
-        gameSession = new LiveGame(agents);
-        gameSession.setCurrentTurn(agents.get(turnNumber));
+        gameSession = new LiveGame(players);
+        gameSession.setCurrentTurn(players.get(turnNumber));
     }
 
-    public Agent getOwner() {
+    public Player getOwner() {
         return owner;
     }
 
-    public void addPlayer(Agent agent) {
-        synchronized (agents) {
-            agents.add(agent);
+    public void addPlayer(Player player) {
+        synchronized (players) {
+            players.add(player);
         }
     }
 
-    public boolean removePlayer(Agent agent) {
-        synchronized (agents) {
-            if (agent.equals(owner)) {
+    public boolean removePlayer(Player player) {
+        synchronized (players) {
+            if (player.equals(owner)) {
                 return true;
             }
-            agents.remove(agent);
-            return agents.size() == 0;
+            players.remove(player);
+            return players.size() == 0;
         }
     }
 
-    public Collection<Agent> getAgents() {
-        return agents;
+    public Collection<Player> getPlayers() {
+        return players;
     }
 
     public String getDescription() { return descript; }

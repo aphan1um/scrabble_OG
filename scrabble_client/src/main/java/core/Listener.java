@@ -4,7 +4,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Maps;
 import com.google.gson.*;
-import core.game.Agent;
+import core.game.Player;
 import core.message.EventMessageList;
 import core.message.Message;
 import core.message.MessageWrapper;
@@ -24,12 +24,12 @@ public abstract class Listener {
     // sure only ONE thread can modify it.
     protected volatile EventMessageList eventList;
     protected final Gson gson;
-    protected BiMap<Socket, Agent> connections;
+    protected BiMap<Socket, Player> connections;
 
     protected abstract void onUserConnect(Socket s) throws IOException;
     protected abstract void prepareEvents();
     protected abstract boolean onMessageReceived(MessageWrapper msgRec, Socket s) throws IOException;
-    protected abstract void onUserDisconnect(Agent p);
+    protected abstract void onUserDisconnect(Player p);
 
     public Listener(String name) {
         this.listenerName = name;
@@ -146,15 +146,15 @@ public abstract class Listener {
      * @param s Socket of player.
      */
     protected void triggerDisconnect(Socket s) {
-        Agent disconnectedAgent = connections.get(s);
-        System.out.println("Disconnected called: " + disconnectedAgent);
+        Player disconnectedPlayer = connections.get(s);
+        System.out.println("Disconnected called: " + disconnectedPlayer);
 
         synchronized (connections) {
             connections.remove(s);
             System.out.println("REMOVED SOMETHING");
         }
 
-        onUserDisconnect(disconnectedAgent);
+        onUserDisconnect(disconnectedPlayer);
     }
 
     /***
@@ -181,7 +181,7 @@ public abstract class Listener {
         if (smsg == null)
             return;
 
-        for (Agent p : smsg.getSendTo()) {
+        for (Player p : smsg.getSendTo()) {
             try {
                 Socket socket_send = connections.inverse().get(p);
 

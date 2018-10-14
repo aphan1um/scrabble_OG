@@ -2,7 +2,7 @@ package client.controller;
 
 import client.Connections;
 import core.ConnectType;
-import core.game.Agent;
+import core.game.Player;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -22,7 +22,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
-import client.ClientMain;
 import client.util.StageUtils;
 
 import java.io.IOException;
@@ -31,7 +30,6 @@ import java.net.BindException;
 import java.net.ConnectException;
 import java.net.URL;
 import java.net.UnknownHostException;
-import java.util.List;
 import java.util.ResourceBundle;
 
 public class LoginFormController implements Initializable {
@@ -145,7 +143,7 @@ public class LoginFormController implements Initializable {
         Stage dialog = WaitDialogController.createDialog(stage, "Connecting to server...");
 
         // set player details
-        Connections.playerProperty().set(new Agent(txtName.getText(), Agent.AgentType.PLAYER));
+        Connections.playerProperty().set(new Player(txtName.getText()));
 
         Task task = new Task() {
             @Override

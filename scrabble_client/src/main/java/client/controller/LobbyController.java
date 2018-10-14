@@ -3,24 +3,27 @@ package client.controller;
 import client.ClientMain;
 import client.Connections;
 import client.GameWindow;
+import client.util.StageUtils;
 import core.ConnectType;
-import core.game.Agent;
+import core.game.Player;
 import core.message.MessageEvent;
 import core.message.MessageWrapper;
 import core.messageType.MSGAgentChanged;
 import core.messageType.MSGChat;
 import core.messageType.MSGGameStatus;
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -47,7 +50,7 @@ public class LobbyController implements Initializable {
         // message received
         MessageEvent<MSGChat> chatEvent = new MessageEvent<MSGChat>() {
             @Override
-            public MessageWrapper[] onMsgReceive(MSGChat recMessage, Agent sender) {
+            public MessageWrapper[] onMsgReceive(MSGChat recMessage, Player sender) {
                 chatBox.appendText(String.format("%s said:\t%s\n",
                         recMessage.getSender().getName(), recMessage.getChatMsg()), Color.BLACK);
                 return null;
@@ -57,13 +60,13 @@ public class LobbyController implements Initializable {
         // when client.listeners sends the initial list of players in lobby
         MessageEvent<MSGAgentChanged> getPlayersEvent = new MessageEvent<MSGAgentChanged>() {
             @Override
-            public MessageWrapper[] onMsgReceive(MSGAgentChanged recMessage, Agent sender) {
+            public MessageWrapper[] onMsgReceive(MSGAgentChanged recMessage, Player sender) {
                 switch (recMessage.getStatus()) {
                     case JOINED:
-                        Platform.runLater(() -> lstPlayers.getItems().addAll(recMessage.getAgents()));
+                        Platform.runLater(() -> lstPlayers.getItems().addAll(recMessage.getPlayers()));
                         break;
                     case DISCONNECTED:
-                        Platform.runLater(() -> lstPlayers.getItems().removeAll(recMessage.getAgents()));
+                        Platform.runLater(() -> lstPlayers.getItems().removeAll(recMessage.getPlayers()));
                         break;
                 }
 
@@ -74,21 +77,21 @@ public class LobbyController implements Initializable {
         // when player joins or leaves the lobby
         MessageEvent<MSGAgentChanged> getPlayerStatus = new MessageEvent<MSGAgentChanged>() {
             @Override
-            public MessageWrapper[] onMsgReceive(MSGAgentChanged recMessage, Agent sender) {
+            public MessageWrapper[] onMsgReceive(MSGAgentChanged recMessage, Player sender) {
                 // if host has left the lobby
                 if (recMessage.hasHostLeft()) {
                     Platform.runLater(() ->
                             ClientMain.endApp("The host has left the lobby. The app will now close."));
                 }
 
-                for (Agent agent : recMessage.getAgents()) {
+                for (Player player : recMessage.getPlayers()) {
                     switch (recMessage.getStatus()) {
                         case JOINED:
-                            chatBox.appendText(String.format("%s has joined the lobby.\n", agent),
+                            chatBox.appendText(String.format("%s has joined the lobby.\n", player),
                                     Color.GREEN);
                             break;
                         case DISCONNECTED:
-                            chatBox.appendText(String.format("%s has left the lobby.\n", agent),
+                            chatBox.appendText(String.format("%s has left the lobby.\n", player),
                                     Color.RED);
                             break;
                     }
@@ -101,7 +104,7 @@ public class LobbyController implements Initializable {
         // host has announced the game to start
         MessageEvent<MSGGameStatus> gameStartEvent = new MessageEvent<MSGGameStatus>() {
             @Override
-            public MessageWrapper[] onMsgReceive(MSGGameStatus recMessage, Agent sender) {
+            public MessageWrapper[] onMsgReceive(MSGGameStatus recMessage, Player sender) {
                 Platform.runLater(() -> {
                     shutdown(); // clear events
                     ((Stage)btnStartGame.getScene().getWindow()).close();
@@ -161,6 +164,31 @@ public class LobbyController implements Initializable {
         if (Connections.getListener().getServerType() == ConnectType.LOCAL) {
             btnInvite.setDisable(false);
         }
+
+        btnInvite.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                FXMLLoader loader2 = new FXMLLoader(getClass().getResource("/InvitePlayerList.fxml"));
+                PlayerInviteDialog inviteController = new PlayerInviteDialog();
+
+                loader2.setController(inviteController);
+
+                Stage inviteStage = new Stage();
+                inviteStage.initModality(Modality.APPLICATION_MODAL);
+                inviteStage.initOwner(chatPane.getScene().getWindow());
+                inviteStage.setTitle("Invite players");
+
+                try {
+                    inviteStage.setScene(new Scene(loader2.load()));
+                    inviteStage.setOnShown(e ->
+                            StageUtils.centreStage((Stage)btnInvite.getScene().getWindow(), inviteStage));
+                    inviteStage.showAndWait();
+                    inviteController.shutdown();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        });
 
         btnStartGame.setDisable(!isHosting);
     }

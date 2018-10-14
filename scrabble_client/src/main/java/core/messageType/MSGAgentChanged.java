@@ -1,13 +1,13 @@
 package core.messageType;
 
-import core.game.Agent;
+import core.game.Player;
 import core.message.Message;
 
 import java.util.Arrays;
 import java.util.Collection;
 
 public class MSGAgentChanged implements Message {
-    private Collection<Agent> agents;
+    private Collection<Player> players;
     private NewStatus status;
     private boolean hostLeft;
 
@@ -16,21 +16,21 @@ public class MSGAgentChanged implements Message {
         JOINED
     }
 
-    public MSGAgentChanged(NewStatus status, boolean hostLeft, Agent... agents) {
+    public MSGAgentChanged(NewStatus status, boolean hostLeft, Player... players) {
         super();
         this.status = status;
-        this.agents = Arrays.asList(agents);
+        this.players = Arrays.asList(players);
         this.hostLeft = hostLeft;
     }
 
-    public MSGAgentChanged(NewStatus status, Collection<Agent> agents) {
+    public MSGAgentChanged(NewStatus status, Collection<Player> players) {
         super();
         this.status = status;
-        this.agents = agents;
+        this.players = players;
     }
 
-    public Collection<Agent> getAgents() {
-        return agents;
+    public Collection<Player> getPlayers() {
+        return players;
     }
 
     public NewStatus getStatus() {
