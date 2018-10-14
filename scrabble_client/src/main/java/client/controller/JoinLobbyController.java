@@ -132,7 +132,7 @@ public class JoinLobbyController implements Initializable {
         Connections.getListener().requestAllLobbies();
     }
 
-    private void shutdown() {
+    public void shutdown() {
         ((Stage)tblLobby.getScene().getWindow()).close();
 
         Connections.getListener().getEventList().removeEvents(

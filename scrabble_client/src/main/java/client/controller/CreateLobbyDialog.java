@@ -58,7 +58,7 @@ public class CreateLobbyDialog implements Initializable {
         Connections.getListener().getEventList().addEvents(events.createResp);
         Connections.getListener().inLobbyProperty().addListener(events.joinedLobby);
 
-        btnCancel.setOnAction(e -> btnCancel.getScene().getWindow().hide());
+        btnCancel.setOnAction(e -> ((Stage)btnCancel.getScene().getWindow()).close());
 
         btnCreate.setOnAction(e -> {
             if (txtName.getText().isEmpty()) {
@@ -75,7 +75,7 @@ public class CreateLobbyDialog implements Initializable {
         });
     }
 
-    private void shutdown() {
+    public void shutdown() {
         ((Stage)txtName.getScene().getWindow()).close();
 
         Connections.getListener().getEventList().removeEvents(events.createResp);

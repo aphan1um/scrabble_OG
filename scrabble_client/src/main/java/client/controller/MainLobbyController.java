@@ -91,6 +91,7 @@ public class MainLobbyController implements Initializable {
                 joinStage.setScene(new Scene(loader1.load()));
                 joinStage.setOnShown(e2 ->
                         StageUtils.centreStage((Stage)btnJoin.getScene().getWindow(), joinStage));
+                joinStage.setOnCloseRequest(e2 -> joinLobbyController.shutdown());
                 joinStage.show();
             } catch (IOException e1) {
                 e1.printStackTrace();
@@ -112,6 +113,9 @@ public class MainLobbyController implements Initializable {
                 createStage.setScene(new Scene(loader2.load()));
                 createStage.setOnShown(e2 ->
                         StageUtils.centreStage((Stage)btnCreate.getScene().getWindow(), createStage));
+
+                createStage.setOnCloseRequest(e2 -> createLobbyController.shutdown());
+
                 createStage.show();
             } catch (IOException e1) {
                 e1.printStackTrace();
