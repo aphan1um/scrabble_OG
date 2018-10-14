@@ -1,6 +1,7 @@
 package client;
 
 import client.listeners.ScrabbleClientListener;
+import core.ConnectType;
 import server.ScrabbleServerListener;
 import core.game.Agent;
 import javafx.beans.property.ObjectProperty;
@@ -18,7 +19,7 @@ public class Connections {
     /** Returns a connection that is listening to the server. */
     public static ScrabbleClientListener getListener() {
         if (listener == null) {
-            listener = new ScrabbleClientListener(playerProperty.get().getName());
+            listener = new ScrabbleClientListener(playerProperty.get().getName(), ConnectType.LOCAL);
         }
 
         return listener;
@@ -27,7 +28,7 @@ public class Connections {
     /** Returns a connection represents the server/host. */
     public static ScrabbleServerListener getServer() {
         if (server == null) {
-            server = new ScrabbleServerListener("Server");
+            server = new ScrabbleServerListener("Server", ConnectType.LOCAL);
         }
 
         return server;

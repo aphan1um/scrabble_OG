@@ -3,6 +3,7 @@ package server;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Maps;
+import core.ConnectType;
 import core.ServerListener;
 import core.game.Agent;
 import core.game.Lobby;
@@ -14,8 +15,10 @@ import java.net.Socket;
 import java.util.*;
 
 public class ScrabbleServerListener extends ServerListener {
+
     private BiMap<String, Lobby> lobbyMap;
     private Map<Agent, Lobby> playerLobbyMap; // note this is not a bijection, so a BiMap can't be used
+    private ConnectType serverType;
 
     private class ServerEvents {
         // return list of players back to player who sent details to join lobby
@@ -63,8 +66,11 @@ public class ScrabbleServerListener extends ServerListener {
         MessageEvent<MSGChat> chatReceived = new MessageEvent<MSGChat>() {
             @Override
             public MessageWrapper[] onMsgReceive(MSGChat recMessage, Agent sender) {
+                Lobby lobbyChat = playerLobbyMap.get(sender);
+
                 return MessageWrapper.prepWraps(
-                        new MessageWrapper(recMessage, playerLobbyMap.get(sender).getAgents()));
+                        new MessageWrapper(recMessage,
+                                playerLobbyMap.get(sender).getAgents()));
             }
         };
 
@@ -178,8 +184,8 @@ public class ScrabbleServerListener extends ServerListener {
 
     }
 
-    public ScrabbleServerListener(String name) {
-        super(name);
+    public ScrabbleServerListener(String name, ConnectType connectType) {
+        super(name, connectType);
 
         // add events
         ServerEvents events = new ServerEvents();
@@ -191,6 +197,8 @@ public class ScrabbleServerListener extends ServerListener {
                 events.voteReceived,
                 events.playerMakesMove
         );
+
+        this.serverType = serverType;
     }
 
     @Override
@@ -211,10 +219,10 @@ public class ScrabbleServerListener extends ServerListener {
 
     @Override
     protected boolean onMessageReceived(MessageWrapper msgRec, Socket s) throws IOException {
-        if (connections.get(s) == null) {
-            if (msgRec.getMessageType() == Message.MessageType.JOIN_LOBBY) {
-                Agent player = (Agent)((MSGJoinLobby)msgRec.getMessage()).getPlayer();
-                Lobby lobby = lobbyMap.get(((MSGJoinLobby)msgRec.getMessage()).getLobbyName());
+        if (connections.get(s) == null) { // if player hasn't been authenticated yet
+
+            if (msgRec.getMessageType() == Message.MessageType.LOGIN) {
+                Agent player = (Agent)((MSGLogin)msgRec.getMessage()).getPlayer();
                 boolean is_unique = false;
 
                 synchronized (connections) {
@@ -226,17 +234,14 @@ public class ScrabbleServerListener extends ServerListener {
                 }
 
                 // send back message if their name is unique to the server
-                if (!is_unique)
+                if (!is_unique) {
                     sendMessage(new MSGQuery(MSGQuery.QueryType.NON_UNIQUE_ID), s);
-                else if (lobby != null && lobby.getGameSession() != null)
-                    sendMessage(new MSGQuery(MSGQuery.QueryType.GAME_ALREADY_MADE), s);
-                else {
+                    return false;
+                } else {
                     sendMessage(new MSGQuery(MSGQuery.QueryType.ACCEPTED), s);
                     return true;
                 }
             }
-
-            return false;
         }
 
         return true;

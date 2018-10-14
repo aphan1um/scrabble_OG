@@ -19,6 +19,7 @@ import java.util.*;
 public abstract class Listener {
     private static final int HEARTBEAT_PERIOD = 10000; // in ms
     private String listenerName;
+    private ConnectType connectType;
 
     // TODO: This solves the issue of iterating through the list, but we must make
     // sure only ONE thread can modify it.
@@ -31,8 +32,10 @@ public abstract class Listener {
     protected abstract boolean onMessageReceived(MessageWrapper msgRec, Socket s) throws IOException;
     protected abstract void onUserDisconnect(Agent p);
 
-    public Listener(String name) {
+    public Listener(String name, ConnectType connectType) {
         this.listenerName = name;
+        this.connectType = connectType;
+
         eventList = new EventMessageList();
         gson = new GsonBuilder()
                 .enableComplexMapKeySerialization()
@@ -55,6 +58,8 @@ public abstract class Listener {
     public String getName() {
         return listenerName;
     }
+
+    public ConnectType getConnectType() { return connectType; }
 
     public EventMessageList getEventList() {
         return eventList;

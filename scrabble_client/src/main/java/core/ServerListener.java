@@ -5,13 +5,12 @@ import core.message.Message;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public abstract class ServerListener extends Listener {
-    public ServerListener(String name) {
-        super(name);
+    public ServerListener(String name, ConnectType connectType) {
+        super(name, connectType);
     }
 
     public void start(int port) throws IOException {

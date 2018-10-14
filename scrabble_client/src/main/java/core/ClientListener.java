@@ -8,8 +8,9 @@ import java.util.concurrent.*;
 
 public abstract class ClientListener extends Listener {
     protected Socket socket;
-    public ClientListener(String name) {
-        super(name);
+
+    public ClientListener(String name, ConnectType connectType) {
+        super(name, connectType);
     }
 
     public abstract void onAuthenticate() throws Exception;

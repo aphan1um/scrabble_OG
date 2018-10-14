@@ -3,10 +3,10 @@ package client.listeners;
 import client.ClientMain;
 import client.Connections;
 import core.ClientListener;
+import core.ConnectType;
 import core.game.Agent;
 import core.game.GameRules;
 import core.message.Message;
-import core.message.MessageEvent;
 import core.message.MessageWrapper;
 import core.messageType.*;
 import javafx.application.Platform;
@@ -19,16 +19,12 @@ import java.io.IOException;
 import java.net.Socket;
 
 final public class ScrabbleClientListener extends ClientListener {
-    private long serverTime;
-    private TimeSync timeSync;
     private String lobbyName;
 
     private DoubleProperty pingMS; // ping in milliseconds (ms)
 
-    public ScrabbleClientListener(String name) {
-        super(name);
-        timeSync = new TimeSync();
-        serverTime = -1;
+    public ScrabbleClientListener(String name, ConnectType connectType) {
+        super(name, connectType);
         pingMS = new SimpleDoubleProperty();
     }
 
@@ -129,9 +125,8 @@ final public class ScrabbleClientListener extends ClientListener {
 
     @Override
     public void onAuthenticate() throws Exception {
-        // sender player details
-        sendMessage(new MSGJoinLobby(
-                Connections.playerProperty().get(), lobbyName));
+        // sender player's username; server checks if its unique
+        sendMessage(new MSGLogin(Connections.playerProperty().get()));
 
         // TODO: potential code dups, also dodgy code
         DataInputStream in = new DataInputStream(socket.getInputStream());
@@ -150,8 +145,15 @@ final public class ScrabbleClientListener extends ClientListener {
                     case NON_UNIQUE_ID:
                         throw new NonUniqueNameException();
                     case ACCEPTED:
-                        return;
+                        if (getConnectType() == ConnectType.LOCAL) {
+                            sendMessage(new MSGJoinLobby(lobbyName));
+                        } else {
+                            return;
+                        }
                 }
+            } else if (getConnectType() == ConnectType.LOCAL &&
+                    msgRec.getMessageType() == Message.MessageType.AGENT_CHANGED) {
+                return;
             }
         }
     }

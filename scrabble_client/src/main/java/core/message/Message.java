@@ -7,6 +7,7 @@ import core.messageType.*;
 
 public interface Message {
     public enum MessageType {
+        LOGIN,
         JOIN_LOBBY,
         CHAT,
         PING,
@@ -21,6 +22,7 @@ public interface Message {
 
         static {
             classMaps = ImmutableBiMap.<MessageType, Class<? extends Message>>builder()
+                    .put(LOGIN, MSGLogin.class)
                     .put(JOIN_LOBBY, MSGJoinLobby.class)
                     .put(CHAT, MSGChat.class)
                     .put(PING, MSGPing.class)

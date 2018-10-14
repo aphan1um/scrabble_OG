@@ -1,5 +1,7 @@
 package server;
 
+import core.ConnectType;
+
 import java.io.IOException;
 
 public class ServerMain {
@@ -13,7 +15,9 @@ public class ServerMain {
         int port = Integer.parseInt(args[0]);
         System.out.println("Connecting as port " + port + "...");
 
-        ScrabbleServerListener server = new ScrabbleServerListener("Server");
+        // for internet use
+        ScrabbleServerListener server = new ScrabbleServerListener("Server",
+                ConnectType.INTERNET);
         server.start(port);
     }
 
