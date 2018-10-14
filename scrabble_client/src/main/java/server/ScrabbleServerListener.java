@@ -35,7 +35,7 @@ public class ScrabbleServerListener extends ServerListener {
                 } else if (lobby.getGameSession() != null) {
                     // if the lobby has already started game
                     return MessageWrapper.prepWraps(new MessageWrapper(
-                            new MSGQuery(MSGQuery.QueryType.GAME_ALREADY_STARTED, true, getServerType()),
+                            new MSGQuery(MSGQuery.QueryType.GAME_ALREADY_STARTED, true),
                             sender));
                 } else {
                     synchronized (lobby) {
@@ -47,7 +47,7 @@ public class ScrabbleServerListener extends ServerListener {
                     playerLobbyMap.put(sender, lobby);
                 }
 
-                Message msg1 = new MSGQuery(MSGQuery.QueryType.GAME_ALREADY_STARTED, false, getServerType());
+                Message msg1 = new MSGQuery(MSGQuery.QueryType.GAME_ALREADY_STARTED, false);
                 MSGAgentChanged msg2 = new MSGAgentChanged(MSGAgentChanged.NewStatus.JOINED, false, sender);
                 // TODO: Is there a cleaner way to do this?
                 Set<Agent> retSend = new HashSet<>(lobby.getAgents());

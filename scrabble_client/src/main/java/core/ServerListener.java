@@ -13,6 +13,7 @@ public abstract class ServerListener extends Listener {
 
     public ServerListener(String name, ConnectType serverType) {
         super(name);
+        this.serverType = serverType;
     }
 
     public ConnectType getServerType() {

@@ -163,7 +163,7 @@ final public class ScrabbleClientListener extends ClientListener {
 
     public void requestLobbyDetails() {
         try {
-            sendMessage(new MSGQuery(MSGQuery.QueryType.GET_PLAYER_LIST, true, null));
+            sendMessage(new MSGQuery(MSGQuery.QueryType.GET_PLAYER_LIST, true));
         } catch (IOException e) {
             e.printStackTrace();
         }

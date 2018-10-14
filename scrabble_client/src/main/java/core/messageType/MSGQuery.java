@@ -14,11 +14,16 @@ public class MSGQuery implements Message {
     private boolean value;
     private ConnectType serverType;
 
-    public MSGQuery(QueryType queryType, boolean value, ConnectType serverType) {
+    public MSGQuery(QueryType queryType, boolean value) {
         this.queryType = queryType;
         this.value = value;
-        this.serverType = serverType;
     }
+
+    public MSGQuery(QueryType queryType, boolean value, ConnectType type) {
+        this(queryType, value);
+        this.serverType = type;
+    }
+
 
     public QueryType getQueryType() {
         return queryType;
