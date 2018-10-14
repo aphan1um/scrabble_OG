@@ -17,7 +17,7 @@
   </rowConstraints>
    <children>
       <Button fx:id="btnJoin" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Join Lobby" GridPane.rowIndex="1" />
-      <Button fx:id="btnCreate" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Creat a Game" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+      <Button fx:id="btnCreate" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Create a Game" GridPane.columnIndex="1" GridPane.rowIndex="1" />
       <AnchorPane fx:id="paneChat" prefHeight="360.0" prefWidth="398.0" GridPane.columnSpan="2147483647" />
    </children>
 </GridPane>

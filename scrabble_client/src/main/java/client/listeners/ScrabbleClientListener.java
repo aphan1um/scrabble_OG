@@ -7,6 +7,7 @@ import core.ConnectType;
 import core.game.Agent;
 import core.game.GameRules;
 import core.message.Message;
+import core.message.MessageEvent;
 import core.message.MessageWrapper;
 import core.messageType.*;
 import javafx.application.Platform;
@@ -20,6 +21,7 @@ import java.net.Socket;
 
 final public class ScrabbleClientListener extends ClientListener {
     private String lobbyName;
+    private boolean inLobby;
 
     private DoubleProperty pingMS; // ping in milliseconds (ms)
     private ConnectType serverType;
@@ -28,6 +30,8 @@ final public class ScrabbleClientListener extends ClientListener {
         super(name);
         pingMS = new SimpleDoubleProperty();
     }
+
+    public ConnectType getServerType() { return serverType; }
 
     public String getLobbyName() {
         return lobbyName;
@@ -57,14 +61,9 @@ final public class ScrabbleClientListener extends ClientListener {
         sendGameMove(null, null);
     }
 
-    // TODO: Experimental and needs to be enforced better
-    public void setLobbyName(String lobbyName) {
-        this.lobbyName = lobbyName;
-    }
-
     public void sendChatMessage(String txt) {
         try {
-            sendMessage(new MSGChat(txt, Connections.playerProperty().get()));
+            sendMessage(new MSGChat(txt, Connections.playerProperty().get(), lobbyName));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -83,7 +82,22 @@ final public class ScrabbleClientListener extends ClientListener {
     protected void onUserConnect(Socket s) throws IOException { }
 
     @Override
-    protected void prepareEvents() { }
+    protected void prepareEvents() {
+        eventList.addEvents(
+                new MessageEvent<MSGQuery>() {
+                    @Override
+                    public MessageWrapper[] onMsgReceive(MSGQuery recMessage, Agent sender) {
+                        if (recMessage.getQueryType() == MSGQuery.QueryType.GAME_ALREADY_STARTED &&
+                        recMessage.getValue() == false) {
+                            inLobby = true;
+                        }
+
+                        return null;
+                    }
+                }
+        );
+
+    }
 
     @Override
     protected boolean onMessageReceived(MessageWrapper msgRec, Socket s) {
@@ -92,25 +106,6 @@ final public class ScrabbleClientListener extends ClientListener {
             pingMS.set(Math.abs(msgRec.getTimeStamps().get(0) - System.nanoTime())/Math.pow(10, 6));
             System.out.println(pingMS);
         }
-        /**
-
-        return true;
-        **/
-        /**
-        if (msgRec.timeStamps != null) {
-            if (serverTime < 0)
-                serverTime = msgRec.timeStamps[0];
-
-            if (msgRec.timeStamps.length == 2) {
-                // calculate latency
-                long latency = (System.nanoTime() - msgRec.timeStamps[0])/2;
-                // calculate difference in time from server & client
-                long client_server_delta = System.nanoTime() - msgRec.timeStamps[1];
-
-                timeSync.addLatencyValue(latency);
-            }
-        }
-        **/
 
         return true;
     }
@@ -140,7 +135,8 @@ final public class ScrabbleClientListener extends ClientListener {
             if (msgRec.getMessageType() == Message.MessageType.QUERY) {
                 MSGQuery qmsg = (MSGQuery)msgRec.getMessage();
 
-                serverType = qmsg.getServerType();
+                if (qmsg.getServerType() != null)
+                    serverType = qmsg.getServerType();
 
                 switch (qmsg.getQueryType()) {
                     case GAME_ALREADY_STARTED:
@@ -164,6 +160,15 @@ final public class ScrabbleClientListener extends ClientListener {
     public void requestLobbyDetails() {
         try {
             sendMessage(new MSGQuery(MSGQuery.QueryType.GET_PLAYER_LIST, true));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void createLobby(String lobbyName, String descript) {
+        try {
+            this.lobbyName = lobbyName;
+            sendMessage(new MSGJoinLobby(lobbyName, descript));
         } catch (IOException e) {
             e.printStackTrace();
         }

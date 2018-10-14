@@ -27,11 +27,16 @@ public class ScrabbleServerListener extends ServerListener {
                 Lobby lobby = lobbyMap.get(recv.getLobbyName());
 
                 if (lobby == null) { // if lobby hasn't been made yet, make player owner
-                    lobby = new Lobby(sender);
+                    lobby = new Lobby(sender, recv.getDescription());
 
                     synchronized (lobbyMap) {
                         lobbyMap.put(recv.getLobbyName(), lobby);
                     }
+                } else if (!recv.getDescription().isEmpty()) {
+                    return MessageWrapper.prepWraps(new MessageWrapper(
+                            new MSGQuery(MSGQuery.QueryType.LOBBY_ALREADY_MADE, true),
+                            sender));
+
                 } else if (lobby.getGameSession() != null) {
                     // if the lobby has already started game
                     return MessageWrapper.prepWraps(new MessageWrapper(
@@ -67,9 +72,21 @@ public class ScrabbleServerListener extends ServerListener {
             public MessageWrapper[] onMsgReceive(MSGChat recMessage, Agent sender) {
                 Lobby lobbyChat = playerLobbyMap.get(sender);
 
+                Collection<Agent> receivers = null;
+
+                if (lobbyChat == null) { // if in main lobby room
+                    List<Agent> allOnline = new ArrayList<>();
+                    playerLobbyMap.forEach((k, v) -> {
+                        if (v == null) allOnline.add(k);
+                    });
+
+                    receivers = allOnline;
+                } else {
+                    receivers = playerLobbyMap.get(sender).getAgents();
+                }
+
                 return MessageWrapper.prepWraps(
-                        new MessageWrapper(recMessage,
-                                playerLobbyMap.get(sender).getAgents()));
+                        new MessageWrapper(recMessage, receivers));
             }
         };
 
@@ -195,6 +212,34 @@ public class ScrabbleServerListener extends ServerListener {
                 return MessageWrapper.prepWraps(new MessageWrapper(msg, sender));
             }
         };
+
+        MessageEvent<MSGQuery> requestLobbyList = new MessageEvent<MSGQuery>() {
+            @Override
+            public MessageWrapper[] onMsgReceive(MSGQuery recMessage, Agent sender) {
+                if (recMessage.getQueryType() != MSGQuery.QueryType.GET_LOBBY_LIST)
+                    return null;
+
+                Message msg = new MSGLobbyList(lobbyMap.keySet());
+                return MessageWrapper.prepWraps(new MessageWrapper(msg, sender));
+            }
+        };
+
+        MessageEvent<MSGQuery> requestOnlinePlayers = new MessageEvent<MSGQuery>() {
+            @Override
+            public MessageWrapper[] onMsgReceive(MSGQuery recMessage, Agent sender) {
+                if (recMessage.getQueryType() != MSGQuery.QueryType.GET_ALL_ONLINE_PLAYERS)
+                    return null;
+
+                // add all players not in a lobby
+                List<String> allOnline = new ArrayList<>();
+                playerLobbyMap.forEach((k, v) -> {
+                    if (v == null) allOnline.add(k.toString());
+                });
+
+                Message msg = new MSGPlayerList(allOnline);
+                return MessageWrapper.prepWraps(new MessageWrapper(msg, sender));
+            }
+        };
     }
 
     public ScrabbleServerListener(String name, ConnectType connectType) {
@@ -249,6 +294,11 @@ public class ScrabbleServerListener extends ServerListener {
 
                 // send back message if their name is unique to the server
                 sendMessage(new MSGQuery(MSGQuery.QueryType.AUTHENTICATED, is_unique, getServerType()), s);
+
+                if (is_unique) {
+                    playerLobbyMap.put(player, null);
+                }
+
                 return is_unique;
             }
         }

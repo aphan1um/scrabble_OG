@@ -1,5 +1,6 @@
 package client;
 
+import client.controller.CreateLobbyDialog;
 import core.game.Agent;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;

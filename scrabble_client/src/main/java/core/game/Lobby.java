@@ -9,10 +9,11 @@ public class Lobby {
     private transient Agent owner;
     private transient LiveGame gameSession;
     private transient List<Agent> agents;
+    private transient String descript;
 
     private transient int turnNumber = 0;
 
-    public Lobby(Agent owner) {
+    public Lobby(Agent owner, String descript) {
         this.owner = owner;
         this.agents = new ArrayList<>();
         agents.add(owner);
@@ -46,6 +47,8 @@ public class Lobby {
     public Collection<Agent> getAgents() {
         return agents;
     }
+
+    public String getDescription() { return descript; }
 
     public LiveGame getGameSession() {
         return gameSession;

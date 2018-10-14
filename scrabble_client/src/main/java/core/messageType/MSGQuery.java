@@ -7,7 +7,10 @@ public class MSGQuery implements Message {
     public enum QueryType {
         AUTHENTICATED,
         GAME_ALREADY_STARTED,
-        GET_PLAYER_LIST
+        GET_PLAYER_LIST,
+        GET_LOBBY_LIST,
+        LOBBY_ALREADY_MADE,
+        GET_ALL_ONLINE_PLAYERS
     }
 
     private QueryType queryType;

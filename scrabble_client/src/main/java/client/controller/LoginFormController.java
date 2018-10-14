@@ -1,6 +1,7 @@
 package client.controller;
 
 import client.Connections;
+import core.ConnectType;
 import core.game.Agent;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -130,26 +131,6 @@ public class LoginFormController implements Initializable {
     private void connect(boolean isHosting) {
         Stage dialog = WaitDialogController.createDialog(stage);
 
-        // TODO: messy code
-        // load the lobby form
-        FXMLLoader loader = new FXMLLoader(
-                LobbyController.class.getResource("/LobbyForm.fxml"));
-        LobbyController lobbyController = new LobbyController();
-        loader.setController(lobbyController);
-
-        Stage lobbyStage = new Stage();
-        try {
-            lobbyStage.setScene(new Scene(loader.load()));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        // TODO: DEBUG
-        lobbyStage.setOnCloseRequest(t -> {
-            Platform.exit();
-            System.exit(0);
-        });
-
         // set player details
         Connections.playerProperty().set(new Agent(txtName.getText(), Agent.AgentType.PLAYER));
 
@@ -174,21 +155,59 @@ public class LoginFormController implements Initializable {
             dialog.close();
             stage.close();
 
-            lobbyStage.setTitle(String.format("[User %s] @ %s:%s (Lobby - %s)",
-                    txtName.getText(),
-                    isHosting ? "localhost" : txtIP.getText(),
-                    txtPort.getText(),
-                    Connections.getListener().getLobbyName()));
+            if (Connections.getListener().getServerType() == ConnectType.LOCAL) {
+                Platform.runLater(() -> {
+                    FXMLLoader loader = new FXMLLoader(
+                            LobbyController.class.getResource("/LobbyForm.fxml"));
+                    LobbyController lobbyController = new LobbyController();
+                    loader.setController(lobbyController);
 
-            lobbyStage.show();
-            Connections.getListener().requestLobbyDetails();
+                    Stage lobbyStage = new Stage();
+                    try {
+                        lobbyStage.setScene(new Scene(loader.load()));
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+
+                    lobbyStage.setOnCloseRequest(t -> {
+                        Platform.exit();
+                        System.exit(0);
+                    });
+
+                    lobbyStage.setTitle(String.format("[User %s] @ %s:%s (Lobby - %s)",
+                            txtName.getText(),
+                            isHosting ? "localhost" : txtIP.getText(),
+                            txtPort.getText(),
+                            Connections.getListener().getLobbyName()));
+
+                    Connections.getListener().requestLobbyDetails();
+                    lobbyStage.show();
+                });
+
+            } else {
+                FXMLLoader loader = new FXMLLoader(
+                        LobbyController.class.getResource("/MainLobby.fxml"));
+                loader.setController(new MainLobbyController());
+
+                Stage mainLobby = new Stage();
+                try {
+                    mainLobby.setScene(new Scene(loader.load()));
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+
+                mainLobby.setOnCloseRequest(t -> {
+                    Platform.exit();
+                    System.exit(0);
+                });
+
+                mainLobby.show();
+            }
         });
 
         // happens if exception is thrown (e.g. client.listeners doesn't exist)
         task.setOnFailed((e) -> {
             dialog.close();
-            lobbyController.shutdown();
-
             handleConnectError(task.getException());
         });
 

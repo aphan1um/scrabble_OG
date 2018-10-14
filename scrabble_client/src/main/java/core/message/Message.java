@@ -16,7 +16,9 @@ public interface Message {
         GAME_VOTE,
         GAME_STATUS_CHANGED,
         QUERY,
-        NEW_TURN;
+        NEW_TURN,
+        LOBBY_LIST,
+        PLAYER_LIST;
 
         private static final BiMap<MessageType,Class<? extends Message>> classMaps;
 
@@ -31,7 +33,9 @@ public interface Message {
                     .put(GAME_VOTE, MSGGameVote.class)
                     .put(GAME_STATUS_CHANGED, MSGGameStatus.class)
                     .put(QUERY, MSGQuery.class)
-                    .put(NEW_TURN, MSGNewTurn.class).build();
+                    .put(NEW_TURN, MSGNewTurn.class)
+                    .put(LOBBY_LIST, MSGLobbyList.class)
+                    .put(PLAYER_LIST, MSGPlayerList.class).build();
         }
     }
 
