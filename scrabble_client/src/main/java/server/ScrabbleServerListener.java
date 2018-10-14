@@ -355,11 +355,8 @@ public class ScrabbleServerListener extends ServerListener {
             lobby.getPlayers().remove(p);
         }
 
-        if (lobby.getOwner().equals(p)) {
-            synchronized (playerLobbyMap) {
-                if (lobby.getOwner().equals(p))
-                    playerLobbyMap.remove(p);
-            }
+        synchronized (playerLobbyMap) {
+            playerLobbyMap.remove(p);
         }
 
         if (lobby.getPlayers().isEmpty()) {
