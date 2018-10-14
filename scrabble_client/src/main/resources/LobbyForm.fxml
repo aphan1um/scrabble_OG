@@ -23,8 +23,6 @@
             <VBox prefHeight="200.0" prefWidth="100.0">
                <children>
                   <ListView fx:id="lstPlayers" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS" />
-                   <ListView fx:id="lstReceivers" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefWidth="201.0" VBox.vgrow="ALWAYS" />
-                   <Button fx:id="btnInvite" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Invite" />
                   <Button fx:id="btnKick" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Kick agent">
                      <VBox.margin>
                         <Insets />
