@@ -162,4 +162,30 @@ public class LobbyController implements Initializable {
                     events.gameStartEvent);
         }
     }
+
+    public static Stage createStage(String ip, String port) {
+        FXMLLoader loader = new FXMLLoader(
+                LobbyController.class.getResource("/LobbyForm.fxml"));
+        LobbyController lobbyController = new LobbyController();
+        loader.setController(lobbyController);
+
+        Stage lobbyStage = new Stage();
+        try {
+            lobbyStage.setScene(new Scene(loader.load()));
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+
+        lobbyStage.setOnCloseRequest(t -> {
+            Platform.exit();
+            System.exit(0);
+        });
+
+        lobbyStage.setTitle(String.format("[User %s] @ %s:%s (Lobby - %s)",
+                Connections.playerProperty().get().getName(), ip, port,
+                Connections.getListener().getLobbyName()));
+
+        Connections.getListener().requestLobbyDetails();
+        return lobbyStage;
+    }
 }

@@ -32,7 +32,7 @@ public class ScrabbleServerListener extends ServerListener {
                     synchronized (lobbyMap) {
                         lobbyMap.put(recv.getLobbyName(), lobby);
                     }
-                } else if (!recv.getDescription().isEmpty()) {
+                } else if (recv.getDescription() != null && !recv.getDescription().isEmpty()) {
                     return MessageWrapper.prepWraps(new MessageWrapper(
                             new MSGQuery(MSGQuery.QueryType.LOBBY_ALREADY_MADE, true),
                             sender));
@@ -219,7 +219,7 @@ public class ScrabbleServerListener extends ServerListener {
                 if (recMessage.getQueryType() != MSGQuery.QueryType.GET_LOBBY_LIST)
                     return null;
 
-                Message msg = new MSGLobbyList(lobbyMap.keySet());
+                Message msg = new MSGLobbyList(lobbyMap);
                 return MessageWrapper.prepWraps(new MessageWrapper(msg, sender));
             }
         };
@@ -272,7 +272,9 @@ public class ScrabbleServerListener extends ServerListener {
                 events.startGame,
                 events.voteReceived,
                 events.playerMakesMove,
-                events.requestPlayers
+                events.requestPlayers,
+                events.requestLobbyList,
+                events.requestLobbyList
         );
     }
 

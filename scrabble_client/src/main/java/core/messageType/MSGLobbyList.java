@@ -1,17 +1,19 @@
 package core.messageType;
 
+import core.game.Lobby;
 import core.message.Message;
 
 import java.util.Collection;
+import java.util.Map;
 
 public class MSGLobbyList implements Message {
-    public Collection<String> lobbies;
+    public Map<String, Lobby> lobbies;
 
-    public MSGLobbyList(Collection<String> lobbies) {
+    public MSGLobbyList(Map<String, Lobby> lobbies) {
         this.lobbies = lobbies;
     }
 
-    public Collection<String> getLobbies() {
+    public Map<String, Lobby> getLobbies() {
         return lobbies;
     }
 }

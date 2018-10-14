@@ -165,6 +165,14 @@ final public class ScrabbleClientListener extends ClientListener {
         }
     }
 
+    public void requestAllLobbies() {
+        try {
+            sendMessage(new MSGQuery(MSGQuery.QueryType.GET_LOBBY_LIST, true));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void createLobby(String lobbyName, String descript) {
         try {
             this.lobbyName = lobbyName;
@@ -172,5 +180,9 @@ final public class ScrabbleClientListener extends ClientListener {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void joinLobby(String lobbyName) {
+        createLobby(lobbyName, null);
     }
 }

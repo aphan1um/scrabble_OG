@@ -129,7 +129,7 @@ public class LoginFormController implements Initializable {
     }
 
     private void connect(boolean isHosting) {
-        Stage dialog = WaitDialogController.createDialog(stage);
+        Stage dialog = WaitDialogController.createDialog(stage, "Connecting to server...");
 
         // set player details
         Connections.playerProperty().set(new Agent(txtName.getText(), Agent.AgentType.PLAYER));
@@ -156,33 +156,9 @@ public class LoginFormController implements Initializable {
             stage.close();
 
             if (Connections.getListener().getServerType() == ConnectType.LOCAL) {
-                Platform.runLater(() -> {
-                    FXMLLoader loader = new FXMLLoader(
-                            LobbyController.class.getResource("/LobbyForm.fxml"));
-                    LobbyController lobbyController = new LobbyController();
-                    loader.setController(lobbyController);
-
-                    Stage lobbyStage = new Stage();
-                    try {
-                        lobbyStage.setScene(new Scene(loader.load()));
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
-
-                    lobbyStage.setOnCloseRequest(t -> {
-                        Platform.exit();
-                        System.exit(0);
-                    });
-
-                    lobbyStage.setTitle(String.format("[User %s] @ %s:%s (Lobby - %s)",
-                            txtName.getText(),
-                            isHosting ? "localhost" : txtIP.getText(),
-                            txtPort.getText(),
-                            Connections.getListener().getLobbyName()));
-
-                    Connections.getListener().requestLobbyDetails();
-                    lobbyStage.show();
-                });
+                LobbyController.createStage(
+                        isHosting ? "localhost" : txtIP.getText(),
+                        txtPort.getText()).show();
 
             } else {
                 FXMLLoader loader = new FXMLLoader(

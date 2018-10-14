@@ -9,13 +9,14 @@ public class Lobby {
     private transient Agent owner;
     private transient LiveGame gameSession;
     private transient List<Agent> agents;
-    private transient String descript;
+    private String descript;
 
     private transient int turnNumber = 0;
 
     public Lobby(Agent owner, String descript) {
         this.owner = owner;
         this.agents = new ArrayList<>();
+        this.descript = descript;
         agents.add(owner);
     }
 

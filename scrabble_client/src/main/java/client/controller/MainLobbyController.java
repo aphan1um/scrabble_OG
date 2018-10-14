@@ -11,6 +11,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -70,8 +71,34 @@ public class MainLobbyController implements Initializable {
             Stage joinStage = new Stage();
             try {
                 joinStage.setScene(new Scene(loader1.load()));
+                joinStage.showAndWait();
             } catch (IOException e1) {
                 e1.printStackTrace();
+            }
+
+            if (joinLobbyController.hasJoinedLobby()) {
+                ((Stage)btnCreate.getScene().getWindow()).close();
+                LobbyController.createStage("", "").show();
+            }
+        });
+
+        btnCreate.setOnAction(e -> {
+            FXMLLoader loader2 = new FXMLLoader(getClass().getResource("/CreateLobbyDialog.fxml"));
+            CreateLobbyDialog createLobbyController = new CreateLobbyDialog();
+
+            loader2.setController(createLobbyController);
+
+            Stage createStage = new Stage();
+            try {
+                createStage.setScene(new Scene(loader2.load()));
+                createStage.showAndWait();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+
+            if (createLobbyController.hasGameCreated()) {
+                ((Stage)btnCreate.getScene().getWindow()).close();
+                LobbyController.createStage("", "").show();
             }
         });
 

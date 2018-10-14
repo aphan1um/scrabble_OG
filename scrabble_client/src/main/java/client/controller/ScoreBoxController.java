@@ -30,7 +30,6 @@ public class ScoreBoxController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // TODO: Thanks to https://stackoverflow.com/a/18620705 for the help
-        // TODO: This table does not count removal/additions of values
         // load and bind the scores to the table
         TableColumn<Agent, String> colNames =
                 new TableColumn<>("Player");
@@ -48,7 +47,7 @@ public class ScoreBoxController implements Initializable {
         colNames.prefWidthProperty().bind(tblScores.widthProperty().multiply(0.6));
         colPoints.prefWidthProperty().bind(tblScores.widthProperty().multiply(0.4));
 
-        // TODO: Thanks to https://stackoverflow.com/a/37172900 for the help
+        // Thanks to https://stackoverflow.com/a/37172900 for the idea
         ObservableList<Agent> lst = FXCollections.observableArrayList(scores.keySet());
         scores.addListener(new MapChangeListener<Agent, Integer>() {
             @Override

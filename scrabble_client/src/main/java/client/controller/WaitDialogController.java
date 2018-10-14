@@ -5,6 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.paint.Color;
 import javafx.stage.Modality;
@@ -19,16 +20,25 @@ import java.util.ResourceBundle;
 public class WaitDialogController implements Initializable {
     @FXML
     private ProgressIndicator progress;
+    @FXML
+    private Label lblContext;
+
+    private String context;
+
+    public WaitDialogController(String context){
+        this.context = context;
+    }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         progress.setProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
+        lblContext.setText(context);
     }
 
-    public static Stage createDialog(Stage stage) {
+    public static Stage createDialog(Stage stage, String context) {
         FXMLLoader loader = new FXMLLoader(
                 WaitDialogController.class.getResource("/WaitDialog.fxml"));
-        loader.setController(new WaitDialogController());
+        loader.setController(new WaitDialogController(context));
 
         // ensure the dialog is owned by the parent stage
         Stage newStage = new Stage(StageStyle.TRANSPARENT);
