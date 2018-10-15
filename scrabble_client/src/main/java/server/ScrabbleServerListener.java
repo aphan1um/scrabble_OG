@@ -349,7 +349,9 @@ public class ScrabbleServerListener extends ServerListener {
                     playerLobbyMap.put(player, null);
 
                     if (getServerType() == ConnectType.INTERNET) {
-                        new Timer().schedule(
+                        Timer timer_welcome = new Timer();
+
+                        timer_welcome.schedule(
                                 new java.util.TimerTask() {
                                     @Override
                                     public void run() {
@@ -363,9 +365,12 @@ public class ScrabbleServerListener extends ServerListener {
                                         } catch (IOException e) {
                                             e.printStackTrace();
                                         }
+
+                                        timer_welcome.cancel();
+                                        timer_welcome.purge();
                                     }
                                 },
-                                800
+                                750
                         );
                     }
 
