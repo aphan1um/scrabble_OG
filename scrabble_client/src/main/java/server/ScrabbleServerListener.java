@@ -358,14 +358,13 @@ public class ScrabbleServerListener extends ServerListener {
             }
         }
 
-
         synchronized (playerLobbyMap) {
             playerLobbyMap.remove(p);
         }
 
-        if (lobby.getPlayers().isEmpty()) {
+        if (lobby != null && lobby.getPlayers().isEmpty()) {
             synchronized (lobbyMap) {
-                if (lobby.getPlayers().isEmpty())
+                if (lobby != null && lobby.getPlayers().isEmpty())
                     lobbyMap.inverse().remove(lobby);
             }
         }
