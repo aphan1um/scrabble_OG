@@ -11,7 +11,6 @@ import core.game.Lobby;
 import core.message.*;
 import core.messageType.*;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import sun.management.Agent;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -128,6 +127,11 @@ public class ScrabbleServerListener extends ServerListener {
             @Override
             public MessageWrapper[] onMsgReceive(MSGGameAction msg, Player sender) {
                 Lobby lobby = playerLobbyMap.get(sender);
+
+                // to avoid spam
+                if (lobby.getGameSession().hasMadeMove())
+                    return null;
+
                 lobby.getGameSession().incrementBoard(msg.getMoveLocation(), msg.getLetter());
 
                 if (msg.getMoveLocation() == null || msg.getLetter() == null) { // player skipped turn

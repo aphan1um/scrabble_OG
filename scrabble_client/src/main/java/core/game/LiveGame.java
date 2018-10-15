@@ -20,6 +20,8 @@ public class LiveGame {
     private transient Point lastLetterPos;
     private transient int numSkipConsecutive;
 
+    private transient boolean hasMadeMove; // to avoid spamming
+
     public LiveGame(List<Player> players) {
         // TODO: somewhat inefficient. For now, ONLY the server needs
         // to call this constructor
@@ -45,6 +47,10 @@ public class LiveGame {
         }
     }
 
+    public boolean hasMadeMove() {
+        return hasMadeMove;
+    }
+
     // also calculates score;
     public void nextTurn(boolean skipped) {
         int idx = players.indexOf(currentTurn);
@@ -57,6 +63,7 @@ public class LiveGame {
             scores.put(currentTurn, scores.get(currentTurn) + calculateScore());
         }
         currentTurn = players.get(new_idx);
+        hasMadeMove = false;
     }
 
     public boolean allPlayersSkipped() {
@@ -101,6 +108,7 @@ public class LiveGame {
         numFilled++;
 
         resetVotes();
+        hasMadeMove = true;
     }
 
     public boolean isBoardFull() {
