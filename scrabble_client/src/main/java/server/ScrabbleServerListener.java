@@ -331,27 +331,30 @@ public class ScrabbleServerListener extends ServerListener {
                 // send back message if their name is unique to the server
                 sendMessage(new MSGQuery(MSGQuery.QueryType.AUTHENTICATED, is_unique, getServerType()), s);
 
-                new Timer().schedule(
-                        new java.util.TimerTask() {
-                            @Override
-                            public void run() {
-                                try {
-                                    sendMessage(new MSGChat(
-                                            String.format("Welcome to %s server!\nPlease keep in " +
-                                                    "mind this is a public chatroom.", getName()),
-                                            new Player("Server"), null), s);
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        },
-                        800
-                );
-
-
-
                 if (is_unique) {
                     playerLobbyMap.put(player, null);
+
+                    if (getServerType() == ConnectType.INTERNET) {
+                        new Timer().schedule(
+                                new java.util.TimerTask() {
+                                    @Override
+                                    public void run() {
+                                        try {
+                                            sendMessage(new MSGChat(
+                                                    String.format("Welcome user %s to %s server!\n" +
+                                                            "Please keep in " +
+                                                            "mind this is a public chatroom.",
+                                                            player.getName(), getName()),
+                                                    new Player("Server"), null), s);
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                },
+                                800
+                        );
+                    }
+
                 }
 
                 return is_unique;
