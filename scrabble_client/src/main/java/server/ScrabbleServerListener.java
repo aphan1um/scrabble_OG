@@ -351,9 +351,13 @@ public class ScrabbleServerListener extends ServerListener {
         Lobby lobby = playerLobbyMap.get(p);
         System.out.println("Lobby: " + lobby);
 
-        synchronized (lobby.getPlayers()) {
-            lobby.getPlayers().remove(p);
+        if (lobby != null) {
+            synchronized (lobby.getPlayers()) {
+                if (lobby != null)
+                    lobby.getPlayers().remove(p);
+            }
         }
+
 
         synchronized (playerLobbyMap) {
             playerLobbyMap.remove(p);
