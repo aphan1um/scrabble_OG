@@ -1,5 +1,6 @@
 package server;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Maps;
@@ -9,6 +10,7 @@ import core.game.Player;
 import core.game.Lobby;
 import core.message.*;
 import core.messageType.*;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import sun.management.Agent;
 
 import java.io.IOException;
@@ -226,7 +228,15 @@ public class ScrabbleServerListener extends ServerListener {
                 if (recMessage.getQueryType() != MSGQuery.QueryType.GET_LOBBY_LIST)
                     return null;
 
-                Message msg = new MSGLobbyList(lobbyMap);
+                BiMap<String, Lobby> filtered =
+                        Maps.filterEntries(lobbyMap, new Predicate<Map.Entry<String, Lobby>>() {
+                    @Override
+                    public boolean apply(Map.@Nullable Entry<String, Lobby> input) {
+                        return input.getValue().getGameSession() == null;
+                    }
+                });
+
+                Message msg = new MSGLobbyList(filtered);
                 return MessageWrapper.prepWraps(new MessageWrapper(msg, sender));
             }
         };
