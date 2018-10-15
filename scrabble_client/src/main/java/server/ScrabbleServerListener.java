@@ -128,8 +128,8 @@ public class ScrabbleServerListener extends ServerListener {
             public MessageWrapper[] onMsgReceive(MSGGameAction msg, Player sender) {
                 Lobby lobby = playerLobbyMap.get(sender);
 
-                // to avoid spam
-                if (lobby.getGameSession().hasMadeMove())
+                // to avoid spam/some cheating
+                if (lobby.getGameSession().hasMadeMove() || lobby.getGameSession().getCurrentTurn() != sender)
                     return null;
 
                 lobby.getGameSession().incrementBoard(msg.getMoveLocation(), msg.getLetter());
