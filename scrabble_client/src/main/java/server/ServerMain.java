@@ -15,8 +15,10 @@ public class ServerMain {
         int port = Integer.parseInt(args[0]);
         System.out.println("Connecting as port " + port + "...");
 
+        String name = (args.length > 1) ? args[1] : "Server";
+
         // for internet use
-        ScrabbleServerListener server = new ScrabbleServerListener("Server",
+        ScrabbleServerListener server = new ScrabbleServerListener(name,
                 ConnectType.INTERNET);
         server.start(port);
     }
